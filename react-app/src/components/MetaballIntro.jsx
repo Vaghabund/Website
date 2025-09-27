@@ -7,6 +7,7 @@ const MetaballIntro = forwardRef(function MetaballIntro({ phase, onMobileEnter, 
   const cursorCanvasRef = useRef(null)
   const animationRef = useRef(null)
   const ballsRef = useRef([])
+  const phaseRef = useRef(phase)
   const timelineRef = useRef(null)
   const groupTransform = useRef({ x:0, y:0, scale:1 })
 
@@ -15,6 +16,11 @@ const MetaballIntro = forwardRef(function MetaballIntro({ phase, onMobileEnter, 
       startFullTransition(cb)
     }
   }))
+
+  useEffect(() => {
+    // keep latest phase in a ref so animation loop can read it without re-subscribing
+    phaseRef.current = phase
+  }, [phase])
 
   useEffect(() => {
   const canvas = canvasRef.current
@@ -76,8 +82,8 @@ const MetaballIntro = forwardRef(function MetaballIntro({ phase, onMobileEnter, 
             ball.y = cy + Math.sin(ball.orbitAngle)*ball.orbitRadius
           }
         }
-      } else if(!mouseMoved) {
-        // if no mouse movement after startup, keep orbiting
+      } else if(!mouseMoved || phaseRef.current !== 'interactive') {
+        // if no mouse movement after startup OR app is not in interactive phase, keep orbiting
         if(ball.isCenter){
           // pulse
         } else {
@@ -115,8 +121,10 @@ const MetaballIntro = forwardRef(function MetaballIntro({ phase, onMobileEnter, 
     }
 
     function draw(){
-      // subtle trail (partial clear) to make motion feel fluid
-      ctx.fillStyle = 'rgba(0,0,0,0.1)'
+  // subtle trail (partial clear) to make motion feel fluid
+  // Colors are hardcoded to the 'inverted' look (light background with dark blobs)
+  const inverted = true
+      ctx.fillStyle = inverted ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'
       ctx.fillRect(0,0,width,height)
 
       // Apply group transform by translating context
@@ -127,13 +135,21 @@ const MetaballIntro = forwardRef(function MetaballIntro({ phase, onMobileEnter, 
       ctx.translate(gx, gy)
       ctx.scale(gs, gs)
 
-      ctx.globalCompositeOperation = 'screen'
+  // Use 'screen' for light-on-dark mode, but when inverted (dark blobs on light bg)
+  // use normal compositing so dark shapes render correctly.
+  ctx.globalCompositeOperation = inverted ? 'source-over' : 'screen'
       for(const b of ballsRef.current){
         const g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.radius)
-        g.addColorStop(0, b.color)
-        // try to preserve varying alpha similar to original
-        g.addColorStop(0.7, b.color.replace(/0\.(\d+)/, function(m,p){ return '0.3' }))
-        g.addColorStop(1, 'rgba(0,0,0,0)')
+        if(inverted){
+          g.addColorStop(0, 'rgba(0,0,0,0.95)')
+          g.addColorStop(0.7, 'rgba(0,0,0,0.3)')
+          g.addColorStop(1, 'rgba(0,0,0,0)')
+        } else {
+          g.addColorStop(0, b.color)
+          // try to preserve varying alpha similar to original
+          g.addColorStop(0.7, b.color.replace(/0\.(\d+)/, function(m,p){ return '0.3' }))
+          g.addColorStop(1, 'rgba(0,0,0,0)')
+        }
         ctx.fillStyle = g
         ctx.beginPath()
         ctx.arc(b.x, b.y, b.radius, 0, Math.PI*2)
@@ -148,14 +164,22 @@ const MetaballIntro = forwardRef(function MetaballIntro({ phase, onMobileEnter, 
       // cursor drawn separately on cursor canvas (so metaball canvas can have partial clear trailing)
       // main canvas does not draw the cursor here
       
-      // draw cursor overlay
+      // always clear cursor overlay first to avoid stuck drawings
+      cctx.clearRect(0,0,width,height)
+      // draw cursor overlay if we have seen movement
       if(mouseMoved){
-        cctx.clearRect(0,0,width,height)
-        cctx.save()
-        cctx.globalCompositeOperation = 'screen'
+  cctx.save()
+  // draw cursor with normal composite when inverted so dark cursor shows up,
+  // otherwise use screen for a subtle glow on dark backgrounds
+  cctx.globalCompositeOperation = inverted ? 'source-over' : 'screen'
         const g = cctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, 10)
-        g.addColorStop(0, 'rgba(255,255,255,0.9)')
-        g.addColorStop(0.7, 'rgba(255,255,255,0.3)')
+        if(inverted){
+          g.addColorStop(0, 'rgba(0,0,0,0.9)')
+          g.addColorStop(0.7, 'rgba(0,0,0,0.3)')
+        } else {
+          g.addColorStop(0, 'rgba(255,255,255,0.9)')
+          g.addColorStop(0.7, 'rgba(255,255,255,0.3)')
+        }
         g.addColorStop(1, 'rgba(0,0,0,0)')
         cctx.fillStyle = g
         cctx.beginPath()
@@ -181,22 +205,38 @@ const MetaballIntro = forwardRef(function MetaballIntro({ phase, onMobileEnter, 
   function onMove(e){ if(!allowMouse) return; mouseX = e.clientX; mouseY = e.clientY; mouseMoved = true }
   function onPointerDown(e){/* placeholder */}
   function onDblClick(e){ if(timelineRef.current) return; if(onDoubleClick) onDoubleClick() }
-  function onClick(e){ if(onMobileEnter) onMobileEnter() }
+  function onClick(e){ /* single click intentionally disabled for transition */ }
+
+  // allow keyboard activation: Enter or Space
+  function onKeyDown(e){
+    if(timelineRef.current) return
+    if(e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar'){
+      if(onDoubleClick) onDoubleClick()
+      else if(onMobileEnter) onMobileEnter()
+    }
+  }
 
   canvas.addEventListener('mousemove', onMove)
+  // also listen globally so elements like buttons don't prevent pointer tracking
+  window.addEventListener('pointermove', onMove)
   canvas.addEventListener('pointerdown', onPointerDown)
   canvas.addEventListener('dblclick', onDblClick)
-  canvas.addEventListener('click', onClick)
+  // do NOT start transition on single click of canvas
+  // global keyboard listener
+  window.addEventListener('keydown', onKeyDown)
   canvas.addEventListener('touchmove', (e)=>{ if(!allowMouse) return; const t = e.touches[0]; mouseX = t.clientX; mouseY = t.clientY; mouseMoved = true }, { passive:false })
+  window.addEventListener('touchmove', (e)=>{ if(!allowMouse) return; const t = e.touches[0]; mouseX = t.clientX; mouseY = t.clientY; mouseMoved = true }, { passive:false })
 
     // cleanup
     return () => {
       cancelAnimationFrame(animationRef.current)
       window.removeEventListener('resize', resize)
       canvas.removeEventListener('mousemove', onMove)
-      canvas.removeEventListener('pointerdown', onPointerDown)
-      canvas.removeEventListener('dblclick', onDblClick)
-      canvas.removeEventListener('click', onClick)
+      window.removeEventListener('pointermove', onMove)
+  canvas.removeEventListener('pointerdown', onPointerDown)
+  canvas.removeEventListener('dblclick', onDblClick)
+  window.removeEventListener('keydown', onKeyDown)
+      window.removeEventListener('touchmove', (e)=>{ if(!allowMouse) return; const t = e.touches[0]; mouseX = t.clientX; mouseY = t.clientY; mouseMoved = true })
     }
   }, [onDoubleClick])
 
@@ -234,12 +274,21 @@ const MetaballIntro = forwardRef(function MetaballIntro({ phase, onMobileEnter, 
       for(let i=0;i<balls.length;i++){ balls[i].x = positions[i].x; balls[i].y = positions[i].y }
     }})
 
-    // Phase 2: scale down to 30% and move group to top-left over 0.6s (start immediately after 0.3s)
+    // Phase 2: scale down and move group to top-left over 0.6s (start immediately after 0.3s)
     const targetScale = 0.3
-    // top-left target: 10% padding from top-left in screen coords, transform to group translation
+    // top-left target: padding from top-left in screen coords
     const paddingX = 30, paddingY = 30
-    const targetGroupX = - (window.innerWidth/2 - paddingX) // move group's center to near left
-    const targetGroupY = - (window.innerHeight/2 - paddingY)
+    // Compute group translation so that the group's center (cx,cy) after scaling lands at (paddingX,paddingY):
+    // We want gx + gs * cx = paddingX  => gx = paddingX - gs * cx
+    const targetGroupX = paddingX - targetScale * cx
+    const targetGroupY = paddingY - targetScale * cy
+
+    // Zero velocities after formation to avoid momentum during the group transform
+    tl.add(() => {
+      for(const b of balls){ b.vx = 0; b.vy = 0 }
+    })
+
+    // No color inversion tween: colors are fixed to the chosen (inverted) palette.
 
     tl.to(groupTransform.current, { duration: 0.6, scale: targetScale, x: targetGroupX, y: targetGroupY, ease: 'power2.inOut', onUpdate: () => {
       // force redraw via requestAnimationFrame by leaving the loop running
