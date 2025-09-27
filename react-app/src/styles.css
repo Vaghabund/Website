@@ -2,6 +2,7 @@
 html,body,#root{height:100%}
 .app-root{height:100vh;overflow:hidden}
 .metaball-canvas{position:fixed;top:0;left:0;width:100%;height:100%;cursor:none}
+.cursor-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2}
 .intro-root{position:relative;height:100vh}
 .enter-cta{position:absolute;right:20px;top:20px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:white;padding:10px;border-radius:20px;backdrop-filter:blur(6px);cursor:pointer}
 .enter-cta.mobile{left:50%;transform:translateX(-50%);bottom:24px;top:auto}
