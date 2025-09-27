@@ -326,9 +326,8 @@ class MetaballAnimation {
     }
 
     animate() {
-        // Clear canvas with a slight trail effect
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    // Clear previous frame (no trail)
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
         // Update metaballs
         for (const ball of this.metaballs) {
@@ -362,12 +361,6 @@ class MetaballAnimation {
             this.ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
             this.ctx.beginPath();
             this.ctx.arc(this.mouseX, this.mouseY, 4, 0, Math.PI * 2);
-            this.ctx.fill();
-            
-            // Add a subtle glow around the cursor
-            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-            this.ctx.beginPath();
-            this.ctx.arc(this.mouseX, this.mouseY, 8, 0, Math.PI * 2);
             this.ctx.fill();
         }
         

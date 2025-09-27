@@ -4,6 +4,13 @@ html,body,#root{height:100%}
 .metaball-canvas{position:fixed;top:0;left:0;width:100%;height:100%;cursor:none}
 .intro-root{position:relative;height:100vh}
 .enter-cta{position:absolute;right:20px;top:20px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:white;padding:10px;border-radius:20px;backdrop-filter:blur(6px);cursor:pointer}
+.enter-cta.mobile{left:50%;transform:translateX(-50%);bottom:24px;top:auto}
 .projects{padding:40px;color:white;background:linear-gradient(180deg,#000,#111);height:100vh}
 .project-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-top:20px}
 .card{background:rgba(255,255,255,0.05);padding:20px;border-radius:12px}
+
+.bg-transition{position:fixed;inset:0;z-index:0;background:#000}
+.portfolio-content{position:fixed;inset:0;z-index:5;pointer-events:none;opacity:0;display:flex;align-items:flex-start;justify-content:center;padding-top:100px}
+.portfolio-content.visible{opacity:1;pointer-events:auto;transition:opacity 0.8s ease}
+.projects{width:100%;max-width:1000px}
+
