@@ -4,6 +4,7 @@ import { gsap } from 'gsap'
 // Metaball canvas wrapped as a React component with GSAP timeline control
 const MetaballIntro = forwardRef(function MetaballIntro({ phase, onMobileEnter, onDoubleClick }, ref){
   const canvasRef = useRef(null)
+  const cursorCanvasRef = useRef(null)
   const animationRef = useRef(null)
   const ballsRef = useRef([])
   const timelineRef = useRef(null)
@@ -16,10 +17,14 @@ const MetaballIntro = forwardRef(function MetaballIntro({ phase, onMobileEnter, 
   }))
 
   useEffect(() => {
-    const canvas = canvasRef.current
-    const ctx = canvas.getContext('2d')
+  const canvas = canvasRef.current
+  const ctx = canvas.getContext('2d')
+  const cursorCanvas = cursorCanvasRef.current
+  const cctx = cursorCanvas.getContext('2d')
     let width = canvas.width = window.innerWidth
     let height = canvas.height = window.innerHeight
+  cursorCanvas.width = width
+  cursorCanvas.height = height
 
     const balls = []
     const centerX = () => width/2
@@ -39,6 +44,7 @@ const MetaballIntro = forwardRef(function MetaballIntro({ phase, onMobileEnter, 
     function resize(){
       width = canvas.width = window.innerWidth
       height = canvas.height = window.innerHeight
+      if(cursorCanvas){ cursorCanvas.width = width; cursorCanvas.height = height }
     }
 
     window.addEventListener('resize', resize)
@@ -109,8 +115,9 @@ const MetaballIntro = forwardRef(function MetaballIntro({ phase, onMobileEnter, 
     }
 
     function draw(){
-  // clear previous frame (no motion trail)
-  ctx.clearRect(0,0,width,height)
+      // subtle trail (partial clear) to make motion feel fluid
+      ctx.fillStyle = 'rgba(0,0,0,0.1)'
+      ctx.fillRect(0,0,width,height)
 
       // Apply group transform by translating context
       ctx.save()
@@ -138,20 +145,23 @@ const MetaballIntro = forwardRef(function MetaballIntro({ phase, onMobileEnter, 
       ctx.globalCompositeOperation = 'source-over'
       ctx.restore()
 
-      // cursor (single dot) is drawn after restoring transform so it stays in screen space
-
+      // cursor drawn separately on cursor canvas (so metaball canvas can have partial clear trailing)
+      // main canvas does not draw the cursor here
+      
+      // draw cursor overlay
       if(mouseMoved){
-        ctx.save()
-        ctx.globalCompositeOperation = 'screen'
-        const g = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, 10)
+        cctx.clearRect(0,0,width,height)
+        cctx.save()
+        cctx.globalCompositeOperation = 'screen'
+        const g = cctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, 10)
         g.addColorStop(0, 'rgba(255,255,255,0.9)')
         g.addColorStop(0.7, 'rgba(255,255,255,0.3)')
         g.addColorStop(1, 'rgba(0,0,0,0)')
-        ctx.fillStyle = g
-        ctx.beginPath()
-        ctx.arc(mouseX, mouseY, 10, 0, Math.PI*2)
-        ctx.fill()
-        ctx.restore()
+        cctx.fillStyle = g
+        cctx.beginPath()
+        cctx.arc(mouseX, mouseY, 10, 0, Math.PI*2)
+        cctx.fill()
+        cctx.restore()
       }
     }
 
@@ -247,6 +257,7 @@ const MetaballIntro = forwardRef(function MetaballIntro({ phase, onMobileEnter, 
   return (
     <div className="intro-root">
       <canvas ref={canvasRef} className="metaball-canvas" />
+      <canvas ref={cursorCanvasRef} className="cursor-canvas" />
       <button className="enter-cta mobile" onClick={() => { if(onMobileEnter) onMobileEnter() }} aria-label="Enter site">Enter</button>
     </div>
   )
