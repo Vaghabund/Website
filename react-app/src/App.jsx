@@ -1,24 +1,23 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import MetaballIntro from './components/MetaballIntro'
+import PortfolioContent from './components/PortfolioContent'
+import BackgroundTransition from './components/BackgroundTransition'
 
 export default function App(){
-  const [entered, setEntered] = useState(false)
+  const [phase, setPhase] = useState('interactive') // 'interactive' | 'transitioning' | 'portfolio'
+  const introRef = useRef(null)
+
+  function handleStartTransition(){
+    if(phase !== 'interactive') return
+    setPhase('transitioning')
+    if(introRef.current && introRef.current.startTransition) introRef.current.startTransition(() => setPhase('portfolio'))
+  }
 
   return (
     <div className="app-root">
-      {!entered ? (
-        <MetaballIntro onEnter={() => setEntered(true)} />
-      ) : (
-        <main className="projects">
-          <h1>Your Projects</h1>
-          <p>This is a placeholder project overview. Replace this with your project cards.</p>
-          <div className="project-grid">
-            <div className="card">Project 1</div>
-            <div className="card">Project 2</div>
-            <div className="card">Project 3</div>
-          </div>
-        </main>
-      )}
+      <BackgroundTransition phase={phase} />
+      <MetaballIntro ref={introRef} phase={phase} onMobileEnter={handleStartTransition} onDoubleClick={handleStartTransition} />
+      <PortfolioContent phase={phase} />
     </div>
   )
 }
