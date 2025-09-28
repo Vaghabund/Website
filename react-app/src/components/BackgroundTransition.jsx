@@ -7,9 +7,9 @@ export default function BackgroundTransition({ phase }){
   useEffect(() => {
     if(!el.current) return
     if(phase === 'transitioning'){
-      gsap.to(el.current, { backgroundColor: '#ffffff', duration: 0.8, delay: 0.2, ease: 'none' })
+      gsap.to(el.current, { backgroundColor: '#ffffff', duration: 0.8, ease: 'none' })
     } else if(phase === 'interactive'){
-      gsap.set(el.current, { backgroundColor: '#000000' })
+      gsap.set(el.current, { backgroundColor: '#ffffff' }) // Ensure consistent white background
     } else if(phase === 'portfolio'){
       gsap.set(el.current, { backgroundColor: '#ffffff' })
     }

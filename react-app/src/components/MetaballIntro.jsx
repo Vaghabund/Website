@@ -2,20 +2,15 @@ import React, { useEffect, useRef, useImperativeHandle, forwardRef } from 'react
 import { gsap } from 'gsap'
 
 // Metaball canvas wrapped as a React component with GSAP timeline control
-const MetaballIntro = forwardRef(function MetaballIntro({ phase, onMobileEnter, onDoubleClick }, ref){
+const MetaballIntro = forwardRef(function MetaballIntro({ phase, scrollProgress, onDoubleClick = () => {}, onMobileEnter }, ref){
   const canvasRef = useRef(null)
   const cursorCanvasRef = useRef(null)
   const animationRef = useRef(null)
   const ballsRef = useRef([])
   const phaseRef = useRef(phase)
-  const timelineRef = useRef(null)
   const groupTransform = useRef({ x:0, y:0, scale:1 })
 
-  useImperativeHandle(ref, () => ({
-    startTransition(cb){
-      startFullTransition(cb)
-    }
-  }))
+  useImperativeHandle(ref, () => ({}))
 
   useEffect(() => {
     // keep latest phase in a ref so animation loop can read it without re-subscribing
@@ -204,7 +199,7 @@ const MetaballIntro = forwardRef(function MetaballIntro({ phase, onMobileEnter, 
 
   function onMove(e){ if(!allowMouse) return; mouseX = e.clientX; mouseY = e.clientY; mouseMoved = true }
   function onPointerDown(e){/* placeholder */}
-  function onDblClick(e){ if(timelineRef.current) return; if(onDoubleClick) onDoubleClick() }
+  function onDblClick(e){ /* placeholder */ }
   function onClick(e){ /* single click intentionally disabled for transition */ }
 
   // allow keyboard activation: Enter or Space
@@ -239,6 +234,32 @@ const MetaballIntro = forwardRef(function MetaballIntro({ phase, onMobileEnter, 
       window.removeEventListener('touchmove', (e)=>{ if(!allowMouse) return; const t = e.touches[0]; mouseX = t.clientX; mouseY = t.clientY; mouseMoved = true })
     }
   }, [onDoubleClick])
+
+  useEffect(() => {
+    const progress = scrollProgress; // Value between 0 and 1
+    const targetScale = 0.3 + (1 - progress) * 0.7; // Shrink spheres
+    const targetY = -window.innerHeight * progress; // Move to top-middle
+
+    // Restore initial outward movement of spheres
+    ballsRef.current.forEach((ball) => {
+      if (!ball.isCenter && progress === 0) {
+        const angle = ball.orbitAngle;
+        ball.x = window.innerWidth / 2 + Math.cos(angle) * ball.orbitRadius * (1 + progress);
+        ball.y = window.innerHeight / 2 + Math.sin(angle) * ball.orbitRadius * (1 + progress);
+      } else if (!ball.isCenter) {
+        ball.orbitAngle += 0.02; // Maintain rotation
+        ball.x = window.innerWidth / 2 + Math.cos(ball.orbitAngle) * ball.orbitRadius;
+        ball.y = window.innerHeight / 2 + Math.sin(ball.orbitAngle) * ball.orbitRadius;
+      }
+    });
+
+    gsap.to(groupTransform.current, {
+      scale: targetScale,
+      y: targetY,
+      duration: 0.1,
+      overwrite: true,
+    });
+  }, [scrollProgress])
 
   // Transition implementation using GSAP
   function startFullTransition(onComplete){
@@ -307,7 +328,6 @@ const MetaballIntro = forwardRef(function MetaballIntro({ phase, onMobileEnter, 
     <div className="intro-root">
       <canvas ref={canvasRef} className="metaball-canvas" />
       <canvas ref={cursorCanvasRef} className="cursor-canvas" />
-      <button className="enter-cta mobile" onClick={() => { if(onMobileEnter) onMobileEnter() }} aria-label="Enter site">Enter</button>
     </div>
   )
 })
