@@ -28,16 +28,18 @@ export default function App(){
   }
 
   return (
-    <div className="app-root main-mode">
-      <Header 
-        onLogoClick={handleLogoClick}
-        onNameClick={handleNameClick}
-      />
-      <PortfolioContent 
-        selectedProject={selectedProject}
-        onProjectClick={handleProjectClick}
-        onBackToProjects={handleBackToProjects}
-      />
+    <>
+      <div className={`app-root main-mode ${showAnimationPopup ? 'blur-background' : ''}`}>
+        <Header 
+          onLogoClick={handleLogoClick}
+          onNameClick={handleNameClick}
+        />
+        <PortfolioContent 
+          selectedProject={selectedProject}
+          onProjectClick={handleProjectClick}
+          onBackToProjects={handleBackToProjects}
+        />
+      </div>
       
       {showAnimationPopup && (
         <div className="animation-fullscreen-overlay">
@@ -47,6 +49,6 @@ export default function App(){
           <MetaballIntro isEmbedded={false} />
         </div>
       )}
-    </div>
+    </>
   )
 }

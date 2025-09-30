@@ -15,7 +15,7 @@ const LogoAnimation = ({ onClick }) => {
     const balls = []
     const centerX = size / 2
     const centerY = size / 2
-    const radius = 6 // Even smaller radius for header
+    const radius = 4 // Smaller radius for header
 
     // Create 4 balls in orbital formation
     for(let i = 0; i < 4; i++){
@@ -28,7 +28,7 @@ const LogoAnimation = ({ onClick }) => {
         radius, 
         isCenter, 
         orbitAngle: angle, 
-        orbitRadius: 12, // Even smaller orbit for header
+        orbitRadius: 14, // Optimal spacing for header
         age: 0 
       })
     }
@@ -39,10 +39,10 @@ const LogoAnimation = ({ onClick }) => {
 
       // Center ball subtle pulsing
       if(ball.isCenter){
-        ball.radius = ball.baseRadius + Math.sin(ball.age * 2) * 1
+        ball.radius = ball.baseRadius + Math.sin(ball.age * 1.5) * 1
       } else {
-        // Continuous orbital motion
-        ball.orbitAngle += 0.02
+        // Slower orbital motion
+        ball.orbitAngle += 0.008
         ball.x = centerX + Math.cos(ball.orbitAngle) * ball.orbitRadius
         ball.y = centerY + Math.sin(ball.orbitAngle) * ball.orbitRadius
       }
@@ -53,18 +53,24 @@ const LogoAnimation = ({ onClick }) => {
       ctx.fillStyle = 'rgba(255, 255, 255, 1)'
       ctx.fillRect(0, 0, size, size)
 
-      // Draw balls with dark style
+      // Draw balls with same style as main animation - solid black with blur
       ctx.globalCompositeOperation = 'source-over'
       for(const b of ballsRef.current){
-        const g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.radius)
-        g.addColorStop(0, 'rgba(0, 0, 0, 0.95)')
-        g.addColorStop(0.7, 'rgba(0, 0, 0, 0.3)')
-        g.addColorStop(1, 'rgba(0, 0, 0, 0)')
+        // Add blur effect (scaled down for smaller logo)
+        ctx.shadowColor = 'rgba(0,0,0,0.8)'
+        ctx.shadowBlur = 8
+        ctx.shadowOffsetX = 0
+        ctx.shadowOffsetY = 0
         
-        ctx.fillStyle = g
+        // Solid black fill
+        ctx.fillStyle = 'rgba(0,0,0,1)'
         ctx.beginPath()
         ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2)
         ctx.fill()
+        
+        // Reset shadow for next iteration
+        ctx.shadowColor = 'transparent'
+        ctx.shadowBlur = 0
       }
     }
 
