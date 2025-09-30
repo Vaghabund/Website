@@ -1,20 +1,14 @@
-import React, { useRef, useState } from 'react'
+import React, { useState } from 'react'
 import MetaballIntro from './components/MetaballIntro'
 import PortfolioContent from './components/PortfolioContent'
-import LogoAnimation from './components/LogoAnimation'
 import Header from './components/Header'
 
 export default function App(){
   const [showAnimationPopup, setShowAnimationPopup] = useState(false)
   const [selectedProject, setSelectedProject] = useState(null)
-  const introRef = useRef(null)
 
   const handleLogoClick = () => {
     setShowAnimationPopup(true)
-  }
-
-  const handleAnimationComplete = () => {
-    setShowAnimationPopup(false)
   }
 
   const handleClosePopup = () => {
@@ -50,10 +44,7 @@ export default function App(){
           <button className="close-button-topleft" onClick={handleClosePopup}>
             ×
           </button>
-          <MetaballIntro
-            ref={introRef}
-            isEmbedded={false}
-          />
+          <MetaballIntro isEmbedded={false} />
         </div>
       )}
     </div>
