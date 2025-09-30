@@ -1,45 +1,61 @@
-import React, { useRef, useState, useEffect } from 'react'
+import React, { useRef, useState } from 'react'
 import MetaballIntro from './components/MetaballIntro'
 import PortfolioContent from './components/PortfolioContent'
-import BackgroundTransition from './components/BackgroundTransition'
+import LogoAnimation from './components/LogoAnimation'
+import Header from './components/Header'
 
 export default function App(){
-  const [phase, setPhase] = useState('interactive') // 'interactive' | 'transitioning' | 'portfolio'
-  const [scrollProgress, setScrollProgress] = useState(0) // Scroll progress (0 to 1)
+  const [showAnimationPopup, setShowAnimationPopup] = useState(false)
+  const [selectedProject, setSelectedProject] = useState(null)
   const introRef = useRef(null)
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY
-      const maxScroll = window.innerHeight // Adjusted to make the main page slide fully
-      const progress = Math.min(scrollY / maxScroll, 1) // Clamp between 0 and 1
-      setScrollProgress(progress)
+  const handleLogoClick = () => {
+    setShowAnimationPopup(true)
+  }
 
-      console.log('Scroll Progress:', progress) // Debugging scroll progress
+  const handleAnimationComplete = () => {
+    setShowAnimationPopup(false)
+  }
 
-      // Update phase based on scroll progress
-      if (progress === 1 && phase !== 'portfolio') {
-        setPhase('portfolio')
-      } else if (progress > 0 && progress < 1 && phase !== 'transitioning') {
-        setPhase('transitioning')
-      } else if (progress === 0 && phase !== 'interactive') {
-        setPhase('interactive')
-      }
-    }
+  const handleClosePopup = () => {
+    setShowAnimationPopup(false)
+  }
 
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [phase])
+  const handleNameClick = () => {
+    setSelectedProject(null)
+  }
+
+  const handleProjectClick = (project) => {
+    setSelectedProject(project)
+  }
+
+  const handleBackToProjects = () => {
+    setSelectedProject(null)
+  }
 
   return (
-    <div className="app-root">
-      <BackgroundTransition phase={phase} />
-      <MetaballIntro
-        ref={introRef}
-        phase={phase}
-        scrollProgress={scrollProgress} // Pass scroll progress to MetaballIntro
+    <div className="app-root main-mode">
+      <Header 
+        onLogoClick={handleLogoClick}
+        onNameClick={handleNameClick}
       />
-      <PortfolioContent phase={phase} scrollProgress={scrollProgress} />
+      <PortfolioContent 
+        selectedProject={selectedProject}
+        onProjectClick={handleProjectClick}
+        onBackToProjects={handleBackToProjects}
+      />
+      
+      {showAnimationPopup && (
+        <div className="animation-fullscreen-overlay">
+          <button className="close-button-topleft" onClick={handleClosePopup}>
+            ×
+          </button>
+          <MetaballIntro
+            ref={introRef}
+            isEmbedded={false}
+          />
+        </div>
+      )}
     </div>
   )
 }
