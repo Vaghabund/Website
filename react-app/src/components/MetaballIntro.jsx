@@ -1,16 +1,12 @@
-import React, { useEffect, useRef, useImperativeHandle, forwardRef } from 'react'
-import { gsap } from 'gsap'
+import React, { useEffect, useRef } from 'react'
 
-// Metaball canvas wrapped as a React component with GSAP timeline control
-const MetaballIntro = forwardRef(function MetaballIntro({ onAnimationComplete, onDoubleClick = () => {}, onMobileEnter, isEmbedded = false }, ref){
+// Interactive metaball canvas component
+const MetaballIntro = ({ isEmbedded = false }) => {
   const canvasRef = useRef(null)
   const cursorCanvasRef = useRef(null)
   const animationRef = useRef(null)
   const ballsRef = useRef([])
-  const timelineRef = useRef(null)
   const groupTransform = useRef({ x:0, y:0, scale:1 })
-
-  useImperativeHandle(ref, () => ({}))
 
   useEffect(() => {
   const canvas = canvasRef.current
@@ -198,13 +194,9 @@ const MetaballIntro = forwardRef(function MetaballIntro({ onAnimationComplete, o
   function onDblClick(e){ /* placeholder */ }
   function onClick(e){ /* single click intentionally disabled for transition */ }
 
-  // allow keyboard activation: Enter or Space
+  // Simplified keyboard handler (no callbacks needed)
   function onKeyDown(e){
-    if(timelineRef.current) return
-    if(e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar'){
-      if(onDoubleClick) onDoubleClick()
-      else if(onMobileEnter) onMobileEnter()
-    }
+    // Keyboard interaction can be added here if needed
   }
 
   canvas.addEventListener('mousemove', onMove)
@@ -229,37 +221,9 @@ const MetaballIntro = forwardRef(function MetaballIntro({ onAnimationComplete, o
   window.removeEventListener('keydown', onKeyDown)
       window.removeEventListener('touchmove', (e)=>{ if(!allowMouse) return; const t = e.touches[0]; mouseX = t.clientX; mouseY = t.clientY; mouseMoved = true })
     }
-  }, [onDoubleClick])
+  }, [])
 
-  // No auto-start - just let it be interactive from the beginning
-
-  // Full transition implementation using GSAP (currently not used)
-  function startFullTransition(onComplete){
-    if(timelineRef.current) return
-    const balls = ballsRef.current
-    if(!balls || balls.length === 0) return
-
-    // disable mouse
-    let onCompleteCalled = false
-
-    // Compute orbital positions at center (world-space)
-    const width = window.innerWidth, height = window.innerHeight
-    const cx = width/2, cy = height/2
-    const orbitalTargets = balls.map((b, i) => {
-      if(b.isCenter) return { x: cx, y: cy }
-      const angle = b.isCenter?0:b.orbitAngle
-      return { x: cx + Math.cos(angle)*b.orbitRadius, y: cy + Math.sin(angle)*b.orbitRadius }
-    })
-
-    // Prepare a simple object array so GSAP can tween positions
-    const positions = balls.map(b => ({ x: b.x, y: b.y }))
-
-    const tl = gsap.timeline({ onComplete: () => {
-      timelineRef.current = null
-      if(onComplete && !onCompleteCalled){ onCompleteCalled = true; onComplete() }
-    }})
-
-    timelineRef.current = tl
+  // Component is now purely interactive - no automatic transitions
 
     // Phase 1: Formation (0.3s)
     tl.to(positions, { duration: 0.3, x: (i)=>orbitalTargets[i].x, y: (i)=>orbitalTargets[i].y, ease: 'power3.out', onUpdate: () => {
@@ -277,23 +241,7 @@ const MetaballIntro = forwardRef(function MetaballIntro({ onAnimationComplete, o
     const targetGroupY = paddingY - targetScale * cy
 
     // Zero velocities after formation to avoid momentum during the group transform
-    tl.add(() => {
-      for(const b of balls){ b.vx = 0; b.vy = 0 }
-    })
 
-    // No color inversion tween: colors are fixed to the chosen (inverted) palette.
-
-    tl.to(groupTransform.current, { duration: 0.6, scale: targetScale, x: targetGroupX, y: targetGroupY, ease: 'power2.inOut', onUpdate: () => {
-      // force redraw via requestAnimationFrame by leaving the loop running
-    }}, '>-0')
-
-    // Phase 3: Background & content (starts 0.2s after phase 2 start)
-    // We do not directly animate DOM content here; App/BackgroundTransition/PortfolioContent listen to phase changes.
-    tl.add(() => {}, '+=0.2')
-
-    // after timeline finishes, call onComplete
-    return tl
-  }
 
   // Render
   return (
@@ -302,6 +250,6 @@ const MetaballIntro = forwardRef(function MetaballIntro({ onAnimationComplete, o
       <canvas ref={cursorCanvasRef} className="cursor-canvas" />
     </div>
   )
-})
+}
 
 export default MetaballIntro
