@@ -51,8 +51,8 @@ const MetaballIntro = ({ isEmbedded = false }) => {
         ball.radius = ball.baseRadius + Math.sin(ball.age*2)*5
       }
 
-      // initial formation / orbital behaviour for the first few seconds
-      if(ball.age <= 4){
+      // initial formation / orbital behaviour for the first 2 seconds
+      if(ball.age <= 2){
         if(ball.isCenter){
           // center just pulses
         } else {
@@ -108,11 +108,8 @@ const MetaballIntro = ({ isEmbedded = false }) => {
     }
 
     function draw(){
-  // subtle trail (partial clear) to make motion feel fluid
-  // Colors are hardcoded to the 'inverted' look (light background with dark blobs)
-  const inverted = true
-      ctx.fillStyle = inverted ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'
-      ctx.fillRect(0,0,width,height)
+  // Clear canvas completely to make background transparent for glassmorphism effect
+  ctx.clearRect(0,0,width,height)
 
       // Apply group transform by translating context
       ctx.save()
@@ -122,25 +119,24 @@ const MetaballIntro = ({ isEmbedded = false }) => {
       ctx.translate(gx, gy)
       ctx.scale(gs, gs)
 
-  // Use 'screen' for light-on-dark mode, but when inverted (dark blobs on light bg)
-  // use normal compositing so dark shapes render correctly.
-  ctx.globalCompositeOperation = inverted ? 'source-over' : 'screen'
+  // Solid black metaballs with edge blur
+  ctx.globalCompositeOperation = 'source-over'
       for(const b of ballsRef.current){
-        const g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.radius)
-        if(inverted){
-          g.addColorStop(0, 'rgba(0,0,0,0.95)')
-          g.addColorStop(0.7, 'rgba(0,0,0,0.3)')
-          g.addColorStop(1, 'rgba(0,0,0,0)')
-        } else {
-          g.addColorStop(0, b.color)
-          // try to preserve varying alpha similar to original
-          g.addColorStop(0.7, b.color.replace(/0\.(\d+)/, function(m,p){ return '0.3' }))
-          g.addColorStop(1, 'rgba(0,0,0,0)')
-        }
-        ctx.fillStyle = g
+        // Add maximum blur effect for very soft edges
+        ctx.shadowColor = 'rgba(0,0,0,0.9)'
+        ctx.shadowBlur = 40
+        ctx.shadowOffsetX = 0
+        ctx.shadowOffsetY = 0
+        
+        // Solid black fill
+        ctx.fillStyle = 'rgba(0,0,0,1)'
         ctx.beginPath()
         ctx.arc(b.x, b.y, b.radius, 0, Math.PI*2)
         ctx.fill()
+        
+        // Reset shadow for next iteration
+        ctx.shadowColor = 'transparent'
+        ctx.shadowBlur = 0
       }
 
       // cursor trail is drawn after restoring transform so it stays in screen space
@@ -155,18 +151,13 @@ const MetaballIntro = ({ isEmbedded = false }) => {
       cctx.clearRect(0,0,width,height)
       // draw cursor overlay if we have seen movement
       if(mouseMoved){
-  cctx.save()
-  // draw cursor with normal composite when inverted so dark cursor shows up,
-  // otherwise use screen for a subtle glow on dark backgrounds
-  cctx.globalCompositeOperation = inverted ? 'source-over' : 'screen'
+        cctx.save()
+        // Use source-over for better visibility on glassmorphism background
+        cctx.globalCompositeOperation = 'source-over'
         const g = cctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, 10)
-        if(inverted){
-          g.addColorStop(0, 'rgba(0,0,0,0.9)')
-          g.addColorStop(0.7, 'rgba(0,0,0,0.3)')
-        } else {
-          g.addColorStop(0, 'rgba(255,255,255,0.9)')
-          g.addColorStop(0.7, 'rgba(255,255,255,0.3)')
-        }
+        // Dark cursor for visibility
+        g.addColorStop(0, 'rgba(0,0,0,0.5)')
+        g.addColorStop(0.7, 'rgba(0,0,0,0.3)')
         g.addColorStop(1, 'rgba(0,0,0,0)')
         cctx.fillStyle = g
         cctx.beginPath()
@@ -216,32 +207,14 @@ const MetaballIntro = ({ isEmbedded = false }) => {
       window.removeEventListener('resize', resize)
       canvas.removeEventListener('mousemove', onMove)
       window.removeEventListener('pointermove', onMove)
-  canvas.removeEventListener('pointerdown', onPointerDown)
-  canvas.removeEventListener('dblclick', onDblClick)
-  window.removeEventListener('keydown', onKeyDown)
+      canvas.removeEventListener('pointerdown', onPointerDown)
+      canvas.removeEventListener('dblclick', onDblClick)
+      window.removeEventListener('keydown', onKeyDown)
       window.removeEventListener('touchmove', (e)=>{ if(!allowMouse) return; const t = e.touches[0]; mouseX = t.clientX; mouseY = t.clientY; mouseMoved = true })
     }
   }, [])
 
   // Component is now purely interactive - no automatic transitions
-
-    // Phase 1: Formation (0.3s)
-    tl.to(positions, { duration: 0.3, x: (i)=>orbitalTargets[i].x, y: (i)=>orbitalTargets[i].y, ease: 'power3.out', onUpdate: () => {
-      // copy back
-      for(let i=0;i<balls.length;i++){ balls[i].x = positions[i].x; balls[i].y = positions[i].y }
-    }})
-
-    // Phase 2: scale down and move group to top-left over 0.6s (start immediately after 0.3s)
-    const targetScale = 0.3
-    // top-left target: padding from top-left in screen coords
-    const paddingX = 30, paddingY = 30
-    // Compute group translation so that the group's center (cx,cy) after scaling lands at (paddingX,paddingY):
-    // We want gx + gs * cx = paddingX  => gx = paddingX - gs * cx
-    const targetGroupX = paddingX - targetScale * cx
-    const targetGroupY = paddingY - targetScale * cy
-
-    // Zero velocities after formation to avoid momentum during the group transform
-
 
   // Render
   return (
