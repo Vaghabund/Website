@@ -1,0 +1,185 @@
+/* Typography Options for Joel's Portfolio */
+
+/* 
+==============================================
+PREMIUM TYPOGRAPHY OPTIONS
+==============================================
+
+Here are several excellent typography choices, ranging from free Google Fonts 
+to premium options like Pangram. Each has its own personality!
+
+*/
+
+/* 
+----------------------------------------------
+1. PANGRAM (Premium - Pangram Pangram Foundry)
+----------------------------------------------
+Modern, geometric sans-serif with excellent readability
+Great for: Modern portfolios, tech/design work
+*/
+
+/* To use Pangram, you'll need to:
+   1. Purchase from: https://pangrampangram.com/products/pangram-sans
+   2. Upload font files to your project
+   3. Use this CSS: */
+
+@font-face {
+  font-family: 'Pangram Sans';
+  src: url('./fonts/PangramSans-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Pangram Sans';
+  src: url('./fonts/PangramSans-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Pangram Sans';
+  src: url('./fonts/PangramSans-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+}
+
+.pangram-typography {
+  font-family: 'Pangram Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* 
+----------------------------------------------
+2. INTER (Free - Google Fonts)
+----------------------------------------------
+Excellent screen readability, modern and clean
+Great for: Professional portfolios, UI design
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+.inter-typography {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* 
+----------------------------------------------
+3. SPACE GROTESK (Free - Google Fonts)
+----------------------------------------------
+Quirky, modern geometric sans-serif
+Great for: Creative portfolios, unique character
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+.space-grotesk-typography {
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* 
+----------------------------------------------
+4. SATOSHI (Premium - Indian Type Foundry)
+----------------------------------------------
+Geometric, friendly, modern
+Great for: Approachable, modern portfolios
+*/
+
+/* Purchase from: https://www.fontshare.com/fonts/satoshi */
+
+.satoshi-typography {
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* 
+----------------------------------------------
+5. CLASH DISPLAY (Free - Fontshare)
+----------------------------------------------
+Strong display font, great for headlines
+Great for: Bold, impactful headers
+*/
+
+@import url('https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap');
+
+.clash-display-typography {
+  font-family: 'Clash Display', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* 
+----------------------------------------------
+6. CABINET GROTESK (Free - Fontshare)
+----------------------------------------------
+Clean, modern, slightly condensed
+Great for: Minimalist portfolios
+*/
+
+@import url('https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,600,700&display=swap');
+
+.cabinet-grotesk-typography {
+  font-family: 'Cabinet Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* 
+----------------------------------------------
+7. GENERAL SANS (Free - Fontshare)
+----------------------------------------------
+Versatile, readable, professional
+Great for: All-purpose use, clean portfolios
+*/
+
+@import url('https://api.fontshare.com/v2/css?f[]=general-sans@300,400,500,600,700&display=swap');
+
+.general-sans-typography {
+  font-family: 'General Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* 
+----------------------------------------------
+8. SYSTEM FONT STACK (Free)
+----------------------------------------------
+Uses each device's native font for optimal performance
+Great for: Fast loading, native feel
+*/
+
+.system-typography {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+}
+
+/* 
+----------------------------------------------
+IMPLEMENTATION EXAMPLES
+----------------------------------------------
+
+Choose one of these complete setups for your portfolio:
+*/
+
+/* OPTION A: INTER + CLASH DISPLAY (Free, Great Combo) */
+.option-a {
+  font-family: 'Inter', sans-serif; /* Body text */
+}
+.option-a h1, .option-a h2, .option-a h3 {
+  font-family: 'Clash Display', sans-serif; /* Headlines */
+}
+
+/* OPTION B: SPACE GROTESK (Free, Unique) */
+.option-b {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+/* OPTION C: CABINET GROTESK (Free, Clean) */
+.option-c {
+  font-family: 'Cabinet Grotesk', sans-serif;
+}
+
+/* OPTION D: PANGRAM SANS (Premium, Perfect) */
+.option-d {
+  font-family: 'Pangram Sans', sans-serif;
+}
+
+/* 
+==============================================
+READY-TO-USE IMPLEMENTATIONS
+==============================================
+
+I'll create separate examples you can drop into your styles.css
+to see each font in action!
+*/

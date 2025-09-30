@@ -1,0 +1,129 @@
+/* 
+==============================================
+QUICK TYPOGRAPHY TESTS
+==============================================
+
+Copy and paste any of these into your styles.css to test them instantly!
+Replace the current font-family rules with your choice.
+*/
+
+/* 
+----------------------------------------------
+🎯 OPTION 1: INTER (Free, Professional)
+----------------------------------------------
+Clean, readable, widely used by top companies
+*/
+
+/* Add this import at the top of your styles.css: */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Replace your current font-family with: */
+html, body, #root {
+  height: 100%;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* 
+----------------------------------------------
+🎨 OPTION 2: SPACE GROTESK (Free, Creative)
+----------------------------------------------
+Quirky, modern, great for creative portfolios
+*/
+
+/* Add this import: */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+/* Replace font-family with: */
+html, body, #root {
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* 
+----------------------------------------------
+✨ OPTION 3: CABINET GROTESK (Free, Minimal)
+----------------------------------------------
+Clean, slightly condensed, very modern
+*/
+
+/* Add this import: */
+@import url('https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@300,400,500,600,700&display=swap');
+
+/* Replace font-family with: */
+html, body, #root {
+  font-family: 'Cabinet Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* 
+----------------------------------------------
+🔥 OPTION 4: GENERAL SANS (Free, Versatile)
+----------------------------------------------
+Perfect balance of modern and readable
+*/
+
+/* Add this import: */
+@import url('https://api.fontshare.com/v2/css?f[]=general-sans@300,400,500,600,700&display=swap');
+
+/* Replace font-family with: */
+html, body, #root {
+  font-family: 'General Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* 
+----------------------------------------------
+💎 OPTION 5: COMBO - CLASH + INTER (Free, Dynamic)
+----------------------------------------------
+Clash Display for headers, Inter for body text
+*/
+
+/* Add these imports: */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap');
+
+/* Base font: */
+html, body, #root {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Headers: */
+.header-name,
+.main-title,
+.about-title,
+.project-page-title,
+.section-title {
+  font-family: 'Clash Display', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* 
+----------------------------------------------
+👑 OPTION 6: PANGRAM SANS (Premium)
+----------------------------------------------
+If you want to use Pangram Sans, here's how:
+
+1. Purchase from: https://pangrampangram.com/products/pangram-sans
+2. Download the web fonts (WOFF2 format)
+3. Create a 'fonts' folder in your 'public' directory
+4. Upload the font files there
+5. Add this CSS:
+*/
+
+@font-face {
+  font-family: 'Pangram Sans';
+  src: url('/fonts/PangramSans-Regular.woff2') format('woff2');
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: 'Pangram Sans';
+  src: url('/fonts/PangramSans-Medium.woff2') format('woff2');
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: 'Pangram Sans';
+  src: url('/fonts/PangramSans-Bold.woff2') format('woff2');
+  font-weight: 700;
+}
+
+html, body, #root {
+  font-family: 'Pangram Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}

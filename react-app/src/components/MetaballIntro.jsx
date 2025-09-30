@@ -2,26 +2,22 @@ import React, { useEffect, useRef, useImperativeHandle, forwardRef } from 'react
 import { gsap } from 'gsap'
 
 // Metaball canvas wrapped as a React component with GSAP timeline control
-const MetaballIntro = forwardRef(function MetaballIntro({ phase, scrollProgress, onDoubleClick = () => {}, onMobileEnter }, ref){
+const MetaballIntro = forwardRef(function MetaballIntro({ onAnimationComplete, onDoubleClick = () => {}, onMobileEnter, isEmbedded = false }, ref){
   const canvasRef = useRef(null)
   const cursorCanvasRef = useRef(null)
   const animationRef = useRef(null)
   const ballsRef = useRef([])
-  const phaseRef = useRef(phase)
+  const timelineRef = useRef(null)
   const groupTransform = useRef({ x:0, y:0, scale:1 })
 
   useImperativeHandle(ref, () => ({}))
-
-  useEffect(() => {
-    // keep latest phase in a ref so animation loop can read it without re-subscribing
-    phaseRef.current = phase
-  }, [phase])
 
   useEffect(() => {
   const canvas = canvasRef.current
   const ctx = canvas.getContext('2d')
   const cursorCanvas = cursorCanvasRef.current
   const cctx = cursorCanvas.getContext('2d')
+    // Always use full screen dimensions for popup
     let width = canvas.width = window.innerWidth
     let height = canvas.height = window.innerHeight
   cursorCanvas.width = width
@@ -77,7 +73,7 @@ const MetaballIntro = forwardRef(function MetaballIntro({ phase, scrollProgress,
             ball.y = cy + Math.sin(ball.orbitAngle)*ball.orbitRadius
           }
         }
-      } else if(!mouseMoved || phaseRef.current !== 'interactive') {
+      } else if(!mouseMoved) {
         // if no mouse movement after startup OR app is not in interactive phase, keep orbiting
         if(ball.isCenter){
           // pulse
@@ -235,33 +231,9 @@ const MetaballIntro = forwardRef(function MetaballIntro({ phase, scrollProgress,
     }
   }, [onDoubleClick])
 
-  useEffect(() => {
-    const progress = scrollProgress; // Value between 0 and 1
-    const targetScale = 0.3 + (1 - progress) * 0.7; // Shrink spheres
-    const targetY = -window.innerHeight * progress; // Move to top-middle
+  // No auto-start - just let it be interactive from the beginning
 
-    // Restore initial outward movement of spheres
-    ballsRef.current.forEach((ball) => {
-      if (!ball.isCenter && progress === 0) {
-        const angle = ball.orbitAngle;
-        ball.x = window.innerWidth / 2 + Math.cos(angle) * ball.orbitRadius * (1 + progress);
-        ball.y = window.innerHeight / 2 + Math.sin(angle) * ball.orbitRadius * (1 + progress);
-      } else if (!ball.isCenter) {
-        ball.orbitAngle += 0.02; // Maintain rotation
-        ball.x = window.innerWidth / 2 + Math.cos(ball.orbitAngle) * ball.orbitRadius;
-        ball.y = window.innerHeight / 2 + Math.sin(ball.orbitAngle) * ball.orbitRadius;
-      }
-    });
-
-    gsap.to(groupTransform.current, {
-      scale: targetScale,
-      y: targetY,
-      duration: 0.1,
-      overwrite: true,
-    });
-  }, [scrollProgress])
-
-  // Transition implementation using GSAP
+  // Full transition implementation using GSAP (currently not used)
   function startFullTransition(onComplete){
     if(timelineRef.current) return
     const balls = ballsRef.current
