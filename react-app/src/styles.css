@@ -370,7 +370,7 @@ body {
 
 .project-header {
   display: grid;
-  grid-template-columns: 60px 1fr 80px 80px 40px;
+  grid-template-columns: 1fr 80px 80px 40px;
   align-items: center;
   gap: 20px;
   padding: 16px 0;
