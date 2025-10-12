@@ -80,7 +80,7 @@ body {
     }
 }
 
-.replay-btn {
+.logo {
     position: absolute;
     top: 20px;
     right: 20px;
@@ -103,14 +103,14 @@ body {
     font-family: 'Arial', sans-serif;
 }
 
-.replay-btn:hover {
+.logo:hover {
     background: rgba(255, 255, 255, 0.2);
     border-color: rgba(255, 255, 255, 0.5);
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
 }
 
-.replay-btn:active {
+.logo:active {
     transform: translateY(0);
     box-shadow: 0 2px 5px rgba(255, 255, 255, 0.1);
 }
