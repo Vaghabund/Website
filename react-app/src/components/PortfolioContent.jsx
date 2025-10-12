@@ -88,9 +88,9 @@ const ProjectPage = ({ project, onBack }) => {
 const projectsData = [
   {
     id: 1,
-    title: 'Project Alpha',
-    subtitle: 'Web Development',
-    year: '2024',
+    title: 'Operational Analysis of Photogrammetry',
+    subtitle: 'Master Thesis',
+    year: '2025',
     description: 'A modern web application built with React and Node.js, featuring real-time collaboration and advanced data visualization.',
     fullDescription: 'Project Alpha represents a comprehensive solution for team collaboration in data-intensive environments. Built with modern web technologies, it provides real-time synchronization, advanced analytics, and intuitive user interfaces that make complex data accessible to all team members.',
     image: 'https://picsum.photos/400/250?random=1',
@@ -100,7 +100,7 @@ const projectsData = [
     solution: 'We implemented a WebSocket-based architecture with optimistic updates and conflict resolution, paired with a responsive design system that adapts to various screen sizes and interaction methods.',
     role: 'Lead Developer & UI Designer',
     timeline: '4 months',
-    technologies: ['React', 'Node.js', 'WebSocket', 'MongoDB', 'D3.js'],
+    technologies: ['TouchDesigner', 'Python', 'WebSocket', 'MongoDB'],
     liveUrl: 'https://example.com',
     gallery: [
       'https://picsum.photos/600/400?random=31',
@@ -211,7 +211,6 @@ export default function PortfolioContent({ selectedProject, onProjectClick, onBa
                   className="project-header"
                   onClick={() => toggleProject(project.id)}
                 >
-                  <span className="project-index">{String(index + 1).padStart(2, '0')}</span>
                   <div className="project-info">
                     <h3 className="project-title">{project.title}</h3>
                     <span className="project-separator">—</span>
