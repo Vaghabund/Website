@@ -1,14 +1,28 @@
-# Metaball Web Animation
+# Joel Tenenberg - Portfolio Website
 
-A beautiful, interactive metaball animation created with HTML5 Canvas and JavaScript.
+A lightweight, modern portfolio website featuring an interactive metaball animation and project showcase.
 
 ## Features
 
-- 🌊 Smooth organic blob-like shapes that merge and separate
-- 🖱️ Interactive mouse/touch controls - move your cursor to influence the metaballs
-- 🎨 Vibrant gradient colors with screen blending effects
-- 📱 Responsive design that works on desktop and mobile
-- ⚡ Optimized performance with efficient rendering
+- 🎨 Clean, minimalist design with professional typography
+- 🌊 Interactive metaball canvas animation (click the logo to view fullscreen)
+- 📱 Fully responsive layout that works on all devices
+- ⚡ Lightweight vanilla JavaScript - no framework dependencies
+- 🎯 Portfolio project showcase with expandable details
+- 🖼️ Detailed project pages with galleries and information
+
+## Structure
+
+The website is built with pure HTML, CSS, and JavaScript:
+
+- `index.html` - Main HTML structure with header, portfolio, and animation overlay
+- `style.css` - Comprehensive styling with modern design patterns
+- `script.js` - All interactive functionality including:
+  - Logo animation (small orbital metaballs in header)
+  - Fullscreen metaball animation with physics simulation
+  - Portfolio project list with expand/collapse
+  - Project detail page navigation
+  - Smooth animations and transitions
 
 ## How to Run
 
@@ -16,54 +30,54 @@ A beautiful, interactive metaball animation created with HTML5 Canvas and JavaSc
 Simply open `index.html` in your web browser.
 
 ### Option 2: Local Server (Recommended)
-For the best experience, serve the files through a local server:
+For the best experience with all features, serve through a local server:
 
-1. **Using Python (if installed):**
-   ```bash
-   cd "c:\Users\Joel\Metaball Web Animation"
-   python -m http.server 8000
-   ```
-   Then open http://localhost:8000 in your browser.
+**Using Python:**
+```bash
+python -m http.server 8000
+```
 
-2. **Using Node.js (if installed):**
-   ```bash
-   cd "c:\Users\Joel\Metaball Web Animation"
-   npx http-server -p 8000
-   ```
-   Then open http://localhost:8000 in your browser.
+**Using Node.js:**
+```bash
+npx http-server -p 8000
+```
 
-3. **Using Live Server (VS Code extension):**
-   If you have the Live Server extension in VS Code, right-click on `index.html` and select "Open with Live Server".
+Then open http://localhost:8000 in your browser.
 
-## How It Works
+## Portfolio Content
 
-The animation creates multiple metaball objects that:
-- Move around the canvas with physics-based motion
-- Respond to mouse/touch input with attractive forces
-- Render using radial gradients with screen blend mode for smooth merging effects
-- Bounce off canvas edges with realistic physics
-- Scale dynamically based on mouse proximity
+The site showcases multiple projects with:
+- Project titles, subtitles, and years
+- Expandable descriptions with images
+- Detailed project pages including:
+  - Overview, challenge, and solution sections
+  - Role, timeline, and technologies used
+  - Live site links
+  - Project galleries
 
-## Files
+## Customization
 
-- `index.html` - Main HTML structure
-- `style.css` - Styling and responsive design
-- `script.js` - Animation logic and metaball physics
-- `README.md` - This documentation
+To customize the portfolio:
+
+1. **Update Projects**: Edit the `projectsData` array in `script.js` to add/modify projects
+2. **Change Colors**: Modify CSS variables and colors in `style.css`
+3. **Adjust Fonts**: Update the font imports at the top of `style.css`
+4. **Modify Animation**: Tweak metaball physics in the `MetaballAnimation` class
 
 ## Browser Compatibility
 
 Works in all modern browsers that support:
 - HTML5 Canvas
 - ES6 Classes
+- CSS Grid and Flexbox
 - requestAnimationFrame
 
-## Customization
+## Architecture
 
-You can easily customize the animation by modifying:
-- Number of metaballs (adjust `numBalls` calculation in `createMetaballs()`)
-- Colors (modify the `colors` array in `createMetaballs()`)
-- Physics parameters (velocity, friction, mouse force in `Metaball.update()`)
-- Visual effects (gradient stops, blend modes in `animate()`)
+Built with clean, maintainable code:
+- **Object-oriented design** with ES6 classes
+- **Modular structure** separating concerns (animation, navigation, UI)
+- **Event-driven architecture** for user interactions
+- **No dependencies** - pure vanilla JavaScript
 
-Enjoy your metaball animation! 🎉
+Enjoy the portfolio! 🎉

@@ -3,14 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Metaball Web Animation</title>
+    <title>Joel Tenenberg - Creative Developer & Designer</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <canvas id="metaballCanvas"></canvas>
-    <button id="replayButton" class="replay-btn" aria-label="Replay animation" title="Replay">↻</button>
+    <!-- Header -->
+    <header class="main-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1 class="header-name" id="headerName">Joel Tenenberg</h1>
+            </div>
+            <div class="header-right">
+                <div class="logo-container" id="logoContainer">
+                    <canvas id="logoCanvas" class="logo-canvas"></canvas>
+                </div>
+            </div>
+        </div>
+    </header>
+    <div class="header-separator"></div>
+
+    <!-- Main Portfolio Content -->
+    <main class="portfolio-content-main" id="portfolioMain">
+        <div class="projects-container" id="projectsContainer">
+            <div class="header-section">
+                <p class="subtitle">Creative Developer & Designer</p>
+            </div>
+
+            <div class="flavor-text-section">
+                <p class="flavor-text">
+                    I create digital experiences that blend technology with artistry. 
+                    Each project is a journey through code, design, and human connection.
+                </p>
+            </div>
+            
+            <div class="projects-section">
+                <div class="projects-separator"></div>
+                <ul class="project-list" id="projectList">
+                    <!-- Projects will be dynamically inserted here -->
+                </ul>
+            </div>
+        </div>
+
+        <!-- Project Detail View (hidden by default) -->
+        <div class="project-page" id="projectPage" style="display: none;">
+            <!-- Project details will be dynamically inserted here -->
+        </div>
+    </main>
+
+    <!-- Animation Fullscreen Overlay (hidden by default) -->
+    <div class="animation-fullscreen-overlay" id="animationOverlay" style="display: none;">
+        <button class="close-button-topleft" id="closeButton">×</button>
+        <div class="intro-root">
+            <canvas id="metaballCanvas" class="metaball-canvas"></canvas>
+            <canvas id="cursorCanvas" class="cursor-canvas"></canvas>
+        </div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
