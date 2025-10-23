@@ -278,6 +278,7 @@ body {
     font-weight: 700;
     color: #888;
     text-align: right;
+    margin-left: auto; /* Ensure it aligns to the right by pushing it away from other elements */
 }
 
 .project-separator {
