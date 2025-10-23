@@ -534,18 +534,29 @@ class PortfolioApp {
             li.className = 'project-item';
             
             li.innerHTML = `
-                <div class="project-header" data-project-id="${project.id}">
-                    <div class="project-info">
-                        <h3 class="project-title">${project.title}</h3>
-                        <span class="project-separator">—</span>
-                        <span class="project-subtitle">${project.subtitle}</span>
-                    </div>
-                    <span class="project-year">${project.year}</span>
-                    <div class="project-thumbnail">
-                        <img src="${project.thumbnailImage || project.image}" alt="${project.title}" />
-                    </div>
-                    <span class="expand-icon">+</span>
+                <div class="project-header" data-project-id="${project.id}" style="display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: center;">
+                    <h3 class="project-title" style="text-align: left; color: black; word-wrap: break-word;">${project.title}</h3>
+                    <span class="project-subtitle" style="text-align: center; color: black;">${project.subtitle}</span>
+                    <span class="project-year" style="text-align: right; color: black;">${project.year}</span>
                 </div>
+
+                <style>
+                    @media (max-width: 768px) {
+                        .project-header .project-subtitle {
+                            display: none;
+                        }
+                        .project-header {
+                            grid-template-columns: 1fr 1fr; /* Two columns: title and year */
+                        }
+                        .project-title {
+                            text-align: left;
+                        }
+                        .project-year {
+                            text-align: right; /* Ensure year stays right-aligned */
+                            justify-self: end; /* Explicitly align to the right in the grid */
+                        }
+                    }
+                </style>
                 <div class="project-details" data-project-details-id="${project.id}">
                     <div class="project-content">
                         <div class="project-description">
@@ -578,25 +589,20 @@ class PortfolioApp {
     
     toggleProject(projectId) {
         const detailsElement = document.querySelector(`[data-project-details-id="${projectId}"]`);
-        const expandIcon = document.querySelector(`[data-project-id="${projectId}"] .expand-icon`);
-        
-        if(this.expandedProject === projectId) {
-            // Collapse
+
+        if (this.expandedProject === projectId) {
+            // Collapse if already expanded
             detailsElement.classList.remove('expanded');
-            expandIcon.textContent = '+';
             this.expandedProject = null;
         } else {
-            // Collapse any previously expanded
-            if(this.expandedProject !== null) {
+            // Collapse any previously expanded tooltip
+            if (this.expandedProject !== null) {
                 const prevDetails = document.querySelector(`[data-project-details-id="${this.expandedProject}"]`);
-                const prevIcon = document.querySelector(`[data-project-id="${this.expandedProject}"] .expand-icon`);
-                if(prevDetails) prevDetails.classList.remove('expanded');
-                if(prevIcon) prevIcon.textContent = '+';
+                if (prevDetails) prevDetails.classList.remove('expanded');
             }
-            
-            // Expand this one
+
+            // Expand the clicked tooltip
             detailsElement.classList.add('expanded');
-            expandIcon.textContent = '−';
             this.expandedProject = projectId;
         }
     }
