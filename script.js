@@ -381,8 +381,8 @@ class MetaballAnimation {
         }
         
         // Friction
-        ball.vx *= 0.98;
-        ball.vy *= 0.98;
+        ball.vx *= 0.99; // Reduced drag slightly
+        ball.vy *= 0.99;
     }
     
     draw() {
