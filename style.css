@@ -1,6 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;200;300;400;500;600;700;800&display=swap');
-@import url('https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@300,400,500,600,700&display=swap');
+@import url('https://api.fontshare.com/v2/css?f[]=elza@1,2,100,101,200,201,300,301,400,401,500,501,600,601,700,701,800,801,900,901&display=swap');
 
 * {
     box-sizing: border-box;
@@ -10,7 +8,7 @@
 
 html, body {
     height: 100%;
-    font-family: 'Cabinet Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'Elza', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 body {
@@ -19,8 +17,16 @@ body {
     background: #ffffff;
 }
 
-/* Header styles */
-.main-header {
+/* ============================================
+   Layout Utility Classes
+   ============================================ */
+
+/* Section - vertical spacing wrapper */
+.section {
+    padding: 20px;
+}
+
+.section--header {
     position: fixed;
     top: 0;
     left: 0;
@@ -30,42 +36,82 @@ body {
     padding: 12px 30px;
 }
 
-.header-content {
+/* Container - max-width wrapper */
+.container {
+    max-width: none;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.section--header .container {
+    max-width: none;
+}
+
+/* Row - flex/grid container */
+.row {
     display: flex;
     align-items: center;
-    width: 100%;
     gap: 20px;
 }
 
-.header-left {
+.row--header {
+    width: 100%;
+    justify-content: space-between;
+    gap: 0;
+}
+
+.row--2col {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 40px;
+    align-items: center;
+}
+
+/* Column - flex/grid child */
+.col {
     flex: 1;
-    display: flex;
-    align-items: center;
 }
 
-.header-right {
+.col--shrink {
     flex-shrink: 0;
+}
+
+/* Column variants for specific layouts */
+.row--header .col {
     display: flex;
     align-items: center;
 }
 
+.row--header .col:first-child {
+    flex: 1;
+    min-width: 0;
+}
+
+.row--header .col--shrink {
+    flex: 0 0 auto;
+    margin-left: 20px;
+}
+
+/* ============================================
+   Specific Component Styles
+   ============================================ */
+   
 .header-name {
-    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-family: 'Elza', sans-serif;
     font-size: 2.8rem;
     font-weight: 800;
     color: #000;
     margin: 0;
     cursor: pointer;
-    transition: color 0.2s ease;
+    transition: transform 0.1s ease;
     text-transform: uppercase;
     letter-spacing: -2px;
     line-height: 1;
     white-space: nowrap;
     transform-origin: left center;
-    width: fit-content;
+    width: auto;
     height: 40px;
-    display: flex;
-    align-items: center;
+    display: inline-block;
     font-stretch: ultra-condensed;
     text-shadow: 0.5px 0 0 currentColor, -0.5px 0 0 currentColor;
     filter: drop-shadow(0 0 8px rgba(0,0,0,0.6));
@@ -193,14 +239,9 @@ body {
     }
 }
 
-/* Portfolio Content Styles */
-.portfolio-content-main {
-    padding: 84px 20px 20px 20px;
-    width: 100%;
-}
-
-.header-section {
-    margin-bottom: 30px;
+/* Content spacing adjustments */
+#portfolioMain {
+    padding-top: 84px;
 }
 
 .subtitle {
@@ -209,19 +250,11 @@ body {
     font-weight: 700;
 }
 
-.flavor-text-section {
-    margin-bottom: 20px;
-}
-
 .flavor-text {
     font-size: 1.2rem;
     font-weight: 700;
     line-height: 1.6;
     color: #000000;
-}
-
-.projects-section {
-    margin-top: 10px;
 }
 
 .project-list {
@@ -265,9 +298,9 @@ body {
 }
 
 .project-subtitle {
-    font-family: 'Cabinet Grotesk', sans-serif;
+    font-family: 'Elza', sans-serif;
     font-size: 1rem;
-    font-weight: 700;
+    font-weight: 200;
     color: #666;
     margin: 0;
     white-space: nowrap;
@@ -275,14 +308,14 @@ body {
 
 .project-year {
     font-size: 1rem;
-    font-weight: 700;
+    font-weight: 200;
     color: #888;
     text-align: right;
     margin-left: auto; /* Ensure it aligns to the right by pushing it away from other elements */
 }
 
 .project-separator {
-    font-family: 'Cabinet Grotesk', sans-serif;
+    font-family: 'Elza', sans-serif;
     font-size: 1rem;
     font-weight: 700;
     color: #ccc;
@@ -293,13 +326,6 @@ body {
     height: 40px;
     border-radius: 0;
     overflow: hidden;
-}
-
-.project-thumbnail img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
 }
 
 .expand-icon {
@@ -350,7 +376,7 @@ body {
 }
 
 .see-project-link {
-    font-family: 'Cabinet Grotesk', sans-serif;
+    font-family: 'Elza', sans-serif;
     background: #000;
     color: #fff;
     border: none;
@@ -368,24 +394,13 @@ body {
     filter: blur(0.5px);
 }
 
-.project-image {
-    border-radius: 0;
-    overflow: hidden;
-}
-
-.project-image img {
-    width: 100%;
-    height: auto;
-    display: block;
-}
-
 /* Project Page Styles */
 .project-page {
     animation: fadeInUp 0.5s ease;
 }
 
 .back-button {
-    font-family: 'Cabinet Grotesk', sans-serif;
+    font-family: 'Elza', sans-serif;
     background: none;
     border: none;
     font-size: 1rem;
@@ -407,7 +422,7 @@ body {
 }
 
 .project-page-title {
-    font-family: 'Cabinet Grotesk', sans-serif;
+    font-family: 'Elza', sans-serif;
     font-size: 3rem;
     font-weight: 700;
     margin-bottom: 10px;
@@ -415,7 +430,7 @@ body {
 }
 
 .project-page-subtitle {
-    font-family: 'Cabinet Grotesk', sans-serif;
+    font-family: 'Elza', sans-serif;
     font-size: 1.2rem;
     color: #666;
     font-weight: 700;
@@ -425,12 +440,6 @@ body {
     margin-bottom: 60px;
     border-radius: 0;
     overflow: hidden;
-}
-
-.project-hero-image img {
-    width: 100%;
-    height: auto;
-    display: block;
 }
 
 .project-details-grid {
@@ -529,17 +538,10 @@ body {
     gap: 20px;
 }
 
-.gallery-grid img {
-    width: 100%;
-    height: auto;
-    border-radius: 0;
-    display: block;
-}
-
 /* Responsive */
 @media (max-width: 768px) {
-    .portfolio-content-main {
-        padding: 80px 20px 20px 20px;
+    #portfolioMain {
+        padding-top: 80px;
     }
     
     .project-page-title {
@@ -569,8 +571,98 @@ body {
         grid-template-columns: 1fr 60px 60px 30px;
         gap: 10px;
     }
-
-    .header-name {
-        font-size: 2rem;
+    
+    .row--2col {
+        grid-template-columns: 1fr;
+        gap: 20px;
     }
+    
+    #aboutSection .simple-img {
+        max-width: 300px;
+    }
+}
+
+/* ============================================
+   Element Utility Classes
+   ============================================ */
+
+.simple-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 0;
+}
+
+.simple-h {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #000;
+}
+
+.simple-p {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #444;
+    margin-bottom: 12px;
+}
+
+/* About section specific */
+#aboutSection {
+    margin-top: 60px;
+    padding: 40px 20px 80px 20px;
+}
+
+.image-stack {
+    position: relative;
+    width: 100%;
+    max-width: 360px;
+}
+
+.image-stack .simple-img {
+    -webkit-user-drag: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+}
+
+.image-stack .simple-img:first-child {
+    position: relative;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.draggable-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    cursor: move;
+    cursor: grab;
+    user-select: none;
+    pointer-events: auto;
+}
+
+.draggable-img:active {
+    cursor: grabbing;
+}
+
+.about-actions {
+    margin-top: 18px;
+}
+
+.cv-download {
+    display: inline-block;
+    background: #000;
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 700;
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.cv-download:hover {
+    background: #222;
+    transform: translateY(-2px);
 }

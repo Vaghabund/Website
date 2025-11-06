@@ -481,29 +481,102 @@ class PortfolioApp {
         // Setup header name stretch
         this.updateNameStretch();
         window.addEventListener('resize', () => this.updateNameStretch());
+        
+        // Setup draggable image
+        this.setupDraggableImage();
+    }
+    
+    setupDraggableImage() {
+        const draggable = document.getElementById('draggableImage');
+        if (!draggable) return;
+        
+        // Prevent right-click context menu on both images
+        const imageStack = draggable.parentElement;
+        const allImages = imageStack.querySelectorAll('img');
+        allImages.forEach(img => {
+            img.addEventListener('contextmenu', (e) => e.preventDefault());
+            img.addEventListener('dragstart', (e) => e.preventDefault());
+        });
+        
+        let isDragging = false;
+        let currentX;
+        let currentY;
+        let initialX;
+        let initialY;
+        let xOffset = 0;
+        let yOffset = 0;
+        
+        draggable.addEventListener('mousedown', dragStart);
+        draggable.addEventListener('touchstart', dragStart);
+        
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('touchmove', drag);
+        
+        document.addEventListener('mouseup', dragEnd);
+        document.addEventListener('touchend', dragEnd);
+        
+        function dragStart(e) {
+            if (e.type === 'touchstart') {
+                initialX = e.touches[0].clientX - xOffset;
+                initialY = e.touches[0].clientY - yOffset;
+            } else {
+                initialX = e.clientX - xOffset;
+                initialY = e.clientY - yOffset;
+            }
+            
+            if (e.target === draggable) {
+                isDragging = true;
+            }
+        }
+        
+        function drag(e) {
+            if (isDragging) {
+                e.preventDefault();
+                
+                if (e.type === 'touchmove') {
+                    currentX = e.touches[0].clientX - initialX;
+                    currentY = e.touches[0].clientY - initialY;
+                } else {
+                    currentX = e.clientX - initialX;
+                    currentY = e.clientY - initialY;
+                }
+                
+                xOffset = currentX;
+                yOffset = currentY;
+                
+                setTranslate(currentX, currentY, draggable);
+            }
+        }
+        
+        function dragEnd(e) {
+            initialX = currentX;
+            initialY = currentY;
+            isDragging = false;
+        }
+        
+        function setTranslate(xPos, yPos, el) {
+            el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
+        }
     }
     
     updateNameStretch() {
         const nameElement = document.getElementById('headerName');
-        const headerContent = document.querySelector('.header-content');
+        const nameCol = nameElement?.parentElement;
+        const logoContainer = document.querySelector('.logo-container');
         
-        if(!nameElement || !headerContent) return;
+        if(!nameElement || !nameCol || !logoContainer) return;
         
-        // Get the available width
-        const headerWidth = headerContent.offsetWidth;
-        const logoContainer = document.querySelector('.header-right');
-        const logoWidth = logoContainer ? logoContainer.offsetWidth : 60;
-        const gap = 20;
-        const availableWidth = headerWidth - logoWidth - gap;
-        
-        // Get the natural width of the text
+        // Reset transform to get natural width
         nameElement.style.transform = 'scaleX(1)';
-        const naturalWidth = nameElement.offsetWidth;
         
-        // Calculate the scale factor
+        // Get measurements
+        const naturalWidth = nameElement.offsetWidth;
+        const availableWidth = nameCol.offsetWidth;
+        
+        // Calculate scale to fill the entire available space
         const scaleX = availableWidth / naturalWidth;
         
-        // Apply the transform
+        // Apply the stretch transform
         nameElement.style.transform = `scaleX(${scaleX})`;
     }
     
@@ -534,26 +607,25 @@ class PortfolioApp {
             li.className = 'project-item';
             
             li.innerHTML = `
-                <div class="project-header" data-project-id="${project.id}" style="display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: center;">
-                    <h3 class="project-title" style="text-align: left; color: black; word-wrap: break-word;">${project.title}</h3>
-                    <span class="project-subtitle" style="text-align: center; color: black;">${project.subtitle}</span>
+                <div class="project-header" data-project-id="${project.id}" style="display: grid; grid-template-columns: 1fr 1fr; align-items: baseline; gap: 20px;">
+                    <div style="display: flex; align-items: baseline; gap: 12px;">
+                        <h3 class="project-title" style="text-align: left; color: black; word-wrap: break-word; margin: 0;">${project.title}</h3>
+                        <span class="project-subtitle" style="color: black; font-size: 0.9rem;">${project.subtitle}</span>
+                    </div>
                     <span class="project-year" style="text-align: right; color: black;">${project.year}</span>
                 </div>
 
                 <style>
                     @media (max-width: 768px) {
-                        .project-header .project-subtitle {
+                        .project-header .project-subtitle,
+                        .project-header .project-year {
                             display: none;
                         }
                         .project-header {
-                            grid-template-columns: 1fr 1fr; /* Two columns: title and year */
+                            grid-template-columns: 1fr;
                         }
                         .project-title {
                             text-align: left;
-                        }
-                        .project-year {
-                            text-align: right; /* Ensure year stays right-aligned */
-                            justify-self: end; /* Explicitly align to the right in the grid */
                         }
                     }
                 </style>
@@ -566,7 +638,7 @@ class PortfolioApp {
                             </button>
                         </div>
                         <div class="project-image">
-                            <img src="${project.image}" alt="${project.title}" />
+                            <img class="simple-img" src="${project.image}" alt="${project.title}" />
                         </div>
                     </div>
                 </div>
@@ -620,7 +692,7 @@ class PortfolioApp {
                 <div class="project-gallery">
                     <h3>Gallery</h3>
                     <div class="gallery-grid">
-                        ${project.gallery.map(img => `<img src="${img}" alt="${project.title}" />`).join('')}
+                        ${project.gallery.map(img => `<img class="simple-img" src="${img}" alt="${project.title}" />`).join('')}
                     </div>
                 </div>
             `;
@@ -665,7 +737,7 @@ class PortfolioApp {
                 
                 <div class="project-page-body">
                     <div class="project-hero-image">
-                        <img src="${project.heroImage || project.image}" alt="${project.title}" />
+                        <img class="simple-img" src="${project.heroImage || project.image}" alt="${project.title}" />
                     </div>
                     
                     <div class="project-details-grid">

@@ -5,21 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Joel Tenenberg</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-      body {
-        font-family: 'Inter', sans-serif;
-      }
-    </style>
 </head>
 <body>
     <!-- Header -->
-    <header class="main-header">
-        <div class="header-content">
-            <div class="header-left">
+    <header class="section section--header">
+        <div class="container row row--header">
+            <div class="col">
                 <h1 class="header-name" id="headerName">Joel Tenenberg</h1>
             </div>
-            <div class="header-right">
+            <div class="col col--shrink">
                 <div class="logo-container" id="logoContainer">
                     <canvas id="logoCanvas" class="logo-canvas"></canvas>
                 </div>
@@ -29,26 +23,47 @@
     </header>
 
     <!-- Main Portfolio Content -->
-    <main class="portfolio-content-main" id="portfolioMain">
-        <div class="projects-container" id="projectsContainer">
-            <div class="header-section">
+        <!-- Main Portfolio Content -->
+    <main class="section" id="portfolioMain">
+        <div class="container" id="projectsContainer">
+            <div class="section">
                 <p class="subtitle">Creative Developer & Designer</p>
             </div>
 
-            <div class="flavor-text-section">
+            <div class="section">
                 <p class="flavor-text">
                     I create digital experiences that blend technology with artistry. 
                     Each project is a journey through code, design, and human connection.
                 </p>
             </div>
             
-            <div class="projects-section">
+            <div class="section">
                 <div class="projects-separator"></div>
                 <ul class="project-list" id="projectList">
                     <!-- Projects will be dynamically inserted here without images -->
                 </ul>
             </div>
         </div>
+
+            <!-- About Section -->
+            <section class="section" id="aboutSection">
+                <div class="container row row--2col" >
+                    <div class="col">
+                        <div class="image-stack">
+                            <img src="profile.jpg" alt="Joel Tenenberg" class="simple-img" onerror="this.onerror=null;this.src='https://picsum.photos/400/400?random=99'">
+                            <img src="profile2.jpg" id="draggableImage" class="simple-img draggable-img" alt="Joel Tenenberg 2" onerror="this.onerror=null;this.src='https://picsum.photos/400/400?random=98'">
+                        </div>
+                    </div>
+                    <div class="col">
+                        <h2 class="simple-h">About</h2>
+                        <p class="simple-p">I build thoughtful digital experiences that bridge code and craft. My work focuses on interaction, clarity, and performance — whether that's a research project, a product, or an experimental interface.</p>
+                        <p class="simple-p">If you'd like to see a concise overview of my background, skills, and experience, download my CV below.</p>
+                        <div class="about-actions">
+                            <a class="cv-download" href="Joel_Tenenberg_CV.pdf" download>Download CV</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
         <!-- Project Detail View (hidden by default) -->
         <div class="project-page" id="projectPage" style="display: none;">
