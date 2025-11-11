@@ -100,6 +100,7 @@ body {
     font-family: 'Elza', sans-serif;
     font-size: 2.8rem;
     font-weight: 800;
+    font-style: italic;
     color: #000;
     margin: 0;
     cursor: pointer;
@@ -118,7 +119,7 @@ body {
 }
 
 .header-name:hover {
-    filter: blur(0.5px);
+    filter: blur(0.5px) drop-shadow(0 0 8px rgba(0,0,0,0.6));
 }
 
 .header-separator {
@@ -139,10 +140,11 @@ body {
     border-radius: 6px;
     overflow: hidden;
     transition: transform 0.2s ease;
+    filter: drop-shadow(0 0 8px rgba(0,0,0,0.6));
 }
 
 .logo-container:hover {
-    filter: blur(0.5px);
+    filter: blur(0.5px) drop-shadow(0 0 8px rgba(0,0,0,0.6));
 }
 
 .logo-canvas {
@@ -665,4 +667,30 @@ body {
 .cv-download:hover {
     background: #222;
     transform: translateY(-2px);
+}
+
+/* ============================================
+   3D Banner Styles
+   ============================================ */
+
+.three-banner {
+    width: 100%;
+    height: 500px;
+    margin: 0 0 40px 0;
+    overflow: hidden;
+    position: relative;
+    background: #ffffff;
+    border-radius: 0;
+}
+
+.three-banner canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+@media (max-width: 768px) {
+    .three-banner {
+        height: 350px;
+    }
 }
