@@ -135,10 +135,9 @@ class LogoAnimation {
     updateBall(ball, dt) {
         ball.age += dt;
         
-        // Center ball stays static (no pulsing)
+        // Center ball subtle pulsing
         if(ball.isCenter) {
-            // Keep radius constant
-            ball.radius = ball.baseRadius;
+            ball.radius = ball.baseRadius + Math.sin(ball.age * 1.5) * 1;
         } else {
             // Slower orbital motion
             ball.orbitAngle += 0.008;
@@ -152,14 +151,24 @@ class LogoAnimation {
         this.ctx.fillStyle = 'rgba(255, 255, 255, 1)';
         this.ctx.fillRect(0, 0, this.size, this.size);
         
-        // Draw balls - solid black, no blur or shadow
+        // Draw balls with same style as main animation - solid black with blur
         this.ctx.globalCompositeOperation = 'source-over';
         for(const b of this.balls) {
-            // Solid black fill with no effects
+            // Add blur effect
+            this.ctx.shadowColor = 'rgba(0,0,0,0.8)';
+            this.ctx.shadowBlur = 8;
+            this.ctx.shadowOffsetX = 0;
+            this.ctx.shadowOffsetY = 0;
+            
+            // Solid black fill
             this.ctx.fillStyle = 'rgba(0,0,0,1)';
             this.ctx.beginPath();
             this.ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
             this.ctx.fill();
+            
+            // Reset shadow for next iteration
+            this.ctx.shadowColor = 'transparent';
+            this.ctx.shadowBlur = 0;
         }
     }
     
@@ -320,7 +329,7 @@ class MetaballAnimation {
         const cx = this.width / 2;
         const cy = this.height / 2;
         
-        // Center ball stays static (no pulsing)
+        // Keep radius constant
         if(ball.isCenter) {
             ball.radius = ball.baseRadius;
         }
@@ -394,13 +403,21 @@ class MetaballAnimation {
         this.ctx.translate(gx, gy);
         this.ctx.scale(gs, gs);
         
-        // Solid black metaballs without blur
+        // Solid black metaballs with edge blur
         this.ctx.globalCompositeOperation = 'source-over';
         for(const b of this.balls) {
+            this.ctx.shadowColor = 'rgba(0,0,0,0.9)';
+            this.ctx.shadowBlur = 40;
+            this.ctx.shadowOffsetX = 0;
+            this.ctx.shadowOffsetY = 0;
+            
             this.ctx.fillStyle = 'rgba(0,0,0,1)';
             this.ctx.beginPath();
             this.ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
             this.ctx.fill();
+            
+            this.ctx.shadowColor = 'transparent';
+            this.ctx.shadowBlur = 0;
         }
         
         this.ctx.restore();
@@ -458,9 +475,6 @@ class PortfolioApp {
     }
     
     init() {
-        // Initialize logo animation
-        this.logoAnimation = new LogoAnimation('logoCanvas');
-        
         // Render projects
         this.renderProjects();
         
@@ -551,23 +565,18 @@ class PortfolioApp {
     updateNameStretch() {
         const nameElement = document.getElementById('headerName');
         const nameCol = nameElement?.parentElement;
-        const logoCanvas = document.getElementById('logoCanvas');
-        const logoCol = logoCanvas?.parentElement;
+        const logoContainer = document.querySelector('.logo-container');
         
-        if(!nameElement || !nameCol || !logoCol) return;
+        if(!nameElement || !nameCol || !logoContainer) return;
         
         // Reset transform to get natural width
         nameElement.style.transform = 'scaleX(1)';
         
-        // Force reflow
-        void nameElement.offsetWidth;
-        
         // Get measurements
         const naturalWidth = nameElement.offsetWidth;
-        const logoWidth = logoCol.offsetWidth;
         const availableWidth = nameCol.offsetWidth;
         
-        // Calculate scale to fill available space
+        // Calculate scale to fill the entire available space
         const scaleX = availableWidth / naturalWidth;
         
         // Apply the stretch transform
@@ -576,18 +585,13 @@ class PortfolioApp {
     
     setupEventListeners() {
         // Header name click - go back to projects
-        document.getElementById('headerName').addEventListener('click', (e) => {
-            // Don't trigger if clicking the logo
-            if (e.target.closest('.name-icon, #logoCanvas')) {
-                return;
-            }
+        document.getElementById('headerName').addEventListener('click', () => {
             this.selectedProject = null;
             this.showProjects();
         });
         
         // Logo click - show fullscreen animation
-        document.getElementById('logoCanvas').addEventListener('click', (e) => {
-            e.stopPropagation();
+        document.getElementById('logoContainer').addEventListener('click', () => {
             this.showAnimationPopup();
         });
         
