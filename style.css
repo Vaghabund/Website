@@ -138,19 +138,36 @@ body {
     height: 40px;
     cursor: pointer;
     border-radius: 6px;
-    overflow: hidden;
-    transition: transform 0.2s ease;
-    filter: drop-shadow(0 0 8px rgba(0,0,0,0.6));
+    overflow: visible;
+    transition: filter 0.2s ease;
+    filter: blur(0px) drop-shadow(0 0 8px rgba(0,0,0,0.6));
 }
 
 .logo-container:hover {
-    filter: blur(0.5px) drop-shadow(0 0 8px rgba(0,0,0,0.6));
+    filter: blur(1.5px) drop-shadow(0 0 8px rgba(0,0,0,0.6));
 }
 
-.logo-canvas {
+.logo-container:not(:hover) {
+    filter: blur(0px) drop-shadow(0 0 8px rgba(0,0,0,0.6));
+}
+
+.logo-image {
     display: block;
     width: 100%;
     height: 100%;
+    animation: spin 8s linear infinite;
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* Animation Full-Screen Popup Styles - Glassmorphism */
