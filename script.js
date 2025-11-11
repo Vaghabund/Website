@@ -12,6 +12,12 @@ const projectsData = [
         image: 'https://picsum.photos/400/250?random=1',
         thumbnailImage: 'https://picsum.photos/60/40?random=11',
         heroImage: 'https://picsum.photos/800/400?random=21',
+        model3D: 'models/project1.glb', // Path to 3D model
+        model3DOptions: { // Optional 3D banner settings
+            interactionType: 'cursor-follow',
+            autoRotate: true,
+            backgroundColor: 0xffffff
+        },
         challenge: 'The main challenge was creating a system that could handle real-time data updates while maintaining performance and user experience across different devices and network conditions.',
         solution: 'We implemented a WebSocket-based architecture with optimistic updates and conflict resolution, paired with a responsive design system that adapts to various screen sizes and interaction methods.',
         role: 'Lead Developer & UI Designer',
@@ -129,9 +135,10 @@ class LogoAnimation {
     updateBall(ball, dt) {
         ball.age += dt;
         
-        // Center ball subtle pulsing
+        // Center ball stays static (no pulsing)
         if(ball.isCenter) {
-            ball.radius = ball.baseRadius + Math.sin(ball.age * 1.5) * 1;
+            // Keep radius constant
+            ball.radius = ball.baseRadius;
         } else {
             // Slower orbital motion
             ball.orbitAngle += 0.008;
@@ -145,24 +152,14 @@ class LogoAnimation {
         this.ctx.fillStyle = 'rgba(255, 255, 255, 1)';
         this.ctx.fillRect(0, 0, this.size, this.size);
         
-        // Draw balls with same style as main animation - solid black with blur
+        // Draw balls - solid black, no blur or shadow
         this.ctx.globalCompositeOperation = 'source-over';
         for(const b of this.balls) {
-            // Add blur effect
-            this.ctx.shadowColor = 'rgba(0,0,0,0.8)';
-            this.ctx.shadowBlur = 8;
-            this.ctx.shadowOffsetX = 0;
-            this.ctx.shadowOffsetY = 0;
-            
-            // Solid black fill
+            // Solid black fill with no effects
             this.ctx.fillStyle = 'rgba(0,0,0,1)';
             this.ctx.beginPath();
             this.ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
             this.ctx.fill();
-            
-            // Reset shadow for next iteration
-            this.ctx.shadowColor = 'transparent';
-            this.ctx.shadowBlur = 0;
         }
     }
     
@@ -323,9 +320,9 @@ class MetaballAnimation {
         const cx = this.width / 2;
         const cy = this.height / 2;
         
-        // Center ball subtle pulsing
+        // Center ball stays static (no pulsing)
         if(ball.isCenter) {
-            ball.radius = ball.baseRadius + Math.sin(ball.age * 2) * 5;
+            ball.radius = ball.baseRadius;
         }
         
         // Initial formation / orbital behaviour for the first 2 seconds
@@ -397,21 +394,13 @@ class MetaballAnimation {
         this.ctx.translate(gx, gy);
         this.ctx.scale(gs, gs);
         
-        // Solid black metaballs with edge blur
+        // Solid black metaballs without blur
         this.ctx.globalCompositeOperation = 'source-over';
         for(const b of this.balls) {
-            this.ctx.shadowColor = 'rgba(0,0,0,0.9)';
-            this.ctx.shadowBlur = 40;
-            this.ctx.shadowOffsetX = 0;
-            this.ctx.shadowOffsetY = 0;
-            
             this.ctx.fillStyle = 'rgba(0,0,0,1)';
             this.ctx.beginPath();
             this.ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
             this.ctx.fill();
-            
-            this.ctx.shadowColor = 'transparent';
-            this.ctx.shadowBlur = 0;
         }
         
         this.ctx.restore();
@@ -562,18 +551,23 @@ class PortfolioApp {
     updateNameStretch() {
         const nameElement = document.getElementById('headerName');
         const nameCol = nameElement?.parentElement;
-        const logoContainer = document.querySelector('.logo-container');
+        const logoCanvas = document.getElementById('logoCanvas');
+        const logoCol = logoCanvas?.parentElement;
         
-        if(!nameElement || !nameCol || !logoContainer) return;
+        if(!nameElement || !nameCol || !logoCol) return;
         
         // Reset transform to get natural width
         nameElement.style.transform = 'scaleX(1)';
         
+        // Force reflow
+        void nameElement.offsetWidth;
+        
         // Get measurements
         const naturalWidth = nameElement.offsetWidth;
+        const logoWidth = logoCol.offsetWidth;
         const availableWidth = nameCol.offsetWidth;
         
-        // Calculate scale to fill the entire available space
+        // Calculate scale to fill available space
         const scaleX = availableWidth / naturalWidth;
         
         // Apply the stretch transform
@@ -582,13 +576,18 @@ class PortfolioApp {
     
     setupEventListeners() {
         // Header name click - go back to projects
-        document.getElementById('headerName').addEventListener('click', () => {
+        document.getElementById('headerName').addEventListener('click', (e) => {
+            // Don't trigger if clicking the logo
+            if (e.target.closest('.name-icon, #logoCanvas')) {
+                return;
+            }
             this.selectedProject = null;
             this.showProjects();
         });
         
         // Logo click - show fullscreen animation
-        document.getElementById('logoContainer').addEventListener('click', () => {
+        document.getElementById('logoCanvas').addEventListener('click', (e) => {
+            e.stopPropagation();
             this.showAnimationPopup();
         });
         
@@ -726,6 +725,14 @@ class PortfolioApp {
             `;
         }
         
+        // Check if project has 3D model
+        let banner3DHTML = '';
+        if (project.model3D) {
+            banner3DHTML = `
+                <div class="three-banner" id="threeBanner-${project.id}"></div>
+            `;
+        }
+        
         projectPage.innerHTML = `
             <button class="back-button" id="backButton">← Back to Projects</button>
             
@@ -736,6 +743,8 @@ class PortfolioApp {
                 </header>
                 
                 <div class="project-page-body">
+                    ${banner3DHTML}
+                    
                     <div class="project-hero-image">
                         <img class="simple-img" src="${project.heroImage || project.image}" alt="${project.title}" />
                     </div>
@@ -780,8 +789,26 @@ class PortfolioApp {
         projectsContainer.style.display = 'none';
         projectPage.style.display = 'block';
         
+        // Initialize 3D banner if model exists
+        if (project.model3D && typeof window.init3DBanner === 'function') {
+            // Small delay to ensure DOM is ready
+            setTimeout(() => {
+                const options = project.model3DOptions || {};
+                this.currentBanner = window.init3DBanner(
+                    `threeBanner-${project.id}`,
+                    project.model3D,
+                    options
+                );
+            }, 100);
+        }
+        
         // Setup back button
         document.getElementById('backButton').addEventListener('click', () => {
+            // Cleanup 3D banner before hiding
+            if (this.currentBanner && typeof this.currentBanner.destroy === 'function') {
+                this.currentBanner.destroy();
+                this.currentBanner = null;
+            }
             this.showProjects();
         });
         

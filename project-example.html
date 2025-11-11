@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Example - 3D Banner</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Additional project page styles */
+        .project-standalone {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 100px 20px 40px;
+        }
+        
+        .project-content {
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="section section--header">
+        <div class="container row row--header">
+            <div class="col">
+                <h1 class="header-name">
+                    <a href="index.html" style="text-decoration: none; color: inherit;">Joel Tenenberg</a>
+                </h1>
+            </div>
+        </div>
+        <div class="header-separator"></div>
+    </header>
+
+    <!-- Project Content -->
+    <main class="project-standalone">
+        <a href="index.html" class="back-button">← Back to Projects</a>
+        
+        <header class="project-page-header">
+            <h1 class="project-page-title">Project Title</h1>
+            <p class="project-page-subtitle">Project Subtitle</p>
+        </header>
+        
+        <!-- 3D Banner Container -->
+        <div class="three-banner" id="projectBanner"></div>
+        
+        <!-- Project Content -->
+        <div class="project-content">
+            <div class="project-details-grid">
+                <div class="project-description-section">
+                    <h3>Overview</h3>
+                    <p>Your project description goes here. This is where you explain what the project is about, your goals, and what you achieved.</p>
+                    
+                    <h3>Challenge</h3>
+                    <p>Describe the main challenges you faced during this project.</p>
+                    
+                    <h3>Solution</h3>
+                    <p>Explain how you solved the challenges and what technologies or approaches you used.</p>
+                </div>
+                
+                <div class="project-info-section">
+                    <div class="project-info-item">
+                        <h4>Role</h4>
+                        <p>Your Role</p>
+                    </div>
+                    
+                    <div class="project-info-item">
+                        <h4>Timeline</h4>
+                        <p>X months</p>
+                    </div>
+                    
+                    <div class="project-info-item">
+                        <h4>Technologies</h4>
+                        <ul class="tech-list">
+                            <li>Technology 1</li>
+                            <li>Technology 2</li>
+                            <li>Technology 3</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Three.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.159.0/examples/js/loaders/GLTFLoader.js"></script>
+    
+    <!-- 3D Banner Module -->
+    <script src="threeBanner.js"></script>
+    
+    <!-- Initialize 3D Banner -->
+    <script>
+        // Initialize the 3D banner when page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            // Example usage:
+            const banner = init3DBanner('projectBanner', 'models/your-model.glb', {
+                interactionType: 'cursor-follow',  // Options: 'cursor-follow', 'rotate', 'tilt'
+                height: 500,                       // Banner height in pixels
+                backgroundColor: 0xf8f8f8,         // Hex color code
+                modelScale: 1,                     // Scale of the 3D model
+                autoRotate: true,                  // Enable auto-rotation
+                maxRotation: 10,                   // Max rotation in degrees for cursor interaction
+                lerpFactor: 0.1                    // Smoothness factor (0-1, lower = smoother)
+            });
+            
+            // If model doesn't exist, it will show a placeholder geometry
+        });
+    </script>
+</body>
+</html>
