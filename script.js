@@ -571,16 +571,30 @@ class PortfolioApp {
         
         // Reset transform to get natural width
         nameElement.style.transform = 'scaleX(1)';
-        
-        // Get measurements
+        nameElement.style.display = 'inline-block';
+        nameElement.style.transformOrigin = 'left center';
+
+        // Get measurements for stretching
         const naturalWidth = nameElement.offsetWidth;
         const availableWidth = nameCol.offsetWidth;
-        
-        // Calculate scale to fill the entire available space
+
+        // Calculate scale to fill the entire available space (visual only)
         const scaleX = availableWidth / naturalWidth;
-        
-        // Apply the stretch transform
         nameElement.style.transform = `scaleX(${scaleX})`;
+
+        // Calculate the spacing from the logo to the window border and
+        // apply the same spacing as the right margin on the name element.
+        // This makes the visual gap between the (stretched) name and the logo
+        // match the distance from the logo to the window edge.
+        try {
+            const logoRect = logoContainer.getBoundingClientRect();
+            const logoRightSpacing = Math.max(8, Math.round(window.innerWidth - logoRect.right));
+            // Apply spacing as right margin (in layout space) so the gap equals logo->window distance
+            nameElement.style.marginRight = `${logoRightSpacing}px`;
+        } catch (e) {
+            // fallback: ensure there's a small margin
+            nameElement.style.marginRight = '12px';
+        }
     }
     
     setupEventListeners() {
