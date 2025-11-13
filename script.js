@@ -12,11 +12,14 @@ const projectsData = [
         image: 'https://picsum.photos/400/250?random=1',
         thumbnailImage: 'https://picsum.photos/60/40?random=11',
         heroImage: 'https://picsum.photos/800/400?random=21',
-        model3D: 'models/project1.glb', // Path to 3D model
+        model3D: 'media/models/Harpy v24.gltf', // Path to 3D model
         model3DOptions: { // Optional 3D banner settings
             interactionType: 'cursor-follow',
             autoRotate: true,
-            backgroundColor: 0xffffff
+            modelScale: 1.5,
+            backgroundColor: 0xf5f5f5,
+            maxRotation: 15,
+            lerpFactor: 0.08
         },
         challenge: 'The main challenge was creating a system that could handle real-time data updates while maintaining performance and user experience across different devices and network conditions.',
         solution: 'We implemented a WebSocket-based architecture with optimistic updates and conflict resolution, paired with a responsive design system that adapts to various screen sizes and interaction methods.',
