@@ -9,9 +9,9 @@ const projectsData = [
         year: '2025',
         description: 'A modern web application built with React and Node.js, featuring real-time collaboration and advanced data visualization.',
         fullDescription: 'Project Alpha represents a comprehensive solution for team collaboration in data-intensive environments. Built with modern web technologies, it provides real-time synchronization, advanced analytics, and intuitive user interfaces that make complex data accessible to all team members.',
-        image: 'https://picsum.photos/400/250?random=1',
-        thumbnailImage: 'https://picsum.photos/60/40?random=11',
-        heroImage: 'https://picsum.photos/800/400?random=21',
+        image: 'media/projects/OperationalAnalysisofPhotogrammetry/Masterpräsi_01.png',
+        thumbnailImage: 'media/projects/OperationalAnalysisofPhotogrammetry/Masterpräsi_02.png',
+        heroImage: 'media/projects/OperationalAnalysisofPhotogrammetry/Masterpräsi_03.png',
         model3D: 'models/project1.glb', // Path to 3D model
         model3DOptions: { // Optional 3D banner settings
             interactionType: 'cursor-follow',
@@ -25,8 +25,11 @@ const projectsData = [
         technologies: ['TouchDesigner', 'Python', 'WebSocket', 'MongoDB'],
         liveUrl: 'https://example.com',
         gallery: [
-            'https://picsum.photos/600/400?random=31',
-            'https://picsum.photos/600/400?random=32'
+            'media/projects/OperationalAnalysisofPhotogrammetry/Masterpräsi_01.png',
+            'media/projects/OperationalAnalysisofPhotogrammetry/Masterpräsi_02.png',
+            'media/projects/OperationalAnalysisofPhotogrammetry/Masterpräsi_03.png',
+            'media/projects/OperationalAnalysisofPhotogrammetry/Masterpräsi_04.png',
+            'media/projects/OperationalAnalysisofPhotogrammetry/Rundgang_01.png'
         ]
     },
     {
