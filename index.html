@@ -49,8 +49,15 @@
                 <div class="container row row--2col" >
                     <div class="col">
                         <div class="image-stack">
-                            <img src="profile.jpg" alt="Joel Tenenberg" class="simple-img" onerror="this.onerror=null;this.src='https://picsum.photos/400/400?random=99'">
-                            <img src="profile2.jpg" id="draggableImage" class="simple-img draggable-img" alt="Joel Tenenberg 2" onerror="this.onerror=null;this.src='https://picsum.photos/400/400?random=98'">
+                            <picture>
+                                <source type="image/webp" srcset="media/about/profile-small.webp 400w, media/about/profile.webp 800w" sizes="(max-width: 600px) 400px, 800px">
+                                <img src="media/about/profile.jpg" srcset="media/about/profile-small.jpg 400w, media/about/profile.jpg 800w" sizes="(max-width: 600px) 400px, 800px" alt="Joel Tenenberg" class="simple-img" loading="lazy" onerror="this.onerror=null;this.src='https://picsum.photos/400/400?random=99'">
+                            </picture>
+
+                            <picture>
+                                <source type="image/webp" srcset="media/about/profile2-small.webp 400w, media/about/profile2.webp 800w" sizes="(max-width: 600px) 400px, 800px">
+                                <img src="media/about/profile2.jpg" id="draggableImage" srcset="media/about/profile2-small.jpg 400w, media/about/profile2.jpg 800w" sizes="(max-width: 600px) 400px, 800px" class="simple-img draggable-img" alt="Joel Tenenberg 2" loading="lazy" onerror="this.onerror=null;this.src='https://picsum.photos/400/400?random=98'">
+                            </picture>
                         </div>
                     </div>
                     <div class="col">
