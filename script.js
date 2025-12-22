@@ -620,6 +620,24 @@ class PortfolioApp {
         document.getElementById('closeButton').addEventListener('click', () => {
             this.closeAnimationPopup();
         });
+
+        // Delegate click for 'See project' buttons to ensure they always work
+        const projectList = document.getElementById('projectList');
+        if (projectList) {
+            projectList.addEventListener('click', (e) => {
+                const btn = e.target.closest && e.target.closest('.see-project-link');
+                if (btn) {
+                    e.stopPropagation();
+                    const pid = btn.getAttribute('data-see-project-id');
+                    const project = projectsData.find(p => String(p.id) === String(pid));
+                    if (project) {
+                        this.showProjectDetail(project);
+                    } else {
+                        console.warn('Project not found for id', pid);
+                    }
+                }
+            });
+        }
     }
     
     renderProjects() {
@@ -709,43 +727,46 @@ class PortfolioApp {
         const projectPage = document.getElementById('projectPage');
         const projectsContainer = document.getElementById('projectsContainer');
         
-        // Build project detail HTML
+        // Build project detail HTML (exclude PDFs from gallery; PDFs are exposed via Documents buttons)
         let galleryHTML = '';
-        if(project.gallery && project.gallery.length > 0) {
-            galleryHTML = `
-                <div class="project-gallery">
-                    <h3>Gallery</h3>
-                    <div class="gallery-grid">
-                        ${project.gallery.map(img => {
-                            if (/\.pdf$/i.test(img)) {
-                                // Try to show a PNG preview or a -thumb image; if not available the link opens PDF in new tab
-                                const pngPreview = img.replace(/\.pdf$/i, '.png');
-                                const thumbPreview = img.replace(/\.pdf$/i, '-thumb.jpg');
+        if (project.gallery && project.gallery.length > 0) {
+            const imageItems = project.gallery.filter(img => !/\.pdf$/i.test(img));
+            if (imageItems.length > 0) {
+                galleryHTML = `
+                    <div class="project-gallery">
+                        <h3>Gallery</h3>
+                        <div class="gallery-grid">
+                            ${imageItems.map(img => {
+                                const thumb = img.replace(/\.(png|jpe?g)$/i, '-thumb.jpg');
+                                const thumbWebp = img.replace(/\.(png|jpe?g)$/i, '-thumb.webp');
                                 return `
-                                    <div class="gallery-item pdf-item">
-                                        <a href="${img}" target="_blank" rel="noopener noreferrer">
-                                            <img class="simple-img" src="${pngPreview}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-block'">
-                                        </a>
-                                        <a href="${img}" target="_blank" rel="noopener noreferrer" style="display:none">Open PDF</a>
+                                    <div class="gallery-item">
+                                        <picture>
+                                            <source type="image/webp" srcset="${thumbWebp}" />
+                                            <img class="simple-img" src="${thumb}" alt="${project.title}" loading="lazy" />
+                                        </picture>
                                     </div>
                                 `;
-                            }
-                            // image file: use -thumb variant when available
-                            const thumb = img.replace(/\.(png|jpe?g)$/i, '-thumb.jpg');
-                            const thumbWebp = img.replace(/\.(png|jpe?g)$/i, '-thumb.webp');
-                            return `
-                                <div class="gallery-item">
-                                    <picture>
-                                        <source type="image/webp" srcset="${thumbWebp}" />
-                                        <img class="simple-img" src="${thumb}" alt="${project.title}" loading="lazy" />
-                                    </picture>
-                                </div>
-                            `;
-                        }).join('')}
+                            }).join('')}
+                        </div>
                     </div>
-                </div>
-            `;
+                `;
+            }
         }
+
+            // Documents links for the side info section
+            let docsHTML = '';
+            if (project.map || project.thesis) {
+                docsHTML = `
+                    <div class="project-info-item">
+                        <h4>Documents</h4>
+                        <div class="project-docs">
+                            ${project.map ? `<a class="project-link btn" href="${project.map}" target="_blank" rel="noopener noreferrer">Map (PDF)</a>` : ''}
+                            ${project.thesis ? `<a class="project-link btn" href="${project.thesis}" target="_blank" rel="noopener noreferrer">Thesis (PDF)</a>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
         
         let challengeHTML = '';
         if(project.challenge) {
@@ -827,6 +848,7 @@ class PortfolioApp {
                             </div>
                             
                             ${liveUrlHTML}
+                            ${docsHTML}
                         </div>
                     </div>
                     
