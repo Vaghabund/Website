@@ -9,9 +9,9 @@ const projectsData = [
         year: '2025',
         description: 'A modern web application built with React and Node.js, featuring real-time collaboration and advanced data visualization.',
         fullDescription: 'Project Alpha represents a comprehensive solution for team collaboration in data-intensive environments. Built with modern web technologies, it provides real-time synchronization, advanced analytics, and intuitive user interfaces that make complex data accessible to all team members.',
-        image: 'media/projects/OperationalAnalysisofPhotogrammetry/Masterpräsi_01.png',
-        thumbnailImage: 'media/projects/OperationalAnalysisofPhotogrammetry/Masterpräsi_02.png',
-        heroImage: 'media/projects/OperationalAnalysisofPhotogrammetry/Masterpräsi_03.png',
+        image: 'media/projects/OperationalAnalysisofPhotogrametry/Masterpräsi_01.png',
+        thumbnailImage: 'media/projects/OperationalAnalysisofPhotogrametry/Masterpräsi_02.png',
+        heroImage: 'media/projects/OperationalAnalysisofPhotogrametry/Masterpräsi_03.png',
         model3D: 'models/project1.glb', // Path to 3D model
         model3DOptions: { // Optional 3D banner settings
             interactionType: 'cursor-follow',
@@ -25,12 +25,16 @@ const projectsData = [
         technologies: ['TouchDesigner', 'Python', 'WebSocket', 'MongoDB'],
         liveUrl: 'https://example.com',
         gallery: [
-            'media/projects/OperationalAnalysisofPhotogrammetry/Masterpräsi_01.png',
-            'media/projects/OperationalAnalysisofPhotogrammetry/Masterpräsi_02.png',
-            'media/projects/OperationalAnalysisofPhotogrammetry/Masterpräsi_03.png',
-            'media/projects/OperationalAnalysisofPhotogrammetry/Masterpräsi_04.png',
-            'media/projects/OperationalAnalysisofPhotogrammetry/Rundgang_01.png'
-        ]
+            'media/projects/OperationalAnalysisofPhotogrametry/Masterpräsi_01.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/Masterpräsi_02.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/Masterpräsi_03.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/Masterpräsi_04.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/Rundgang_01.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/Map of Operational Analysis.pdf',
+            'media/projects/OperationalAnalysisofPhotogrametry/MA DC_Joel Tenenberg_Operational Analysis of Photogrammetry.pdf'
+        ],
+        thesis: 'media/projects/OperationalAnalysisofPhotogrametry/MA DC_Joel Tenenberg_Operational Analysis of Photogrammetry.pdf',
+        map: 'media/projects/OperationalAnalysisofPhotogrametry/Map of Operational Analysis.pdf'
     },
     {
         id: 2,
@@ -712,7 +716,32 @@ class PortfolioApp {
                 <div class="project-gallery">
                     <h3>Gallery</h3>
                     <div class="gallery-grid">
-                        ${project.gallery.map(img => `<img class="simple-img" src="${img}" alt="${project.title}" />`).join('')}
+                        ${project.gallery.map(img => {
+                            if (/\.pdf$/i.test(img)) {
+                                // Try to show a PNG preview or a -thumb image; if not available the link opens PDF in new tab
+                                const pngPreview = img.replace(/\.pdf$/i, '.png');
+                                const thumbPreview = img.replace(/\.pdf$/i, '-thumb.jpg');
+                                return `
+                                    <div class="gallery-item pdf-item">
+                                        <a href="${img}" target="_blank" rel="noopener noreferrer">
+                                            <img class="simple-img" src="${pngPreview}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-block'">
+                                        </a>
+                                        <a href="${img}" target="_blank" rel="noopener noreferrer" style="display:none">Open PDF</a>
+                                    </div>
+                                `;
+                            }
+                            // image file: use -thumb variant when available
+                            const thumb = img.replace(/\.(png|jpe?g)$/i, '-thumb.jpg');
+                            const thumbWebp = img.replace(/\.(png|jpe?g)$/i, '-thumb.webp');
+                            return `
+                                <div class="gallery-item">
+                                    <picture>
+                                        <source type="image/webp" srcset="${thumbWebp}" />
+                                        <img class="simple-img" src="${thumb}" alt="${project.title}" loading="lazy" />
+                                    </picture>
+                                </div>
+                            `;
+                        }).join('')}
                     </div>
                 </div>
             `;
