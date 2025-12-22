@@ -29,6 +29,12 @@ const projectsData = [
             'media/projects/OperationalAnalysisofPhotogrametry/Masterpräsi_02.png',
             'media/projects/OperationalAnalysisofPhotogrametry/Masterpräsi_03.png',
             'media/projects/OperationalAnalysisofPhotogrametry/Masterpräsi_04.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/analysis.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/keypoints.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/matching.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/Pointcoud.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/ransacfilter.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/Tower_jpeg.jpg',
             'media/projects/OperationalAnalysisofPhotogrametry/Rundgang_01.png',
             'media/projects/OperationalAnalysisofPhotogrametry/Map of Operational Analysis.pdf',
             'media/projects/OperationalAnalysisofPhotogrametry/MA DC_Joel Tenenberg_Operational Analysis of Photogrammetry.pdf'
@@ -621,12 +627,13 @@ class PortfolioApp {
             this.closeAnimationPopup();
         });
 
-        // Delegate click for 'See project' buttons to ensure they always work
+        // Delegate click for elements with `data-see-project-id` to ensure thumbnails and buttons work
         const projectList = document.getElementById('projectList');
         if (projectList) {
             projectList.addEventListener('click', (e) => {
-                const btn = e.target.closest && e.target.closest('.see-project-link');
+                const btn = e.target.closest && e.target.closest('[data-see-project-id]');
                 if (btn) {
+                    e.preventDefault();
                     e.stopPropagation();
                     const pid = btn.getAttribute('data-see-project-id');
                     const project = projectsData.find(p => String(p.id) === String(pid));
@@ -680,8 +687,10 @@ class PortfolioApp {
                             </button>
                         </div>
                         <div class="project-image">
-                            <img class="simple-img" src="${project.image}" alt="${project.title}" />
-                        </div>
+                                    <a href="#" class="project-thumb" data-see-project-id="${project.id}">
+                                        <img class="simple-img" src="${project.image}" alt="${project.title}" />
+                                    </a>
+                                </div>
                     </div>
                 </div>
             `;
@@ -736,18 +745,18 @@ class PortfolioApp {
                     <div class="project-gallery">
                         <h3>Gallery</h3>
                         <div class="gallery-grid">
-                            ${imageItems.map(img => {
-                                const thumb = img.replace(/\.(png|jpe?g)$/i, '-thumb.jpg');
-                                const thumbWebp = img.replace(/\.(png|jpe?g)$/i, '-thumb.webp');
-                                return `
-                                    <div class="gallery-item">
-                                        <picture>
-                                            <source type="image/webp" srcset="${thumbWebp}" />
-                                            <img class="simple-img" src="${thumb}" alt="${project.title}" loading="lazy" />
-                                        </picture>
-                                    </div>
-                                `;
-                            }).join('')}
+                                        ${imageItems.map((img, i) => {
+                                            const thumb = img.replace(/\.(png|jpe?g)$/i, '-thumb.jpg');
+                                            const thumbWebp = img.replace(/\.(png|jpe?g)$/i, '-thumb.webp');
+                                            return `
+                                                <div class="gallery-item">
+                                                    <picture>
+                                                        <source type="image/webp" srcset="${thumbWebp}" />
+                                                        <img class="simple-img" src="${thumb}" data-full="${img}" data-index="${i}" alt="${project.title}" loading="lazy" />
+                                                    </picture>
+                                                </div>
+                                            `;
+                                        }).join('')}
                         </div>
                     </div>
                 `;
@@ -886,6 +895,58 @@ class PortfolioApp {
         
         // Scroll to top
         window.scrollTo(0, 0);
+
+        // Setup gallery lightbox interactions
+        const lightboxEl = document.getElementById('lightbox');
+        const lightboxImage = lightboxEl && lightboxEl.querySelector('.lightbox-image');
+        const lightboxClose = lightboxEl && lightboxEl.querySelector('.lightbox-close');
+        const lightboxPrev = lightboxEl && lightboxEl.querySelector('.lightbox-prev');
+        const lightboxNext = lightboxEl && lightboxEl.querySelector('.lightbox-next');
+
+        const galleryImgs = projectPage.querySelectorAll('.project-gallery .gallery-item img');
+        const images = Array.from(galleryImgs).map(img => img.dataset.full || img.src.replace('-thumb',''));
+
+        let currentIndex = 0;
+
+        function showLightbox(idx) {
+            if (!lightboxEl || !lightboxImage) return;
+            currentIndex = idx;
+            lightboxImage.src = images[currentIndex];
+            lightboxEl.style.display = 'flex';
+        }
+
+        function closeLightbox() {
+            if (!lightboxEl) return;
+            lightboxEl.style.display = 'none';
+            lightboxImage.src = '';
+        }
+
+        function nextImage() { showLightbox((currentIndex + 1) % images.length); }
+        function prevImage() { showLightbox((currentIndex - 1 + images.length) % images.length); }
+
+        // Attach click handlers
+        galleryImgs.forEach((img, i) => {
+            img.addEventListener('click', (e) => {
+                e.stopPropagation();
+                showLightbox(i);
+            });
+        });
+
+        if (lightboxClose) lightboxClose.addEventListener('click', closeLightbox);
+        if (lightboxPrev) lightboxPrev.addEventListener('click', (e) => { e.stopPropagation(); prevImage(); });
+        if (lightboxNext) lightboxNext.addEventListener('click', (e) => { e.stopPropagation(); nextImage(); });
+
+        // click outside image to close
+        const overlay = lightboxEl && lightboxEl.querySelector('.lightbox-overlay');
+        if (overlay) overlay.addEventListener('click', closeLightbox);
+
+        // keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (!lightboxEl || lightboxEl.style.display !== 'flex') return;
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowRight') nextImage();
+            if (e.key === 'ArrowLeft') prevImage();
+        });
     }
     
     showProjects() {
