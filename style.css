@@ -287,8 +287,9 @@ body {
 .project-item:last-child {
     border-bottom: 3px solid #000000;
 }
+
   
-.project-header {
+ .project-header {
     display: grid;
     grid-template-columns: 1fr 80px 80px 40px;
     align-items: center;
@@ -393,8 +394,9 @@ body {
     color: #444;
     margin-bottom: 16px;
 }
-
-.see-project-link {
+ 
+/* General button styles (base) */
+.btn, button, input[type="button"], input[type="submit"], .see-project-link, .pdf-open-btn, .cv-download, .back-button {
     font-family: 'Elza', sans-serif;
     background: #000;
     color: #fff;
@@ -407,7 +409,7 @@ body {
     font-weight: 700;
 }
 
-.see-project-link:hover {
+.btn:hover, button:hover, input[type="button"]:hover, input[type="submit"]:hover, .see-project-link:hover, .pdf-open-btn:hover, .cv-download:hover, .back-button:hover {
     background: #333;
     transform: translateY(-1px);
     filter: blur(0.5px);
@@ -420,20 +422,16 @@ body {
 
 .back-button {
     font-family: 'Elza', sans-serif;
-    background: none;
+    background: #000;
+    color: #fff;
     border: none;
-    font-size: 1rem;
-    font-weight: 700;
-    color: #666;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 0.9rem;
     cursor: pointer;
-    padding: 8px 0;
+    transition: all 0.2s ease;
+    font-weight: 700;
     margin-bottom: 40px;
-    transition: color 0.2s ease;
-}
-
-.back-button:hover {
-    color: #000;
-    filter: blur(0.5px);
 }
 
 .project-page-header {
@@ -538,6 +536,16 @@ body {
 .project-link:hover {
     color: #666;
     filter: blur(0.5px);
+}
+
+/* When a project link is used as a button, keep text white and remove underline */
+.project-link.btn {
+    color: #fff;
+    text-decoration: none;
+}
+
+.project-link.btn:hover {
+    color: #fff;
 }
 
 .project-gallery {
