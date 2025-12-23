@@ -22,4 +22,11 @@ To use it:
 
 This script does not overwrite your originals — it generates optimized copies alongside them.
 
+## Bio Content
+
+You can also create a `bio.md` file here to store your About page text content:
+- See `bio-template.md` for a complete example with all fields
+- Use frontmatter for metadata (name, title, contact info)
+- Write your bio content in Markdown
+
 After adding your real images, feel free to remove this README file.
