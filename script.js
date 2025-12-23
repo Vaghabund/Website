@@ -1,6 +1,31 @@
 // ============================================
 // Project Data
 // ============================================
+//
+// MEDIA STRUCTURE:
+// Projects are organized in: media/projects/[project-name]/
+// Each project folder contains:
+//   - images/        All images (hero, gallery, thumbnails)
+//   - videos/        Video files (optional)
+//   - models/        3D models (.glb files) (optional)
+//   - documents/     PDFs and documents (optional)
+//   - description.md Project metadata and content
+//
+// ADDING NEW PROJECTS:
+// 1. Copy media/projects/_template/ to media/projects/your-project-name/
+// 2. Add your media files to the appropriate folders
+// 3. Run: node scripts/optimize-media-images.js
+// 4. Edit description.md with project details
+// 5. Add project entry below with updated paths
+//
+// IMAGE OPTIMIZATION:
+// Original images go in images/ folder
+// Optimization script auto-generates:
+//   - .webp (full quality)
+//   - -small.{jpg,webp} (800px)
+//   - -thumb.{jpg,webp} (400px)
+// ============================================
+
 const projectsData = [
     {
         id: 1,
@@ -9,10 +34,10 @@ const projectsData = [
         year: '2025',
         description: 'A modern web application built with React and Node.js, featuring real-time collaboration and advanced data visualization.',
         fullDescription: 'Project Alpha represents a comprehensive solution for team collaboration in data-intensive environments. Built with modern web technologies, it provides real-time synchronization, advanced analytics, and intuitive user interfaces that make complex data accessible to all team members.',
-        image: 'media/projects/OperationalAnalysisofPhotogrametry/Masterpräsi_01.png',
-        thumbnailImage: 'media/projects/OperationalAnalysisofPhotogrametry/Masterpräsi_02.png',
-        heroImage: 'media/projects/OperationalAnalysisofPhotogrametry/Masterpräsi_03.png',
-        model3D: 'models/project1.glb', // Path to 3D model
+        image: 'media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_01.png',
+        thumbnailImage: 'media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_02.png',
+        heroImage: 'media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_03.png',
+        model3D: '', // Path to 3D model (empty for now, add .glb file to models/ folder)
         model3DOptions: { // Optional 3D banner settings
             interactionType: 'cursor-follow',
             autoRotate: true,
@@ -25,22 +50,22 @@ const projectsData = [
         technologies: ['TouchDesigner', 'Python', 'WebSocket', 'MongoDB'],
         liveUrl: 'https://example.com',
         gallery: [
-            'media/projects/OperationalAnalysisofPhotogrametry/Masterpräsi_01.png',
-            'media/projects/OperationalAnalysisofPhotogrametry/Masterpräsi_02.png',
-            'media/projects/OperationalAnalysisofPhotogrametry/Masterpräsi_03.png',
-            'media/projects/OperationalAnalysisofPhotogrametry/Masterpräsi_04.png',
-            'media/projects/OperationalAnalysisofPhotogrametry/analysis.png',
-            'media/projects/OperationalAnalysisofPhotogrametry/keypoints.png',
-            'media/projects/OperationalAnalysisofPhotogrametry/matching.png',
-            'media/projects/OperationalAnalysisofPhotogrametry/Pointcoud.png',
-            'media/projects/OperationalAnalysisofPhotogrametry/ransacfilter.png',
-            'media/projects/OperationalAnalysisofPhotogrametry/Tower_jpeg.jpg',
-            'media/projects/OperationalAnalysisofPhotogrametry/Rundgang_01.png',
-            'media/projects/OperationalAnalysisofPhotogrametry/Map of Operational Analysis.pdf',
-            'media/projects/OperationalAnalysisofPhotogrametry/MA DC_Joel Tenenberg_Operational Analysis of Photogrammetry.pdf'
+            'media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_01.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_02.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_03.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_04.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/images/analysis.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/images/keypoints.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/images/matching.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/images/Pointcoud.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/images/ransacfilter.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/images/Tower_jpeg.jpg',
+            'media/projects/OperationalAnalysisofPhotogrametry/images/Rundgang_01.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/documents/Map of Operational Analysis.pdf',
+            'media/projects/OperationalAnalysisofPhotogrametry/documents/MA DC_Joel Tenenberg_Operational Analysis of Photogrammetry.pdf'
         ],
-        thesis: 'media/projects/OperationalAnalysisofPhotogrametry/MA DC_Joel Tenenberg_Operational Analysis of Photogrammetry.pdf',
-        map: 'media/projects/OperationalAnalysisofPhotogrametry/Map of Operational Analysis.pdf'
+        thesis: 'media/projects/OperationalAnalysisofPhotogrametry/documents/MA DC_Joel Tenenberg_Operational Analysis of Photogrammetry.pdf',
+        map: 'media/projects/OperationalAnalysisofPhotogrametry/documents/Map of Operational Analysis.pdf'
     },
     {
         id: 2,
