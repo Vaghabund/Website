@@ -4,25 +4,25 @@
    Design Tokens (CSS Variables)
    ============================================ */
 :root {
-    /* Colors - Pure Black & White */
+    /* Colors - Beige & Black */
     --color-primary: #000;
     --color-text: #000;
     --color-text-light: #000;
     --color-text-lighter: #000;
-    --color-background: #fff;
-    --color-background-alt: #fff;
+    --color-background: #F5F5DC;
+    --color-background-alt: #F5F5DC;
     --color-border: #000;
 
     /* Spacing Scale */
     --space-xs: 4px;
     --space-sm: 8px;
-    --space-md: 16px;
-    --space-lg: 24px;
-    --space-xl: 32px;
-    --space-2xl: 48px;
-    --space-3xl: 64px;
-    --space-4xl: 96px;
-    --space-5xl: 128px;
+    --space-md: 12px;
+    --space-lg: 16px;
+    --space-xl: 20px;
+    --space-2xl: 24px;
+    --space-3xl: 32px;
+    --space-4xl: 48px;
+    --space-5xl: 64px;
 
     /* Border Radius - Sharp edges */
     --radius-none: 0;
@@ -37,22 +37,22 @@
     --shadow-hover: none;
     --shadow-strong: none;
 
-    /* Transitions - Fast and clean */
-    --transition-fast: 0.15s ease;
-    --transition-normal: 0.2s ease;
-    --transition-slow: 0.3s ease;
-    --transition-smooth: 0.3s ease;
+    /* Transitions - Minimal */
+    --transition-fast: 0.1s ease;
+    --transition-normal: 0.15s ease;
+    --transition-slow: 0.2s ease;
+    --transition-smooth: 0.2s ease;
 
-    /* Typography - Bold and clear */
-    --font-family: 'Elza', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    /* Typography - Simple and readable */
+    --font-family: 'Elza', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
     --font-size-base: 1rem;
     --font-size-sm: 0.875rem;
-    --font-size-md: 1.125rem;
-    --font-size-lg: 1.25rem;
-    --font-size-xl: 1.75rem;
-    --font-size-2xl: 3rem;
-    --font-size-3xl: 3.5rem;
-    --line-height-tight: 1.1;
+    --font-size-md: 1rem;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.25rem;
+    --font-size-2xl: 1.5rem;
+    --font-size-3xl: 2rem;
+    --line-height-tight: 1.2;
     --line-height-normal: 1.5;
     --line-height-relaxed: 1.6;
 }
@@ -88,7 +88,7 @@ body {
     right: 0;
     background: var(--color-background);
     z-index: 100;
-    padding: var(--space-xl) var(--space-2xl);
+    padding: var(--space-md) var(--space-xl);
 }
 
 /* Container - max-width wrapper */
@@ -153,58 +153,37 @@ body {
 
 .header-name {
     font-family: var(--font-family);
-    font-size: var(--font-size-2xl);
-    font-weight: 900;
-    font-style: italic;
+    font-size: var(--font-size-base);
+    font-weight: 400;
+    font-style: normal;
     color: var(--color-primary);
     margin: 0;
     cursor: pointer;
-    transition: opacity var(--transition-fast);
-    text-transform: uppercase;
-    letter-spacing: -2px;
-    line-height: var(--line-height-tight);
+    transition: none;
+    text-transform: none;
+    letter-spacing: normal;
+    line-height: var(--line-height-normal);
     white-space: nowrap;
     width: auto;
     display: inline-block;
-    font-stretch: ultra-condensed;
+    text-decoration: underline;
 }
 
 .header-name:hover {
-    opacity: 0.7;
+    text-decoration: none;
 }
 
 .header-separator {
-    position: fixed;
-    top: 100px;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: var(--color-primary);
-    z-index: 99;
+    display: none;
 }
 
 /* Logo styles within header */
 .logo-container {
-    width: var(--space-3xl);
-    height: var(--space-3xl);
-    cursor: pointer;
-    overflow: visible;
-    transition: opacity var(--transition-normal);
-    opacity: 1;
-}
-
-.logo-container:hover {
-    opacity: 0.7;
+    display: none;
 }
 
 .logo-image {
-    display: block;
-    width: 100%;
-    height: 100%;
-    animation: spin 8s linear infinite;
-    will-change: transform;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
+    display: none;
 }
 
 @keyframes spin {
@@ -277,9 +256,7 @@ body {
 }
 
 .close-button-topleft:hover {
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    opacity: 0.7;
 }
 
 @keyframes fadeIn {
@@ -304,51 +281,55 @@ body {
 
 /* Content spacing adjustments */
 #portfolioMain {
-    padding-top: 140px;
+    padding-top: 60px;
 }
 
 .subtitle {
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-base);
     color: var(--color-primary);
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: normal;
 }
 
 .flavor-text {
-    font-size: var(--font-size-xl);
-    font-weight: 700;
-    line-height: var(--line-height-normal);
+    font-size: var(--font-size-base);
+    font-weight: 400;
+    line-height: var(--line-height-relaxed);
     color: var(--color-primary);
-    max-width: 800px;
+    max-width: none;
 }
 
 .project-list {
     list-style: none;
+    margin-top: var(--space-2xl);
 }
 
 .project-item {
-    border-top: 2px solid var(--color-primary);
+    border-top: none;
+    border-bottom: 1px solid var(--color-primary);
+}
+
+.project-item:first-child {
+    border-top: 1px solid var(--color-primary);
 }
 
 .project-item:last-child {
-    border-bottom: 2px solid var(--color-primary);
+    border-bottom: 1px solid var(--color-primary);
 }
 
 .project-header {
     display: grid;
-    grid-template-columns: 1fr 80px 80px 40px;
-    align-items: center;
+    grid-template-columns: 60px 1fr 200px 200px 80px;
+    align-items: baseline;
     gap: var(--space-xl);
-    padding: var(--space-xl) 0;
+    padding: var(--space-md) 0;
     cursor: pointer;
-    transition: background var(--transition-fast);
+    transition: none;
 }
 
 .project-header:hover {
-    background: rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: none;
 }
 
 .project-info {
@@ -359,14 +340,14 @@ body {
 }
 
 .project-title {
-    font-size: var(--font-size-xl);
-    font-weight: 900;
+    font-size: var(--font-size-base);
+    font-weight: 400;
     color: var(--color-primary);
     margin: 0;
-    white-space: nowrap;
-    text-transform: uppercase;
-    letter-spacing: -0.5px;
-    transition: color var(--transition-fast);
+    white-space: normal;
+    text-transform: none;
+    letter-spacing: normal;
+    transition: none;
 }
 
 .project-subtitle {
@@ -375,24 +356,21 @@ body {
     font-weight: 400;
     color: var(--color-text-light);
     margin: 0;
-    white-space: nowrap;
-    transition: color var(--transition-fast);
+    white-space: normal;
+    transition: none;
 }
 
 .project-year {
     font-size: var(--font-size-base);
-    font-weight: 700;
+    font-weight: 400;
     color: var(--color-text-lighter);
-    text-align: right;
-    margin-left: auto;
-    transition: color var(--transition-fast);
+    text-align: left;
+    margin-left: 0;
+    transition: none;
 }
 
 .project-separator {
-    font-family: var(--font-family);
-    font-size: var(--font-size-base);
-    font-weight: 900;
-    color: var(--color-border);
+    display: none;
 }
 
 .project-thumbnail {
@@ -464,19 +442,19 @@ input[type="submit"],
 .cv-download,
 .back-button {
     font-family: var(--font-family);
-    background: var(--color-primary);
-    color: var(--color-background);
+    background: none;
+    color: var(--color-primary);
     border: none;
-    padding: var(--space-md) var(--space-xl);
+    padding: 0;
     border-radius: var(--radius-none);
     font-size: var(--font-size-base);
     cursor: pointer;
-    transition: all var(--transition-fast);
-    font-weight: 900;
-    text-decoration: none;
-    display: inline-block;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    transition: none;
+    font-weight: 400;
+    text-decoration: underline;
+    display: inline;
+    text-transform: none;
+    letter-spacing: normal;
 }
 
 .btn:hover,
@@ -487,9 +465,7 @@ input[type="submit"]:hover,
 .pdf-open-btn:hover,
 .cv-download:hover,
 .back-button:hover {
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    text-decoration: none;
 }
 
 /* ============================================
@@ -509,19 +485,19 @@ input[type="submit"]:hover,
 
 .project-page-title {
     font-family: var(--font-family);
-    font-size: var(--font-size-3xl);
-    font-weight: 900;
+    font-size: var(--font-size-xl);
+    font-weight: 700;
     margin-bottom: var(--space-md);
     color: var(--color-primary);
-    text-transform: uppercase;
-    letter-spacing: -1px;
+    text-transform: none;
+    letter-spacing: normal;
 }
 
 .project-page-subtitle {
     font-family: var(--font-family);
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-base);
     color: var(--color-text-light);
-    font-weight: 700;
+    font-weight: 400;
 }
 
 .project-hero-image {
@@ -639,11 +615,11 @@ input[type="submit"]:hover,
    ============================================ */
 @media (max-width: 768px) {
     #portfolioMain {
-        padding-top: var(--space-5xl);
+        padding-top: var(--space-4xl);
     }
 
     .project-page-title {
-        font-size: 2rem;
+        font-size: var(--font-size-lg);
     }
 
     .project-details-grid {
@@ -666,8 +642,9 @@ input[type="submit"]:hover,
     }
 
     .project-header {
-        grid-template-columns: 1fr 60px 60px 30px;
-        gap: 10px;
+        grid-template-columns: 40px 1fr 120px 60px;
+        gap: var(--space-sm);
+        font-size: var(--font-size-sm);
     }
 
     .row--2col {
@@ -706,16 +683,16 @@ input[type="submit"]:hover,
 }
 
 .simple-h {
-    font-size: 2rem;
-    font-weight: 900;
+    font-size: var(--font-size-xl);
+    font-weight: 700;
     margin-bottom: var(--space-lg);
     color: var(--color-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    text-transform: none;
+    letter-spacing: normal;
 }
 
 .simple-p {
-    font-size: var(--font-size-md);
+    font-size: var(--font-size-base);
     line-height: var(--line-height-relaxed);
     color: var(--color-text);
     margin-bottom: var(--space-lg);
@@ -888,21 +865,15 @@ input[type="submit"]:hover,
 /* Override button hover effects for lightbox controls */
 .lightbox-prev:hover {
     transform: translateY(-50%) !important;
-    background: rgba(0, 0, 0, 0.5) !important;
-    backdrop-filter: blur(8px) !important;
-    -webkit-backdrop-filter: blur(8px) !important;
+    opacity: 0.7 !important;
 }
 
 .lightbox-next:hover {
     transform: translateY(-50%) !important;
-    background: rgba(0, 0, 0, 0.5) !important;
-    backdrop-filter: blur(8px) !important;
-    -webkit-backdrop-filter: blur(8px) !important;
+    opacity: 0.7 !important;
 }
 
 .lightbox-close:hover {
     transform: none !important;
-    background: rgba(0, 0, 0, 0.5) !important;
-    backdrop-filter: blur(8px) !important;
-    -webkit-backdrop-filter: blur(8px) !important;
+    opacity: 0.7 !important;
 }
