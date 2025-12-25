@@ -277,8 +277,9 @@ body {
 }
 
 .close-button-topleft:hover {
-    background: var(--color-background);
-    color: var(--color-primary);
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 @keyframes fadeIn {
@@ -345,15 +346,9 @@ body {
 }
 
 .project-header:hover {
-    background: var(--color-primary);
-    color: var(--color-background);
-}
-
-.project-header:hover .project-title,
-.project-header:hover .project-subtitle,
-.project-header:hover .project-year,
-.project-header:hover .expand-icon {
-    color: var(--color-background);
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 }
 
 .project-info {
@@ -492,8 +487,9 @@ input[type="submit"]:hover,
 .pdf-open-btn:hover,
 .cv-download:hover,
 .back-button:hover {
-    background: var(--color-background);
-    color: var(--color-primary);
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 /* ============================================
@@ -617,7 +613,7 @@ input[type="submit"]:hover,
 }
 
 .project-link.btn:hover {
-    color: var(--color-primary);
+    color: var(--color-background);
     text-decoration: none;
 }
 
@@ -892,18 +888,21 @@ input[type="submit"]:hover,
 /* Override button hover effects for lightbox controls */
 .lightbox-prev:hover {
     transform: translateY(-50%) !important;
-    background: var(--color-background) !important;
-    color: var(--color-primary) !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
 }
 
 .lightbox-next:hover {
     transform: translateY(-50%) !important;
-    background: var(--color-background) !important;
-    color: var(--color-primary) !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
 }
 
 .lightbox-close:hover {
     transform: none !important;
-    background: var(--color-background) !important;
-    color: var(--color-primary) !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
 }
