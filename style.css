@@ -53,8 +53,8 @@
     --font-size-md: 1.1rem;
     --font-size-lg: 1.3rem;
     --font-size-xl: 1.8rem;
-    --font-size-2xl: 4.5rem;
-    --font-size-3xl: 3.5rem;
+    --font-size-2xl: 3.5rem;
+    --font-size-3xl: 4.5rem;
     --line-height-tight: 0.95;
     --line-height-normal: 1.6;
     --line-height-relaxed: 1.7;
@@ -156,7 +156,7 @@ body {
 
 .header-name {
     font-family: var(--font-family);
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-3xl);
     font-weight: 900;
     font-style: italic;
     color: var(--color-primary);
@@ -506,7 +506,7 @@ input[type="submit"]:hover,
 
 .project-page-title {
     font-family: var(--font-family);
-    font-size: var(--font-size-3xl);
+    font-size: var(--font-size-2xl);
     font-weight: 900;
     margin-bottom: 10px;
     color: var(--color-primary);
