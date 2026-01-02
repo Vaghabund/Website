@@ -51,11 +51,11 @@
     --font-size-base: 1rem;
     --font-size-sm: 0.9rem;
     --font-size-md: 1.1rem;
-    --font-size-lg: 1.2rem;
-    --font-size-xl: 1.5rem;
-    --font-size-2xl: 2.8rem;
-    --font-size-3xl: 3rem;
-    --line-height-tight: 1;
+    --font-size-lg: 1.3rem;
+    --font-size-xl: 1.8rem;
+    --font-size-2xl: 4.5rem;
+    --font-size-3xl: 3.5rem;
+    --line-height-tight: 0.95;
     --line-height-normal: 1.6;
     --line-height-relaxed: 1.7;
 }
@@ -157,22 +157,21 @@ body {
 .header-name {
     font-family: var(--font-family);
     font-size: var(--font-size-2xl);
-    font-weight: 800;
+    font-weight: 900;
     font-style: italic;
     color: var(--color-primary);
     margin: 0;
     cursor: pointer;
     transition: transform var(--transition-fast);
     text-transform: uppercase;
-    letter-spacing: -2px;
+    letter-spacing: -3px;
     line-height: var(--line-height-tight);
     white-space: nowrap;
     transform-origin: left center;
     width: auto;
-    height: var(--space-3xl);
     display: inline-block;
     font-stretch: ultra-condensed;
-    text-shadow: 0.5px 0 0 currentColor, -0.5px 0 0 currentColor;
+    text-shadow: 1px 0 0 currentColor, -1px 0 0 currentColor;
     filter: drop-shadow(var(--shadow-default));
 }
 
@@ -182,7 +181,7 @@ body {
 
 .header-separator {
     position: fixed;
-    top: 65px;
+    top: 80px;
     left: 0;
     right: 0;
     height: 3px;
@@ -318,17 +317,17 @@ body {
 
 /* Content spacing adjustments */
 #portfolioMain {
-    padding-top: 84px;
+    padding-top: 100px;
 }
 
 .subtitle {
-    font-size: var(--font-size-md);
+    font-size: var(--font-size-lg);
     color: var(--color-primary);
     font-weight: 700;
 }
 
 .flavor-text {
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-xl);
     font-weight: 700;
     line-height: var(--line-height-normal);
     color: var(--color-primary);
@@ -368,7 +367,7 @@ body {
 
 .project-title {
     font-size: var(--font-size-xl);
-    font-weight: 700;
+    font-weight: 800;
     color: var(--color-primary);
     margin: 0;
     white-space: nowrap;
@@ -430,7 +429,7 @@ body {
 
 .project-content {
     display: grid;
-    grid-template-columns: 1fr 400px;
+    grid-template-columns: 1fr 500px;
     gap: var(--space-3xl);
     padding: 0 0 0 var(--space-5xl);
     transform: translateY(-10px);
@@ -508,7 +507,7 @@ input[type="submit"]:hover,
 .project-page-title {
     font-family: var(--font-family);
     font-size: var(--font-size-3xl);
-    font-weight: 700;
+    font-weight: 900;
     margin-bottom: 10px;
     color: var(--color-primary);
 }
@@ -534,8 +533,8 @@ input[type="submit"]:hover,
 }
 
 .project-description-section h3 {
-    font-size: 1.3rem;
-    font-weight: 600;
+    font-size: 1.5rem;
+    font-weight: 700;
     margin: var(--space-3xl) 0 var(--space-lg) 0;
     color: var(--color-primary);
 }
@@ -618,8 +617,8 @@ input[type="submit"]:hover,
 }
 
 .project-gallery h3 {
-    font-size: 1.3rem;
-    font-weight: 600;
+    font-size: 1.5rem;
+    font-weight: 700;
     margin-bottom: var(--space-2xl);
     color: var(--color-primary);
 }
@@ -704,8 +703,8 @@ input[type="submit"]:hover,
 }
 
 .simple-h {
-    font-size: 1.6rem;
-    font-weight: 700;
+    font-size: 1.8rem;
+    font-weight: 800;
     margin-bottom: var(--space-md);
     color: var(--color-primary);
 }
@@ -771,7 +770,7 @@ input[type="submit"]:hover,
 
 .three-banner {
     width: 100%;
-    height: 500px;
+    height: 600px;
     margin: 0 0 var(--space-3xl) 0;
     overflow: hidden;
     position: relative;
