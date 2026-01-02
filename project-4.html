@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Delta - Joel Tenenberg</title>
+    <link rel="icon" type="image/svg+xml" href="media/logo/LOGO.svg">
+    <style>
+        @import url('https://api.fontshare.com/v2/css?f[]=elza@1,2,100,101,200,201,300,301,400,401,500,501,600,601,700,701,800,801,900,901&display=swap');
+
+        :root {
+            --color-primary: #000;
+            --color-text: #444;
+            --color-text-light: #666;
+            --color-background: #fff;
+            --color-border: #ccc;
+            --space-sm: 8px;
+            --space-md: 12px;
+            --space-lg: 16px;
+            --space-xl: 20px;
+            --space-2xl: 30px;
+            --space-3xl: 40px;
+            --space-4xl: 60px;
+            --radius-md: 6px;
+            --radius-lg: 8px;
+            --transition-normal: 0.2s ease;
+            --font-family: 'Elza', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --font-size-base: 1rem;
+            --font-size-sm: 0.9rem;
+            --font-size-lg: 1.2rem;
+            --font-size-xl: 1.5rem;
+            --font-size-2xl: 2.8rem;
+            --line-height-normal: 1.6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background: var(--color-background);
+            color: var(--color-text);
+            line-height: var(--line-height-normal);
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--color-background);
+            z-index: 100;
+            padding: var(--space-md) var(--space-2xl);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header-name {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+            color: var(--color-primary);
+            text-decoration: none;
+        }
+
+        .main-content {
+            margin-top: 100px;
+            padding: var(--space-xl);
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .back-button {
+            display: inline-block;
+            color: var(--color-text);
+            text-decoration: none;
+            margin-bottom: var(--space-2xl);
+            transition: var(--transition-normal);
+        }
+
+        .back-button:hover {
+            color: var(--color-primary);
+        }
+
+        .project-header {
+            margin-bottom: var(--space-4xl);
+        }
+
+        .project-title {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+            color: var(--color-primary);
+            margin-bottom: var(--space-sm);
+        }
+
+        .project-subtitle {
+            font-size: var(--font-size-lg);
+            color: var(--color-text-light);
+        }
+
+        .hero-image {
+            width: 100%;
+            height: auto;
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-4xl);
+        }
+
+        .project-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: var(--space-4xl);
+            margin-bottom: var(--space-4xl);
+        }
+
+        .project-description h3 {
+            font-size: var(--font-size-xl);
+            margin-bottom: var(--space-lg);
+            margin-top: var(--space-2xl);
+            color: var(--color-primary);
+        }
+
+        .project-description h3:first-child {
+            margin-top: 0;
+        }
+
+        .project-description p {
+            margin-bottom: var(--space-lg);
+        }
+
+        .project-info {
+            position: sticky;
+            top: 120px;
+        }
+
+        .project-info-item {
+            margin-bottom: var(--space-2xl);
+        }
+
+        .project-info-item h4 {
+            font-size: var(--font-size-lg);
+            margin-bottom: var(--space-sm);
+            color: var(--color-primary);
+        }
+
+        .project-info-item p {
+            color: var(--color-text);
+        }
+
+        .tech-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .tech-list li {
+            padding: var(--space-sm) 0;
+            color: var(--color-text);
+        }
+
+        .gallery {
+            margin-top: var(--space-4xl);
+        }
+
+        .gallery h3 {
+            font-size: var(--font-size-xl);
+            margin-bottom: var(--space-2xl);
+            color: var(--color-primary);
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-lg);
+        }
+
+        .gallery-item {
+            width: 100%;
+            height: auto;
+            border-radius: var(--radius-md);
+        }
+
+        @media (max-width: 768px) {
+            .project-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .project-info {
+                position: static;
+            }
+
+            .main-content {
+                margin-top: 80px;
+                padding: var(--space-lg);
+            }
+
+            .header-name {
+                font-size: var(--font-size-xl);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="index-html-only.html" class="header-name">Joel Tenenberg</a>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <a href="index-html-only.html" class="back-button">← Back to Projects</a>
+        
+        <div class="project-header">
+            <h1 class="project-title">Project Delta</h1>
+            <p class="project-subtitle">Brand Identity • 2023</p>
+        </div>
+
+        <img src="https://picsum.photos/800/400?random=24" 
+             alt="Project Delta" 
+             class="hero-image">
+
+        <div class="project-grid">
+            <div class="project-description">
+                <h3>Overview</h3>
+                <p>
+                    A comprehensive brand identity project for EcoThreads, a sustainable fashion startup committed to ethical manufacturing and environmental responsibility.
+                </p>
+
+                <h3>Challenge</h3>
+                <p>
+                    Creating a brand identity that communicates both premium quality and environmental consciousness in a crowded fashion market.
+                </p>
+
+                <h3>Solution</h3>
+                <p>
+                    Developed a minimalist design language with earth-tones and sustainable materials, paired with clear messaging about the brand's environmental impact.
+                </p>
+            </div>
+
+            <div class="project-info">
+                <div class="project-info-item">
+                    <h4>Role</h4>
+                    <p>Brand Designer & Art Director</p>
+                </div>
+
+                <div class="project-info-item">
+                    <h4>Timeline</h4>
+                    <p>3 months</p>
+                </div>
+
+                <div class="project-info-item">
+                    <h4>Technologies</h4>
+                    <ul class="tech-list">
+                        <li>Adobe Creative Suite</li>
+                        <li>Figma</li>
+                        <li>Print Design</li>
+                        <li>Web Design</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="gallery">
+            <h3>Project Gallery</h3>
+            <div class="gallery-grid">
+                <img src="https://picsum.photos/600/400?random=37" 
+                     alt="Project image 1" 
+                     class="gallery-item">
+                <img src="https://picsum.photos/600/400?random=38" 
+                     alt="Project image 2" 
+                     class="gallery-item">
+            </div>
+        </div>
+    </main>
+</body>
+</html>
