@@ -163,7 +163,6 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 60px;
     cursor: pointer;
     overflow: visible;
     transition: filter var(--transition-normal);
@@ -198,10 +197,10 @@ body {
     align-items: center;
     height: var(--pill-height);
     padding: 0 16px; /* horizontal padding adjusts spacing */
-    border-radius: 30px; 
+    border-radius: 30px;
     background: transparent;
-    color: var(--text);
-    border: 1px solid var(--text);
+    color: #000;
+    border: 1px solid #000;
     font-family: var(--font-family);
     font-size: 1.2rem;
     font-weight: 500;
@@ -215,8 +214,8 @@ body {
 }
 
 .pill-hover:hover {
-    background: var(--text);
-    color: var(--bg);
+    background: #000;
+    color: #fff;
 }
 
 /* ==========================
@@ -260,8 +259,6 @@ body {
     white-space: nowrap;
 }
 
-.menu-link.menu-link: pill .pill-hover:hover
-
 .menu-link.active { color: #000; }
 
 @media (max-width: 768px) {
@@ -286,6 +283,21 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+}
+
+.name-image {
+    display: block;
+    height: 32px;
+    width: auto;
+}
+
+#sharedHeader {
+    min-height: 70px;
+    visibility: hidden;
+}
+
+#sharedHeader.header-loaded {
+    visibility: visible;
 }
 
 
@@ -351,11 +363,6 @@ body {
     z-index: 1001;
 }
 
-.close-button-topleft:hover {
-    background: rgba(77, 77, 77, 0.385);
-    color: #efefef;
-}
-
 @keyframes fadeIn {
     from { 
         opacity: 0;
@@ -396,27 +403,30 @@ body {
 
 .project-list {
     list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
 }
 
 .project-item {
-    border-top: 3px solid var(--color-primary);
-}
-
-.project-item:last-child {
-    border-bottom: 3px solid var(--color-primary);
+    background: #ffffff;
+    border-radius: 30px;
+    border: 1px solid #000;
+    padding: var(--space-md) calc(var(--space-xl) * 1.5);
+    cursor: pointer;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+    position: relative;
+    overflow: hidden;
 }
 
 .project-header {
     display: grid;
-    grid-template-columns: 1fr 80px 80px 40px;
+    grid-template-columns: minmax(0, 1fr) auto auto;
     align-items: center;
-    gap: var(--space-xl);
-    padding: var(--space-lg) 0;
-    cursor: pointer;
-}
-
-.project-header:hover {
-    filter: blur(var(--blur-light));
+    gap: var(--space-lg);
+    padding: var(--space-sm) 0;
 }
 
 .project-info {
@@ -511,6 +521,22 @@ body {
     color: var(--color-text);
     margin-bottom: var(--space-lg);
 }
+
+.project-item:hover {
+    background: #000;
+    border-color: #000;
+    color: #fff !important;
+}
+
+.project-item:hover .project-title,
+.project-item:hover .project-subtitle,
+.project-item:hover .project-year,
+.project-item:hover .project-separator,
+.project-item:hover .project-info,
+.project-item:hover .project-description p,
+.project-item:hover .project-description {
+    color: #fff !important;
+}
  
 /* ============================================
    Button Styles (Unified)
@@ -524,30 +550,17 @@ input[type="submit"],
 .cv-download,
 .back-button {
     font-family: var(--font-family);
-    background: var(--color-primary);
-    color: var(--color-background);
-    border: none;
+    background: transparent;
+    color: var(--color-text);
+    border: 1px solid var(--color-text);
     padding: 10px var(--space-xl);
-    border-radius: var(--radius-md);
+    border-radius: 30px;
     font-size: var(--font-size-sm);
     cursor: pointer;
     transition: all var(--transition-normal);
     font-weight: 700;
     text-decoration: none;
     display: inline-block;
-}
-
-.btn:hover,
-button:hover,
-input[type="button"]:hover,
-input[type="submit"]:hover,
-.see-project-link:hover,
-.pdf-open-btn:hover,
-.cv-download:hover,
-.back-button:hover {
-    background: #333;
-    transform: translateY(-1px);
-    filter: blur(var(--blur-light));
 }
 
 /* ============================================
@@ -659,17 +672,8 @@ input[type="submit"]:hover,
     transition: color var(--transition-normal);
 }
 
-.project-link:hover {
-    color: var(--color-text-light);
-    filter: blur(var(--blur-light));
-}
-
 /* When a project link is used as a button, keep text white */
 .project-link.btn {
-    color: var(--color-background);
-}
-
-.project-link.btn:hover {
     color: var(--color-background);
 }
 
@@ -755,13 +759,6 @@ input[type="submit"]:hover,
     cursor: pointer;
 }
 
-.gallery-item .simple-img:hover,
-.project-image .simple-img:hover,
-.project-hero-image .simple-img:hover {
-    transform: translateY(-1px);
-    filter: blur(var(--blur-light));
-}
-
 .simple-h {
     font-size: 1.6rem;
     font-weight: 700;
@@ -784,31 +781,84 @@ input[type="submit"]:hover,
     padding: var(--space-3xl) var(--space-xl) var(--space-5xl) var(--space-xl);
 }
 
-.image-stack {
-    position: relative;
-    width: 100%;
-    max-width: 360px;
+.archive-section {
+    margin-top: var(--space-5xl);
+    background: rgba(0, 0, 0, 0.02);
+    padding: var(--space-4xl);
+    border-radius: var(--radius-xl);
 }
 
-.image-stack .simple-img {
+.archive-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-3xl);
+    gap: var(--space-xl);
+}
+
+.archive-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--space-md);
+}
+
+.archive-grid figure {
+    margin: 0;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: #fff;
+}
+
+.archive-grid img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block;
+}
+
+.image-stack {
+    position: relative;
+    width: min(100%, 420px);
+    max-width: 420px;
+    margin: 0 auto;
+    overflow: visible;
+}
+
+.image-stack .stacked.behind {
+    position: relative;
+    z-index: 0;
+}
+
+.image-stack .stacked.behind img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.image-stack .stacked.behind img,
+.image-stack .stacked.front img {
     -webkit-user-drag: none;
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
 }
 
-.image-stack .simple-img:first-child {
-    position: relative;
+.image-stack .stacked.front {
+    position: absolute;
+    inset: 0;
     z-index: 1;
     pointer-events: none;
 }
 
-.draggable-img {
+.image-stack .stacked.front img {
     position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 2;
-    cursor: move;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.draggable-img {
     cursor: grab;
     user-select: none;
     pointer-events: auto;
@@ -940,20 +990,3 @@ input[type="submit"]:hover,
 }
 
 /* Override button hover effects for lightbox controls */
-.lightbox-prev:hover {
-    transform: translateY(-50%) !important;
-    filter: none !important;
-    background: rgba(0, 0, 0, 0.95) !important;
-}
-
-.lightbox-next:hover {
-    transform: translateY(-50%) !important;
-    filter: none !important;
-    background: rgba(0, 0, 0, 0.95) !important;
-}
-
-.lightbox-close:hover {
-    transform: none !important;
-    filter: none !important;
-    background: rgba(0, 0, 0, 0.95) !important;
-}

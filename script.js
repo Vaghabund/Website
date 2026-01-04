@@ -676,20 +676,22 @@ class PortfolioApp {
                     ev.preventDefault();
                     const t = link.dataset.target;
                     if (t === 'projects') {
-                        // If we're on the about page, navigate back to index
-                        if (window.location.pathname && window.location.pathname.toLowerCase().includes('about.html')) {
+                        const path = window.location.pathname && window.location.pathname.toLowerCase();
+                        if (path && (path.includes('about.html') || path.includes('archive.html'))) {
                             window.location.href = 'index.html';
                             return;
                         }
-                        // Otherwise, show projects in-place
                         if (typeof this.showProjects === 'function') this.showProjects();
                     } else if (t === 'about') {
-                        // Navigate to the dedicated about page
                         if (!(window.location.pathname && window.location.pathname.toLowerCase().includes('about.html'))) {
                             window.location.href = 'about.html';
                             return;
                         }
-                        // already on about page — nothing else needed
+                    } else if (t === 'archive') {
+                        if (!(window.location.pathname && window.location.pathname.toLowerCase().includes('archive.html'))) {
+                            window.location.href = 'archive.html';
+                            return;
+                        }
                     }
                     this.updateMenuMarker(t);
                 });
@@ -705,6 +707,8 @@ class PortfolioApp {
                 const path = (window.location.pathname || '').toLowerCase();
                 if (path.includes('about.html')) {
                     this.updateMenuMarker('about');
+                } else if (path.includes('archive.html')) {
+                    this.updateMenuMarker('archive');
                 } else {
                     this.updateMenuMarker('projects');
                 }
@@ -714,6 +718,7 @@ class PortfolioApp {
     
     renderProjects() {
         const projectList = document.getElementById('projectList');
+        if (!projectList) return;
         projectList.innerHTML = '';
         
         projectsData.forEach(project => {
@@ -1018,6 +1023,11 @@ class PortfolioApp {
     showProjects() {
         const projectPage = document.getElementById('projectPage');
         const projectsContainer = document.getElementById('projectsContainer');
+
+        if (!projectPage || !projectsContainer) {
+            window.location.href = 'index.html';
+            return;
+        }
         
         projectPage.style.display = 'none';
         projectsContainer.style.display = 'block';
