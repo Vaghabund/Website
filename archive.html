@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archive — Joel Tenenberg</title>
+    <link rel="icon" type="image/svg+xml" href="media/logo/LOGO.svg">
+    <link rel="stylesheet" href="style.css">
+    <script src="header.js" defer></script>
+</head>
+<body>
+    <div id="sharedHeader"></div>
+
+    <main class="section">
+        <div class="container">
+            <section class="section archive-section" id="archiveSection">
+                <div class="archive-heading">
+                    <div>
+                        <p class="simple-h">Archive</p>
+                        <p class="simple-p">A curated grid of imagery and experiments from past work.</p>
+                    </div>
+                    <button class="pill pill-hover" type="button">See more →</button>
+                </div>
+                <div class="archive-grid">
+                    <figure><img src="media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_01.png" alt="Operational analysis preview"></figure>
+                    <figure><img src="media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_02.png" alt="Operational analysis highlight"></figure>
+                    <figure><img src="media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_03.png" alt="Operational analysis render"></figure>
+                    <figure><img src="media/projects/OperationalAnalysisofPhotogrametry/images/Pointcoud.png" alt="Point cloud capture"></figure>
+                    <figure><img src="media/projects/OperationalAnalysisofPhotogrametry/images/Tower_jpeg.jpg" alt="Survey tower concept"></figure>
+                    <figure><img src="media/projects/OperationalAnalysisofPhotogrametry/images/Rundgang_01.png" alt="Rundgang documentation"></figure>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div class="animation-fullscreen-overlay" id="animationOverlay" style="display: none;">
+        <button class="close-button-topleft" id="closeButton">×</button>
+        <div class="intro-root">
+            <canvas id="metaballCanvas" class="metaball-canvas"></canvas>
+            <canvas id="cursorCanvas" class="cursor-canvas"></canvas>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
