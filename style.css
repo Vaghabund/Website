@@ -5,59 +5,64 @@
    ============================================ */
 :root {
     /* Colors */
-    --color-primary: #000;
-    --color-text: #444;
-    --color-text-light: #666;
-    --color-text-lighter: #888;
-    --color-background: #fff;
-    --color-background-alt: #f8f8f8;
-    --color-border: #ccc;
+    --bg: #ffffff;
+    --text: #000000;
 
-    /* Spacing Scale */
-    --space-xs: 4px;
+    /* Spacing (small, large) */
     --space-sm: 8px;
-    --space-md: 12px;
-    --space-lg: 16px;
-    --space-xl: 20px;
-    --space-2xl: 30px;
-    --space-3xl: 40px;
-    --space-4xl: 60px;
-    --space-5xl: 80px;
+    --space-lg: 24px;
 
-    /* Border Radius */
-    --radius-none: 0;
-    --radius-sm: 4px;
+    /* Typography (small, large) */
+    --font-s: 0.9rem;
+    --font-l: 1.2rem;
+
+    /* Misc */
     --radius-md: 6px;
-    --radius-lg: 8px;
-    --radius-xl: 12px;
-    --radius-full: 50%;
+    --transition: 0.2s ease;
 
-    /* Effects */
-    --blur-light: 0.5px;
-    --blur-medium: 1.5px;
-    --blur-heavy: 6px;
-    --shadow-default: 0 0 8px rgba(0, 0, 0, 0.6);
-    --shadow-hover: 0 6px 20px rgba(0, 0, 0, 0.18);
-    --shadow-strong: 0 8px 30px rgba(0, 0, 0, 0.4);
+    /* Compatibility aliases (map old variables to minimal tokens) */
+    --color-background: var(--bg);
+    --color-background-alt: var(--bg);
+    --color-text: var(--text);
+    --color-primary: var(--text);
+    --color-border: var(--text);
 
-    /* Transitions */
-    --transition-fast: 0.1s ease;
-    --transition-normal: 0.2s ease;
-    --transition-slow: 0.3s ease;
-    --transition-smooth: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --space-xs: var(--space-sm);
+    --space-md: var(--space-sm);
+    --space-xl: var(--space-lg);
+    --space-2xl: var(--space-lg);
+    --space-3xl: calc(var(--space-lg) * 1.5);
+    --space-4xl: calc(var(--space-lg) * 2.5);
+    --space-5xl: calc(var(--space-lg) * 3.5);
 
-    /* Typography */
     --font-family: 'Elza', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --font-size-base: 1rem;
-    --font-size-sm: 0.9rem;
-    --font-size-md: 1.1rem;
-    --font-size-lg: 1.2rem;
+    --font-size-base: var(--font-s);
+    --font-size-sm: var(--font-s);
+    --font-size-md: var(--font-l);
+    --font-size-lg: 1.5rem;
     --font-size-xl: 1.5rem;
     --font-size-2xl: 2.8rem;
     --font-size-3xl: 3rem;
     --line-height-tight: 1;
     --line-height-normal: 1.6;
     --line-height-relaxed: 1.7;
+
+    --radius-none: 0;
+    --radius-sm: var(--radius-md);
+    --radius-lg: var(--radius-md);
+    --radius-xl: calc(var(--radius-md) * 2);
+    --radius-full: 50%;
+
+    --blur-light: 0.5px;
+    --blur-heavy: 6px;
+
+    --transition-fast: var(--transition);
+    --transition-normal: var(--transition);
+    --transition-slow: var(--transition);
+    --transition-smooth: var(--transition);
+
+    --color-text-light: #666;
+    --color-text-lighter: #999;
 }
 
 * {
@@ -72,7 +77,7 @@ html, body {
 }
 
 body {
-    background: var(--color-background);
+    background: var(--bg);
 }
 
 /* ============================================
@@ -89,20 +94,9 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    background: var(--color-background);
+    background: var(--bg);
     z-index: 100;
     padding: var(--space-md) var(--space-2xl);
-}
-
-/* Container - max-width wrapper */
-.container {
-    max-width: none;
-    margin: 0 auto;
-    width: 100%;
-}
-
-.section--header .container {
-    max-width: none;
 }
 
 /* Row - flex/grid container */
@@ -156,57 +150,28 @@ body {
 
 .header-name {
     font-family: var(--font-family);
-    font-size: var(--font-size-2xl);
-    font-weight: 800;
-    font-style: italic;
-    color: var(--color-primary);
+    font-weight: 700;
+    font-size: 1rem;
     margin: 0;
     cursor: pointer;
-    transition: transform var(--transition-fast);
-    text-transform: uppercase;
-    letter-spacing: -2px;
-    line-height: var(--line-height-tight);
     white-space: nowrap;
-    transform-origin: left center;
-    width: auto;
-    height: var(--space-3xl);
-    display: inline-block;
-    font-stretch: ultra-condensed;
-    text-shadow: 0.5px 0 0 currentColor, -0.5px 0 0 currentColor;
-    filter: drop-shadow(var(--shadow-default));
 }
 
-.header-name:hover {
-    filter: blur(var(--blur-light)) drop-shadow(var(--shadow-default));
-}
-
-.header-separator {
-    position: fixed;
-    top: 65px;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: var(--color-primary);
-    z-index: 99;
-}
-
-/* Logo styles within header */
-.logo-container {
-    width: var(--space-3xl);
-    height: var(--space-3xl);
+/* Logo in pill shape to match slider and name */
+.logo-capsule {
+    /* logo uses shared .pill visuals; only keep size/behavior here */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 60px;
     cursor: pointer;
-    border-radius: var(--radius-md);
     overflow: visible;
     transition: filter var(--transition-normal);
-    filter: blur(0px) drop-shadow(var(--shadow-default));
 }
 
-.logo-container:hover {
-    filter: blur(var(--blur-medium)) drop-shadow(var(--shadow-default));
-}
-
-.logo-container:not(:hover) {
-    filter: blur(0px) drop-shadow(var(--shadow-default));
+.logo-capsule .logo-image {
+    width: 32px;
+    height: 32px;
 }
 
 .logo-image {
@@ -219,6 +184,92 @@ body {
     -webkit-backface-visibility: hidden;
 }
 
+/* ==========================
+   Procedural Capsule/Pill System
+   - Adapts to content width (inline-flex)
+   - Fixed height via --pill-height
+   - Consistent border-radius (999px = full pill)
+   ========================== */
+
+.pill {
+    --pill-height: 60px;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    height: var(--pill-height);
+    padding: 0 16px; /* horizontal padding adjusts spacing */
+    border-radius: 30px; 
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--text);
+    font-family: var(--font-family);
+    font-size: 1.2rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: all var(--transition);
+}
+
+/* Pill hover effect - can be used on links or interactive elements */
+.pill-hover {
+    cursor: pointer;
+}
+
+.pill-hover:hover {
+    background: var(--text);
+    color: var(--bg);
+}
+
+/* ==========================
+   Top Site Menu (slider marker)
+   ========================== */
+#siteMenu {
+    display: flex;
+    align-items: center;
+    gap: 50px;
+    position: relative;
+    padding-right: 10px;
+}
+
+.menu-capsule {
+    position: relative;
+    display: inline-flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* Inner white capsule that slides between items */
+.menu-inner {
+    position: absolute;
+    left: 0;
+    transform: translateX(0) translateY(0%);
+    height: 60px;
+    width: 70px;
+    background: #000000;
+    border-radius: 30px;
+    transition: transform 260ms cubic-bezier(.2,.8,.2,1), width 260ms ease;
+    z-index: -1;
+}
+
+.menu-link {
+    color: inherit;
+    text-decoration: none;
+    padding: 6px 8px;
+    display: inline-block;
+    position: relative;
+    z-index: 1;
+    white-space: nowrap;
+}
+
+.menu-link.menu-link: pill .pill-hover:hover
+
+.menu-link.active { color: #000; }
+
+@media (max-width: 768px) {
+    #siteMenu { gap: 12px; padding-left: 8px; }
+    .menu-capsule { padding: 8px 10px; gap: 8px; }
+    .menu-inner { height: calc(100% - 8px); }
+}
+
 @keyframes spin {
     from {
         transform: rotate(0deg);
@@ -227,6 +278,16 @@ body {
         transform: rotate(360deg);
     }
 }
+
+/* Name capsule — mirrors the slider visual */
+.name-capsule {
+    /* uses shared .pill visuals; keep only sizing/position rules here */
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
 
 /* Animation Full-Screen Popup Styles - Glassmorphism */
 .animation-fullscreen-overlay {
@@ -274,9 +335,8 @@ body {
     position: fixed;
     top: 10px;
     right: 20px;
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(241, 240, 240, 0.2);
     backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
     border: 1px solid rgba(255, 255, 255, 0.674);
     width: 50px;
     height: 50px;
@@ -700,7 +760,6 @@ input[type="submit"]:hover,
 .project-hero-image .simple-img:hover {
     transform: translateY(-1px);
     filter: blur(var(--blur-light));
-    box-shadow: var(--shadow-hover);
 }
 
 .simple-h {
@@ -775,8 +834,7 @@ input[type="submit"]:hover,
     margin: 0 0 var(--space-3xl) 0;
     overflow: hidden;
     position: relative;
-    background: var(--color-background);
-    border-radius: var(--radius-none);
+    background: var(--bg);
 }
 
 .three-banner canvas {
@@ -824,9 +882,8 @@ input[type="submit"]:hover,
     max-width: calc(100% - 160px);
     max-height: calc(100% - 120px);
     object-fit: contain;
-    box-shadow: var(--shadow-strong);
     border-radius: var(--radius-sm);
-    background: var(--color-background);
+    background: var(--bg);
 }
 
 .lightbox-close,

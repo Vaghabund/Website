@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About — Joel Tenenberg</title>
+    <link rel="icon" type="image/svg+xml" href="media/logo/LOGO.svg">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="section section--header">
+        <div class="container row row--header">
+            <!-- Left: name pill -->
+            <div class="col col--shrink">
+                <div class="name-capsule pill">
+                    <div class="name-inner" aria-hidden="true"></div>
+                    <h1 class="header-name" id="headerName">Joel Tenenberg</h1>
+                </div>
+            </div>
+
+            <!-- Icon with padding -->
+            <div class="col col--shrink">
+                <div class="logo-capsule pill" id="logoContainer">
+                    <img src="media/logo/LOGO.svg" alt="Logo" class="logo-image">
+                </div>
+            </div>
+
+            <!-- Spacer -->
+            <div class="col"></div>
+
+            <!-- Right: slider menu -->
+            <nav id="siteMenu" class="col col--shrink col--menu" aria-label="Site navigation">
+                <div id="mainMenu" class="menu-capsule pill">
+                    <div id="menuMarker" class="menu-inner" aria-hidden="true"></div>
+                    <a href="index.html" class="menu-link" data-target="projects">Projects</a>
+                    <a href="about.html" class="menu-link" data-target="about">About</a>
+                </div>
+            </nav>
+            <div class="header-separator"></div>
+        </div>
+    </header>
+
+    <!-- About Content -->
+    <main class="section">
+        <div class="container">
+            <section class="section about-section" id="aboutSection">
+                <div class="container row row--2col" >
+                    <div class="col">
+                        <div class="image-stack">
+                            <picture>
+                                <source type="image/webp" srcset="media/about/profile2-small.webp 400w, media/about/profile2.webp 800w" sizes="(max-width: 600px) 400px, 800px">
+                                <img src="media/about/profile2.jpg" srcset="media/about/profile2-small.jpg 400w, media/about/profile2.jpg 800w" sizes="(max-width: 600px) 400px, 800px" alt="Joel Tenenberg" class="simple-img" loading="lazy" onerror="this.onerror=null;this.src='https://picsum.photos/400/400?random=98'">
+                            </picture>
+
+                            <picture>
+                                <source type="image/webp" srcset="media/about/profile-small.webp 400w, media/about/profile.webp 800w" sizes="(max-width: 600px) 400px, 800px">
+                                <img src="media/about/profile.jpg" id="draggableImage" srcset="media/about/profile-small.jpg 400w, media/about/profile.jpg 800w" sizes="(max-width: 600px) 400px, 800px" class="simple-img draggable-img" alt="Joel Tenenberg 2" loading="lazy" onerror="this.onerror=null;this.src='https://picsum.photos/400/400?random=99'">
+                            </picture>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <h2 class="simple-h">About</h2>
+                        <p class="simple-p">I build thoughtful digital experiences that bridge code and craft. My work focuses on interaction, clarity, and performance — whether that's a research project, a product, or an experimental interface.</p>
+                        <p class="simple-p">If you'd like to see a concise overview of my background, skills, and experience, download my CV below.</p>
+                        <div class="about-actions">
+                            <a class="cv-download" href="Joel_Tenenberg_CV.pdf" download>Download CV</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Include main script so menu marker and behavior work -->
+    <script src="script.js"></script>
+</body>
+</html>
