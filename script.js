@@ -519,9 +519,7 @@ class PortfolioApp {
         // Setup event listeners
         this.setupEventListeners();
         
-        // Setup header name stretch
-        this.updateNameStretch();
-        window.addEventListener('resize', () => this.updateNameStretch());
+        // Header name stretch removed — keep name static
         
         // Setup draggable image
         this.setupDraggableImage();
@@ -601,38 +599,13 @@ class PortfolioApp {
     }
     
     updateNameStretch() {
+        // No-op: header scaling removed. Ensure name has no transform or extra margin.
         const nameElement = document.getElementById('headerName');
-        const nameCol = nameElement?.parentElement;
-        const logoContainer = document.querySelector('.logo-container');
-        
-        if(!nameElement || !nameCol || !logoContainer) return;
-        
-        // Reset transform to get natural width
-        nameElement.style.transform = 'scaleX(1)';
-        nameElement.style.display = 'inline-block';
-        nameElement.style.transformOrigin = 'left center';
-
-        // Get measurements for stretching
-        const naturalWidth = nameElement.offsetWidth;
-        const availableWidth = nameCol.offsetWidth;
-
-        // Calculate scale to fill the entire available space (visual only)
-        const scaleX = availableWidth / naturalWidth;
-        nameElement.style.transform = `scaleX(${scaleX})`;
-
-        // Calculate the spacing from the logo to the window border and
-        // apply the same spacing as the right margin on the name element.
-        // This makes the visual gap between the (stretched) name and the logo
-        // match the distance from the logo to the window edge.
-        try {
-            const logoRect = logoContainer.getBoundingClientRect();
-            const logoRightSpacing = Math.max(8, Math.round(window.innerWidth - logoRect.right));
-            // Apply spacing as right margin (in layout space) so the gap equals logo->window distance
-            nameElement.style.marginRight = `${logoRightSpacing}px`;
-        } catch (e) {
-            // fallback: ensure there's a small margin
-            nameElement.style.marginRight = '12px';
-        }
+        if (!nameElement) return;
+        nameElement.style.transform = '';
+        nameElement.style.display = '';
+        nameElement.style.transformOrigin = '';
+        nameElement.style.marginRight = '';
     }
     
     setupEventListeners() {
@@ -669,6 +642,73 @@ class PortfolioApp {
                     }
                 }
             });
+        }
+
+        // Simple header menu marker behavior
+        const siteMenu = document.getElementById('siteMenu');
+        if (siteMenu) {
+            const links = Array.from(siteMenu.querySelectorAll('.menu-link'));
+            const marker = document.getElementById('menuMarker');
+
+            const updateMarkerTo = (linkEl) => {
+                if (!linkEl || !marker) return;
+                const linkRect = linkEl.getBoundingClientRect();
+                const menuRect = siteMenu.getBoundingClientRect();
+                const left = Math.round(linkRect.left - menuRect.left);
+                marker.style.transform = `translateX(${left}px)`;
+                marker.style.width = `${Math.round(linkRect.width)}px`;
+            };
+
+            this.updateMenuMarker = (target) => {
+                const activeLink = links.find(l => l.dataset.target === target) || links[0];
+                links.forEach(l => l.classList.toggle('active', l === activeLink));
+                updateMarkerTo(activeLink);
+                // Toggle name capsule active state when 'about' is selected
+                const nameCapsule = document.querySelector('.name-capsule');
+                if (nameCapsule) {
+                    nameCapsule.classList.toggle('active', target === 'about');
+                }
+            };
+
+            // Click handlers for menu links
+            links.forEach(link => {
+                link.addEventListener('click', (ev) => {
+                    ev.preventDefault();
+                    const t = link.dataset.target;
+                    if (t === 'projects') {
+                        // If we're on the about page, navigate back to index
+                        if (window.location.pathname && window.location.pathname.toLowerCase().includes('about.html')) {
+                            window.location.href = 'index.html';
+                            return;
+                        }
+                        // Otherwise, show projects in-place
+                        if (typeof this.showProjects === 'function') this.showProjects();
+                    } else if (t === 'about') {
+                        // Navigate to the dedicated about page
+                        if (!(window.location.pathname && window.location.pathname.toLowerCase().includes('about.html'))) {
+                            window.location.href = 'about.html';
+                            return;
+                        }
+                        // already on about page — nothing else needed
+                    }
+                    this.updateMenuMarker(t);
+                });
+            });
+
+            // Keep marker positioned on resize
+            window.addEventListener('resize', () => {
+                const active = links.find(l => l.classList.contains('active')) || links[0];
+                updateMarkerTo(active);
+            });
+            // initial marker state — choose based on current page
+            setTimeout(() => {
+                const path = (window.location.pathname || '').toLowerCase();
+                if (path.includes('about.html')) {
+                    this.updateMenuMarker('about');
+                } else {
+                    this.updateMenuMarker('projects');
+                }
+            }, 80);
         }
     }
     
@@ -894,6 +934,7 @@ class PortfolioApp {
         // Show project page, hide projects list
         projectsContainer.style.display = 'none';
         projectPage.style.display = 'block';
+        if (this.updateMenuMarker) this.updateMenuMarker('projects');
         
         // Initialize 3D banner if model exists
         if (project.model3D && typeof window.init3DBanner === 'function') {
@@ -980,6 +1021,7 @@ class PortfolioApp {
         
         projectPage.style.display = 'none';
         projectsContainer.style.display = 'block';
+        if (this.updateMenuMarker) this.updateMenuMarker('projects');
         
         this.selectedProject = null;
         
