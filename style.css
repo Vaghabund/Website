@@ -1,5 +1,70 @@
 @import url('https://api.fontshare.com/v2/css?f[]=elza@1,2,100,101,200,201,300,301,400,401,500,501,600,601,700,701,800,801,900,901&display=swap');
 
+/* ============================================
+   Design Tokens (CSS Variables)
+   ============================================ */
+:root {
+    /* Colors */
+    --bg: #ffffff;
+    --text: #000000;
+
+    /* Spacing (small, large) */
+    --space-sm: 8px;
+    --space-lg: 24px;
+
+    /* Typography (small, large) */
+    --font-s: 0.9rem;
+    --font-l: 1.2rem;
+
+    /* Misc */
+    --radius-md: 6px;
+    --transition: 0.2s ease;
+
+    /* Compatibility aliases (map old variables to minimal tokens) */
+    --color-background: var(--bg);
+    --color-background-alt: var(--bg);
+    --color-text: var(--text);
+    --color-primary: var(--text);
+    --color-border: var(--text);
+
+    --space-xs: var(--space-sm);
+    --space-md: var(--space-sm);
+    --space-xl: var(--space-lg);
+    --space-2xl: var(--space-lg);
+    --space-3xl: calc(var(--space-lg) * 1.5);
+    --space-4xl: calc(var(--space-lg) * 2.5);
+    --space-5xl: calc(var(--space-lg) * 3.5);
+
+    --font-family: 'Elza', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-size-base: var(--font-s);
+    --font-size-sm: var(--font-s);
+    --font-size-md: var(--font-l);
+    --font-size-lg: 1.5rem;
+    --font-size-xl: 1.5rem;
+    --font-size-2xl: 2.8rem;
+    --font-size-3xl: 3rem;
+    --line-height-tight: 1;
+    --line-height-normal: 1.6;
+    --line-height-relaxed: 1.7;
+
+    --radius-none: 0;
+    --radius-sm: var(--radius-md);
+    --radius-lg: var(--radius-md);
+    --radius-xl: calc(var(--radius-md) * 2);
+    --radius-full: 50%;
+
+    --blur-light: 0.5px;
+    --blur-heavy: 6px;
+
+    --transition-fast: var(--transition);
+    --transition-normal: var(--transition);
+    --transition-slow: var(--transition);
+    --transition-smooth: var(--transition);
+
+    --color-text-light: #666;
+    --color-text-lighter: #999;
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -8,13 +73,11 @@
 
 html, body {
     height: 100%;
-    font-family: 'Elza', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: var(--font-family);
 }
 
 body {
-    margin: 0;
-    padding: 0;
-    background: #ffffff;
+    background: var(--bg);
 }
 
 /* ============================================
@@ -23,7 +86,7 @@ body {
 
 /* Section - vertical spacing wrapper */
 .section {
-    padding: 20px;
+    padding: var(--space-xl);
 }
 
 .section--header {
@@ -31,27 +94,16 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    background: #ffffff;
+    background: var(--bg);
     z-index: 100;
-    padding: 12px 30px;
-}
-
-/* Container - max-width wrapper */
-.container {
-    max-width: none;
-    margin: 0 auto;
-    width: 100%;
-}
-
-.section--header .container {
-    max-width: none;
+    padding: var(--space-md) var(--space-2xl);
 }
 
 /* Row - flex/grid container */
 .row {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: var(--space-xl);
 }
 
 .row--header {
@@ -63,7 +115,7 @@ body {
 .row--2col {
     display: grid;
     grid-template-columns: 360px 1fr;
-    gap: 40px;
+    gap: var(--space-3xl);
     align-items: center;
 }
 
@@ -89,66 +141,36 @@ body {
 
 .row--header .col--shrink {
     flex: 0 0 auto;
-    margin-left: 20px;
+    margin-left: var(--space-xl);
 }
 
 /* ============================================
    Specific Component Styles
    ============================================ */
-   
+
 .header-name {
-    font-family: 'Elza', sans-serif;
-    font-size: 2.8rem;
-    font-weight: 800;
-    font-style: italic;
-    color: #000;
+    font-family: var(--font-family);
+    font-weight: 700;
+    font-size: 1rem;
     margin: 0;
     cursor: pointer;
-    transition: transform 0.1s ease;
-    text-transform: uppercase;
-    letter-spacing: -2px;
-    line-height: 1;
     white-space: nowrap;
-    transform-origin: left center;
-    width: auto;
-    height: 40px;
-    display: inline-block;
-    font-stretch: ultra-condensed;
-    text-shadow: 0.5px 0 0 currentColor, -0.5px 0 0 currentColor;
-    filter: drop-shadow(0 0 8px rgba(0,0,0,0.6));
 }
 
-.header-name:hover {
-    filter: blur(0.5px) drop-shadow(0 0 8px rgba(0,0,0,0.6));
-}
-
-.header-separator {
-    position: fixed;
-    top: 65px;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: #000000;
-    z-index: 99;
-}
-
-/* Logo styles within header */
-.logo-container {
-    width: 40px;
-    height: 40px;
+/* Logo in pill shape to match slider and name */
+.logo-capsule {
+    /* logo uses shared .pill visuals; only keep size/behavior here */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    border-radius: 6px;
     overflow: visible;
-    transition: filter 0.2s ease;
-    filter: blur(0px) drop-shadow(0 0 8px rgba(0,0,0,0.6));
+    transition: filter var(--transition-normal);
 }
 
-.logo-container:hover {
-    filter: blur(1.5px) drop-shadow(0 0 8px rgba(0,0,0,0.6));
-}
-
-.logo-container:not(:hover) {
-    filter: blur(0px) drop-shadow(0 0 8px rgba(0,0,0,0.6));
+.logo-capsule .logo-image {
+    width: 32px;
+    height: 32px;
 }
 
 .logo-image {
@@ -161,6 +183,90 @@ body {
     -webkit-backface-visibility: hidden;
 }
 
+/* ==========================
+   Procedural Capsule/Pill System
+   - Adapts to content width (inline-flex)
+   - Fixed height via --pill-height
+   - Consistent border-radius (999px = full pill)
+   ========================== */
+
+.pill {
+    --pill-height: 60px;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    height: var(--pill-height);
+    padding: 0 16px; /* horizontal padding adjusts spacing */
+    border-radius: 30px;
+    background: transparent;
+    color: #000;
+    border: 1px solid #000;
+    font-family: var(--font-family);
+    font-size: 1.2rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: all var(--transition);
+}
+
+/* Pill hover effect - can be used on links or interactive elements */
+.pill-hover {
+    cursor: pointer;
+}
+
+.pill-hover:hover {
+    background: #000;
+    color: #fff;
+}
+
+/* ==========================
+   Top Site Menu (slider marker)
+   ========================== */
+#siteMenu {
+    display: flex;
+    align-items: center;
+    gap: 50px;
+    position: relative;
+    padding-right: 10px;
+}
+
+.menu-capsule {
+    position: relative;
+    display: inline-flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* Inner white capsule that slides between items */
+.menu-inner {
+    position: absolute;
+    left: 0;
+    transform: translateX(0) translateY(0%);
+    height: 60px;
+    width: 70px;
+    background: #000000;
+    border-radius: 30px;
+    transition: transform 260ms cubic-bezier(.2,.8,.2,1), width 260ms ease;
+    z-index: -1;
+}
+
+.menu-link {
+    color: inherit;
+    text-decoration: none;
+    padding: 6px 8px;
+    display: inline-block;
+    position: relative;
+    z-index: 1;
+    white-space: nowrap;
+}
+
+.menu-link.active { color: #000; }
+
+@media (max-width: 768px) {
+    #siteMenu { gap: 12px; padding-left: 8px; }
+    .menu-capsule { padding: 8px 10px; gap: 8px; }
+    .menu-inner { height: calc(100% - 8px); }
+}
+
 @keyframes spin {
     from {
         transform: rotate(0deg);
@@ -169,6 +275,31 @@ body {
         transform: rotate(360deg);
     }
 }
+
+/* Name capsule — mirrors the slider visual */
+.name-capsule {
+    /* uses shared .pill visuals; keep only sizing/position rules here */
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.name-image {
+    display: block;
+    height: 32px;
+    width: auto;
+}
+
+#sharedHeader {
+    min-height: 70px;
+    visibility: hidden;
+}
+
+#sharedHeader.header-loaded {
+    visibility: visible;
+}
+
 
 /* Animation Full-Screen Popup Styles - Glassmorphism */
 .animation-fullscreen-overlay {
@@ -216,9 +347,8 @@ body {
     position: fixed;
     top: 10px;
     right: 20px;
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(241, 240, 240, 0.2);
     backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
     border: 1px solid rgba(255, 255, 255, 0.674);
     width: 50px;
     height: 50px;
@@ -231,11 +361,6 @@ body {
     justify-content: center;
     transition: all 0.2s ease;
     z-index: 1001;
-}
-
-.close-button-topleft:hover {
-    background: rgba(77, 77, 77, 0.385);
-    color: #efefef;
 }
 
 @keyframes fadeIn {
@@ -264,119 +389,122 @@ body {
 }
 
 .subtitle {
-    font-size: 1.1rem;
-    color: #000000;
+    font-size: var(--font-size-md);
+    color: var(--color-primary);
     font-weight: 700;
 }
 
 .flavor-text {
-    font-size: 1.2rem;
+    font-size: var(--font-size-lg);
     font-weight: 700;
-    line-height: 1.6;
-    color: #000000;
+    line-height: var(--line-height-normal);
+    color: var(--color-primary);
 }
 
 .project-list {
     list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
 }
 
 .project-item {
-    border-top: 3px solid #000000;
+    background: #ffffff;
+    border-radius: 30px;
+    border: 1px solid #000;
+    padding: var(--space-md) calc(var(--space-xl) * 1.5);
+    cursor: pointer;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+    position: relative;
+    overflow: hidden;
 }
 
-.project-item:last-child {
-    border-bottom: 3px solid #000000;
-}
-  
 .project-header {
     display: grid;
-    grid-template-columns: 1fr 80px 80px 40px;
+    grid-template-columns: minmax(0, 1fr) auto auto;
     align-items: center;
-    gap: 20px;
-    padding: 16px 0;
-    cursor: pointer;
-}
-
-.project-header:hover {
-    filter: blur(0.5px);
+    gap: var(--space-lg);
+    padding: var(--space-sm) 0;
 }
 
 .project-info {
     display: flex;
     align-items: baseline;
-    gap: 12px;
+    gap: var(--space-md);
     min-width: 0;
 }
 
 .project-title {
-    font-size: 1.5rem;
+    font-size: var(--font-size-xl);
     font-weight: 700;
-    color: #000;
+    color: var(--color-primary);
     margin: 0;
     white-space: nowrap;
 }
 
 .project-subtitle {
-    font-family: 'Elza', sans-serif;
-    font-size: 1rem;
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
     font-weight: 200;
-    color: #666;
+    color: var(--color-text-light);
     margin: 0;
     white-space: nowrap;
 }
 
 .project-year {
-    font-size: 1rem;
+    font-size: var(--font-size-base);
     font-weight: 200;
-    color: #888;
+    color: var(--color-text-lighter);
     text-align: right;
-    margin-left: auto; /* Ensure it aligns to the right by pushing it away from other elements */
+    margin-left: auto;
 }
 
 .project-separator {
-    font-family: 'Elza', sans-serif;
-    font-size: 1rem;
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
     font-weight: 700;
-    color: #ccc;
+    color: var(--color-border);
 }
 
 .project-thumbnail {
     width: 60px;
-    height: 40px;
-    border-radius: 0;
+    height: var(--space-3xl);
+    border-radius: var(--radius-none);
     overflow: hidden;
 }
 
 .expand-icon {
-    font-size: 1.5rem;
+    font-size: var(--font-size-xl);
     font-weight: 300;
-    color: #888;
-    transition: transform 0.2s ease;
+    color: var(--color-text-lighter);
+    transition: transform var(--transition-normal);
 }
 
 .project-details {
     overflow: hidden;
     max-height: 0;
     opacity: 0;
-    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
-                opacity 0.3s ease-in-out,
-                padding 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: max-height var(--transition-smooth),
+                opacity var(--transition-slow) ease-in-out,
+                padding var(--transition-smooth);
     padding: 0;
 }
 
 .project-details.expanded {
     max-height: 500px;
     opacity: 1;
-    padding: 20px 0 40px 0;
+    padding: var(--space-xl) 0 var(--space-3xl) 0;
 }
 
 .project-content {
     display: grid;
     grid-template-columns: 1fr 400px;
-    gap: 40px;
-    padding: 0 0 0 80px;
+    gap: var(--space-3xl);
+    padding: 0 0 0 var(--space-5xl);
     transform: translateY(-10px);
-    transition: transform 0.3s ease-out;
+    transition: transform var(--transition-slow) ease-out;
 }
 
 .project-details.expanded .project-content {
@@ -388,91 +516,101 @@ body {
 }
 
 .project-description p {
-    font-size: 1rem;
-    line-height: 1.6;
-    color: #444;
-    margin-bottom: 16px;
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-normal);
+    color: var(--color-text);
+    margin-bottom: var(--space-lg);
 }
 
-.see-project-link {
-    font-family: 'Elza', sans-serif;
+.project-item:hover {
     background: #000;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    font-size: 0.9rem;
+    border-color: #000;
+    color: #fff !important;
+}
+
+.project-item:hover .project-title,
+.project-item:hover .project-subtitle,
+.project-item:hover .project-year,
+.project-item:hover .project-separator,
+.project-item:hover .project-info,
+.project-item:hover .project-description p,
+.project-item:hover .project-description {
+    color: #fff !important;
+}
+ 
+/* ============================================
+   Button Styles (Unified)
+   ============================================ */
+.btn,
+button,
+input[type="button"],
+input[type="submit"],
+.see-project-link,
+.pdf-open-btn,
+.cv-download,
+.back-button {
+    font-family: var(--font-family);
+    background: transparent;
+    color: var(--color-text);
+    border: 1px solid var(--color-text);
+    padding: 10px var(--space-xl);
+    border-radius: 30px;
+    font-size: var(--font-size-sm);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--transition-normal);
     font-weight: 700;
+    text-decoration: none;
+    display: inline-block;
 }
 
-.see-project-link:hover {
-    background: #333;
-    transform: translateY(-1px);
-    filter: blur(0.5px);
-}
-
-/* Project Page Styles */
+/* ============================================
+   Project Page Styles
+   ============================================ */
 .project-page {
     animation: fadeInUp 0.5s ease;
 }
 
 .back-button {
-    font-family: 'Elza', sans-serif;
-    background: none;
-    border: none;
-    font-size: 1rem;
-    font-weight: 700;
-    color: #666;
-    cursor: pointer;
-    padding: 8px 0;
-    margin-bottom: 40px;
-    transition: color 0.2s ease;
-}
-
-.back-button:hover {
-    color: #000;
-    filter: blur(0.5px);
+    margin-bottom: var(--space-3xl);
 }
 
 .project-page-header {
-    margin-bottom: 40px;
+    margin-bottom: var(--space-3xl);
 }
 
 .project-page-title {
-    font-family: 'Elza', sans-serif;
-    font-size: 3rem;
+    font-family: var(--font-family);
+    font-size: var(--font-size-3xl);
     font-weight: 700;
     margin-bottom: 10px;
-    color: #000;
+    color: var(--color-primary);
 }
 
 .project-page-subtitle {
-    font-family: 'Elza', sans-serif;
-    font-size: 1.2rem;
-    color: #666;
+    font-family: var(--font-family);
+    font-size: var(--font-size-lg);
+    color: var(--color-text-light);
     font-weight: 700;
 }
 
 .project-hero-image {
-    margin-bottom: 60px;
-    border-radius: 0;
+    margin-bottom: var(--space-4xl);
+    border-radius: var(--radius-none);
     overflow: hidden;
 }
 
 .project-details-grid {
     display: grid;
     grid-template-columns: 2fr 1fr;
-    gap: 60px;
-    margin-bottom: 60px;
+    gap: var(--space-4xl);
+    margin-bottom: var(--space-4xl);
 }
 
 .project-description-section h3 {
     font-size: 1.3rem;
     font-weight: 600;
-    margin: 40px 0 16px 0;
-    color: #000;
+    margin: var(--space-3xl) 0 var(--space-lg) 0;
+    color: var(--color-primary);
 }
 
 .project-description-section h3:first-child {
@@ -480,21 +618,21 @@ body {
 }
 
 .project-description-section p {
-    font-size: 1.1rem;
-    line-height: 1.7;
-    color: #444;
-    margin-bottom: 20px;
+    font-size: var(--font-size-md);
+    line-height: var(--line-height-relaxed);
+    color: var(--color-text);
+    margin-bottom: var(--space-xl);
 }
 
 .project-info-section {
-    background: #f8f8f8;
-    padding: 30px;
-    border-radius: 12px;
+    background: var(--color-background-alt);
+    padding: var(--space-2xl);
+    border-radius: var(--radius-xl);
     height: fit-content;
 }
 
 .project-info-item {
-    margin-bottom: 30px;
+    margin-bottom: var(--space-2xl);
 }
 
 .project-info-item:last-child {
@@ -502,18 +640,17 @@ body {
 }
 
 .project-info-item h4 {
-    font-size: 1rem;
+    font-size: var(--font-size-sm);
     font-weight: 600;
-    margin-bottom: 8px;
-    color: #000;
+    margin-bottom: var(--space-sm);
+    color: var(--color-primary);
     text-transform: uppercase;
     letter-spacing: 1px;
-    font-size: 0.9rem;
 }
 
 .project-info-item p {
-    color: #666;
-    font-size: 1rem;
+    color: var(--color-text-light);
+    font-size: var(--font-size-base);
 }
 
 .tech-list {
@@ -523,65 +660,67 @@ body {
 }
 
 .tech-list li {
-    color: #666;
-    font-size: 1rem;
-    margin-bottom: 4px;
+    color: var(--color-text-light);
+    font-size: var(--font-size-base);
+    margin-bottom: var(--space-xs);
 }
 
 .project-link {
-    color: #000;
+    color: var(--color-primary);
     text-decoration: none;
     font-weight: 500;
-    transition: color 0.2s ease;
+    transition: color var(--transition-normal);
 }
 
-.project-link:hover {
-    color: #666;
-    filter: blur(0.5px);
+/* When a project link is used as a button, keep text white */
+.project-link.btn {
+    color: var(--color-background);
 }
 
 .project-gallery {
-    margin-top: 60px;
+    margin-top: var(--space-4xl);
 }
 
 .project-gallery h3 {
     font-size: 1.3rem;
     font-weight: 600;
-    margin-bottom: 30px;
-    color: #000;
+    margin-bottom: var(--space-2xl);
+    color: var(--color-primary);
 }
 
 .gallery-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
+    gap: var(--space-xl);
 }
 
-/* Responsive */
+/* ============================================
+   Responsive Styles
+   ============================================ */
 @media (max-width: 768px) {
     #portfolioMain {
-        padding-top: 80px;
+        padding-top: var(--space-5xl);
     }
-    
+
     .project-page-title {
         font-size: 2rem;
     }
-    
+
     .project-details-grid {
         grid-template-columns: 1fr;
-        gap: 40px;
+        gap: var(--space-3xl);
     }
-    
+
     .project-content {
         grid-template-columns: 1fr;
-        gap: 20px;
-        padding: 0 0 30px 0;
+        gap: var(--space-xl);
+        padding: 0 0 var(--space-2xl) 0;
     }
-    
+
     .project-image {
         order: -1;
     }
-    
+
     .gallery-grid {
         grid-template-columns: 1fr;
     }
@@ -590,12 +729,12 @@ body {
         grid-template-columns: 1fr 60px 60px 30px;
         gap: 10px;
     }
-    
+
     .row--2col {
         grid-template-columns: 1fr;
-        gap: 20px;
+        gap: var(--space-xl);
     }
-    
+
     #aboutSection .simple-img {
         max-width: 300px;
     }
@@ -609,54 +748,117 @@ body {
     width: 100%;
     height: auto;
     display: block;
-    border-radius: 0;
+    border-radius: var(--radius-none);
+}
+
+/* Make gallery and project images behave like buttons on hover */
+.gallery-item .simple-img,
+.project-image .simple-img,
+.project-hero-image .simple-img {
+    transition: all var(--transition-normal);
+    cursor: pointer;
 }
 
 .simple-h {
     font-size: 1.6rem;
     font-weight: 700;
-    margin-bottom: 12px;
-    color: #000;
+    margin-bottom: var(--space-md);
+    color: var(--color-primary);
 }
 
 .simple-p {
-    font-size: 1rem;
-    line-height: 1.7;
-    color: #444;
-    margin-bottom: 12px;
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-relaxed);
+    color: var(--color-text);
+    margin-bottom: var(--space-md);
 }
 
-/* About section specific */
+/* ============================================
+   About Section
+   ============================================ */
 #aboutSection {
-    margin-top: 60px;
-    padding: 40px 20px 80px 20px;
+    margin-top: var(--space-4xl);
+    padding: var(--space-3xl) var(--space-xl) var(--space-5xl) var(--space-xl);
+}
+
+.archive-section {
+    margin-top: var(--space-5xl);
+    background: rgba(0, 0, 0, 0.02);
+    padding: var(--space-4xl);
+    border-radius: var(--radius-xl);
+}
+
+.archive-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-3xl);
+    gap: var(--space-xl);
+}
+
+.archive-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--space-md);
+}
+
+.archive-grid figure {
+    margin: 0;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: #fff;
+}
+
+.archive-grid img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block;
 }
 
 .image-stack {
     position: relative;
-    width: 100%;
-    max-width: 360px;
+    width: min(100%, 420px);
+    max-width: 420px;
+    margin: 0 auto;
+    overflow: visible;
 }
 
-.image-stack .simple-img {
+.image-stack .stacked.behind {
+    position: relative;
+    z-index: 0;
+}
+
+.image-stack .stacked.behind img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.image-stack .stacked.behind img,
+.image-stack .stacked.front img {
     -webkit-user-drag: none;
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
 }
 
-.image-stack .simple-img:first-child {
-    position: relative;
+.image-stack .stacked.front {
+    position: absolute;
+    inset: 0;
     z-index: 1;
     pointer-events: none;
 }
 
-.draggable-img {
+.image-stack .stacked.front img {
     position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 2;
-    cursor: move;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.draggable-img {
     cursor: grab;
     user-select: none;
     pointer-events: auto;
@@ -670,21 +872,7 @@ body {
     margin-top: 18px;
 }
 
-.cv-download {
-    display: inline-block;
-    background: #000;
-    color: #fff;
-    padding: 10px 18px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 700;
-    transition: background 0.2s ease, transform 0.15s ease;
-}
-
-.cv-download:hover {
-    background: #222;
-    transform: translateY(-2px);
-}
+/* .cv-download styles are inherited from unified button styles */
 
 /* ============================================
    3D Banner Styles
@@ -693,11 +881,10 @@ body {
 .three-banner {
     width: 100%;
     height: 500px;
-    margin: 0 0 40px 0;
+    margin: 0 0 var(--space-3xl) 0;
     overflow: hidden;
     position: relative;
-    background: #ffffff;
-    border-radius: 0;
+    background: var(--bg);
 }
 
 .three-banner canvas {
@@ -711,3 +898,95 @@ body {
         height: 350px;
     }
 }
+
+/* ============================================
+   Lightbox / Gallery Overlay
+   ============================================ */
+.lightbox {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.lightbox-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(var(--blur-heavy));
+}
+
+.lightbox-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-3xl);
+}
+
+.lightbox-image {
+    max-width: calc(100% - 160px);
+    max-height: calc(100% - 120px);
+    object-fit: contain;
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+}
+
+.lightbox-close,
+.lightbox-prev,
+.lightbox-next {
+    position: absolute;
+    z-index: 2100;
+    background: rgba(0, 0, 0, 0.85);
+    color: var(--color-background);
+    border: none;
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-lg);
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lightbox-prev,
+.lightbox-next {
+    opacity: 0.98;
+}
+
+.lightbox-prev {
+    left: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.lightbox-next {
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.lightbox-close {
+    right: 24px;
+    top: 24px;
+}
+
+/* Lightbox controls on small screens */
+@media (max-width: 600px) {
+    .lightbox-prev,
+    .lightbox-next {
+        width: 48px;
+        height: 48px;
+    }
+    .lightbox-image {
+        max-width: calc(100% - 120px);
+        max-height: calc(100% - 100px);
+    }
+}
+
+/* Override button hover effects for lightbox controls */

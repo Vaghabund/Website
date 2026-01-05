@@ -1,6 +1,31 @@
 // ============================================
 // Project Data
 // ============================================
+//
+// MEDIA STRUCTURE:
+// Projects are organized in: media/projects/[project-name]/
+// Each project folder contains:
+//   - images/        All images (hero, gallery, thumbnails)
+//   - videos/        Video files (optional)
+//   - models/        3D models (.glb files) (optional)
+//   - documents/     PDFs and documents (optional)
+//   - description.md Project metadata and content
+//
+// ADDING NEW PROJECTS:
+// 1. Copy media/projects/_template/ to media/projects/your-project-name/
+// 2. Add your media files to the appropriate folders
+// 3. Run: node scripts/optimize-media-images.js
+// 4. Edit description.md with project details
+// 5. Add project entry below with updated paths
+//
+// IMAGE OPTIMIZATION:
+// Original images go in images/ folder
+// Optimization script auto-generates:
+//   - .webp (full quality)
+//   - -small.{jpg,webp} (800px)
+//   - -thumb.{jpg,webp} (400px)
+// ============================================
+
 const projectsData = [
     {
         id: 1,
@@ -9,9 +34,9 @@ const projectsData = [
         year: '2025',
         description: 'A modern web application built with React and Node.js, featuring real-time collaboration and advanced data visualization.',
         fullDescription: 'Project Alpha represents a comprehensive solution for team collaboration in data-intensive environments. Built with modern web technologies, it provides real-time synchronization, advanced analytics, and intuitive user interfaces that make complex data accessible to all team members.',
-        image: 'https://picsum.photos/400/250?random=1',
-        thumbnailImage: 'https://picsum.photos/60/40?random=11',
-        heroImage: 'https://picsum.photos/800/400?random=21',
+        image: 'media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_01.png',
+        thumbnailImage: 'media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_02.png',
+        heroImage: 'media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_03.png',
         model3D: 'media/models/Harpy v24.gltf', // Path to 3D model
         model3DOptions: { // Optional 3D banner settings
             interactionType: 'cursor-follow',
@@ -28,9 +53,22 @@ const projectsData = [
         technologies: ['TouchDesigner', 'Python', 'WebSocket', 'MongoDB'],
         liveUrl: 'https://example.com',
         gallery: [
-            'https://picsum.photos/600/400?random=31',
-            'https://picsum.photos/600/400?random=32'
-        ]
+            'media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_01.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_02.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_03.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_04.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/images/analysis.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/images/keypoints.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/images/matching.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/images/Pointcoud.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/images/ransacfilter.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/images/Tower_jpeg.jpg',
+            'media/projects/OperationalAnalysisofPhotogrametry/images/Rundgang_01.png',
+            'media/projects/OperationalAnalysisofPhotogrametry/documents/Map of Operational Analysis.pdf',
+            'media/projects/OperationalAnalysisofPhotogrametry/documents/MA DC_Joel Tenenberg_Operational Analysis of Photogrammetry.pdf'
+        ],
+        thesis: 'media/projects/OperationalAnalysisofPhotogrametry/documents/MA DC_Joel Tenenberg_Operational Analysis of Photogrammetry.pdf',
+        map: 'media/projects/OperationalAnalysisofPhotogrametry/documents/Map of Operational Analysis.pdf'
     },
     {
         id: 2,
@@ -484,9 +522,7 @@ class PortfolioApp {
         // Setup event listeners
         this.setupEventListeners();
         
-        // Setup header name stretch
-        this.updateNameStretch();
-        window.addEventListener('resize', () => this.updateNameStretch());
+        // Header name stretch removed — keep name static
         
         // Setup draggable image
         this.setupDraggableImage();
@@ -566,38 +602,13 @@ class PortfolioApp {
     }
     
     updateNameStretch() {
+        // No-op: header scaling removed. Ensure name has no transform or extra margin.
         const nameElement = document.getElementById('headerName');
-        const nameCol = nameElement?.parentElement;
-        const logoContainer = document.querySelector('.logo-container');
-        
-        if(!nameElement || !nameCol || !logoContainer) return;
-        
-        // Reset transform to get natural width
-        nameElement.style.transform = 'scaleX(1)';
-        nameElement.style.display = 'inline-block';
-        nameElement.style.transformOrigin = 'left center';
-
-        // Get measurements for stretching
-        const naturalWidth = nameElement.offsetWidth;
-        const availableWidth = nameCol.offsetWidth;
-
-        // Calculate scale to fill the entire available space (visual only)
-        const scaleX = availableWidth / naturalWidth;
-        nameElement.style.transform = `scaleX(${scaleX})`;
-
-        // Calculate the spacing from the logo to the window border and
-        // apply the same spacing as the right margin on the name element.
-        // This makes the visual gap between the (stretched) name and the logo
-        // match the distance from the logo to the window edge.
-        try {
-            const logoRect = logoContainer.getBoundingClientRect();
-            const logoRightSpacing = Math.max(8, Math.round(window.innerWidth - logoRect.right));
-            // Apply spacing as right margin (in layout space) so the gap equals logo->window distance
-            nameElement.style.marginRight = `${logoRightSpacing}px`;
-        } catch (e) {
-            // fallback: ensure there's a small margin
-            nameElement.style.marginRight = '12px';
-        }
+        if (!nameElement) return;
+        nameElement.style.transform = '';
+        nameElement.style.display = '';
+        nameElement.style.transformOrigin = '';
+        nameElement.style.marginRight = '';
     }
     
     setupEventListeners() {
@@ -616,10 +627,101 @@ class PortfolioApp {
         document.getElementById('closeButton').addEventListener('click', () => {
             this.closeAnimationPopup();
         });
+
+        // Delegate click for elements with `data-see-project-id` to ensure thumbnails and buttons work
+        const projectList = document.getElementById('projectList');
+        if (projectList) {
+            projectList.addEventListener('click', (e) => {
+                const btn = e.target.closest && e.target.closest('[data-see-project-id]');
+                if (btn) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const pid = btn.getAttribute('data-see-project-id');
+                    const project = projectsData.find(p => String(p.id) === String(pid));
+                    if (project) {
+                        this.showProjectDetail(project);
+                    } else {
+                        console.warn('Project not found for id', pid);
+                    }
+                }
+            });
+        }
+
+        // Simple header menu marker behavior
+        const siteMenu = document.getElementById('siteMenu');
+        if (siteMenu) {
+            const links = Array.from(siteMenu.querySelectorAll('.menu-link'));
+            const marker = document.getElementById('menuMarker');
+
+            const updateMarkerTo = (linkEl) => {
+                if (!linkEl || !marker) return;
+                const linkRect = linkEl.getBoundingClientRect();
+                const menuRect = siteMenu.getBoundingClientRect();
+                const left = Math.round(linkRect.left - menuRect.left);
+                marker.style.transform = `translateX(${left}px)`;
+                marker.style.width = `${Math.round(linkRect.width)}px`;
+            };
+
+            this.updateMenuMarker = (target) => {
+                const activeLink = links.find(l => l.dataset.target === target) || links[0];
+                links.forEach(l => l.classList.toggle('active', l === activeLink));
+                updateMarkerTo(activeLink);
+                // Toggle name capsule active state when 'about' is selected
+                const nameCapsule = document.querySelector('.name-capsule');
+                if (nameCapsule) {
+                    nameCapsule.classList.toggle('active', target === 'about');
+                }
+            };
+
+            // Click handlers for menu links
+            links.forEach(link => {
+                link.addEventListener('click', (ev) => {
+                    ev.preventDefault();
+                    const t = link.dataset.target;
+                    if (t === 'projects') {
+                        const path = window.location.pathname && window.location.pathname.toLowerCase();
+                        if (path && (path.includes('about.html') || path.includes('archive.html'))) {
+                            window.location.href = 'index.html';
+                            return;
+                        }
+                        if (typeof this.showProjects === 'function') this.showProjects();
+                    } else if (t === 'about') {
+                        if (!(window.location.pathname && window.location.pathname.toLowerCase().includes('about.html'))) {
+                            window.location.href = 'about.html';
+                            return;
+                        }
+                    } else if (t === 'archive') {
+                        if (!(window.location.pathname && window.location.pathname.toLowerCase().includes('archive.html'))) {
+                            window.location.href = 'archive.html';
+                            return;
+                        }
+                    }
+                    this.updateMenuMarker(t);
+                });
+            });
+
+            // Keep marker positioned on resize
+            window.addEventListener('resize', () => {
+                const active = links.find(l => l.classList.contains('active')) || links[0];
+                updateMarkerTo(active);
+            });
+            // initial marker state — choose based on current page
+            setTimeout(() => {
+                const path = (window.location.pathname || '').toLowerCase();
+                if (path.includes('about.html')) {
+                    this.updateMenuMarker('about');
+                } else if (path.includes('archive.html')) {
+                    this.updateMenuMarker('archive');
+                } else {
+                    this.updateMenuMarker('projects');
+                }
+            }, 80);
+        }
     }
     
     renderProjects() {
         const projectList = document.getElementById('projectList');
+        if (!projectList) return;
         projectList.innerHTML = '';
         
         projectsData.forEach(project => {
@@ -658,8 +760,10 @@ class PortfolioApp {
                             </button>
                         </div>
                         <div class="project-image">
-                            <img class="simple-img" src="${project.image}" alt="${project.title}" />
-                        </div>
+                                    <a href="#" class="project-thumb" data-see-project-id="${project.id}">
+                                        <img class="simple-img" src="${project.image}" alt="${project.title}" />
+                                    </a>
+                                </div>
                     </div>
                 </div>
             `;
@@ -705,18 +809,46 @@ class PortfolioApp {
         const projectPage = document.getElementById('projectPage');
         const projectsContainer = document.getElementById('projectsContainer');
         
-        // Build project detail HTML
+        // Build project detail HTML (exclude PDFs from gallery; PDFs are exposed via Documents buttons)
         let galleryHTML = '';
-        if(project.gallery && project.gallery.length > 0) {
-            galleryHTML = `
-                <div class="project-gallery">
-                    <h3>Gallery</h3>
-                    <div class="gallery-grid">
-                        ${project.gallery.map(img => `<img class="simple-img" src="${img}" alt="${project.title}" />`).join('')}
+        if (project.gallery && project.gallery.length > 0) {
+            const imageItems = project.gallery.filter(img => !/\.pdf$/i.test(img));
+            if (imageItems.length > 0) {
+                galleryHTML = `
+                    <div class="project-gallery">
+                        <h3>Gallery</h3>
+                        <div class="gallery-grid">
+                                        ${imageItems.map((img, i) => {
+                                            const thumb = img.replace(/\.(png|jpe?g)$/i, '-thumb.jpg');
+                                            const thumbWebp = img.replace(/\.(png|jpe?g)$/i, '-thumb.webp');
+                                            return `
+                                                <div class="gallery-item">
+                                                    <picture>
+                                                        <source type="image/webp" srcset="${thumbWebp}" />
+                                                        <img class="simple-img" src="${thumb}" data-full="${img}" data-index="${i}" alt="${project.title}" loading="lazy" />
+                                                    </picture>
+                                                </div>
+                                            `;
+                                        }).join('')}
+                        </div>
                     </div>
-                </div>
-            `;
+                `;
+            }
         }
+
+            // Documents links for the side info section
+            let docsHTML = '';
+            if (project.map || project.thesis) {
+                docsHTML = `
+                    <div class="project-info-item">
+                        <h4>Documents</h4>
+                        <div class="project-docs">
+                            ${project.map ? `<a class="project-link btn" href="${project.map}" target="_blank" rel="noopener noreferrer">Map (PDF)</a>` : ''}
+                            ${project.thesis ? `<a class="project-link btn" href="${project.thesis}" target="_blank" rel="noopener noreferrer">Thesis (PDF)</a>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
         
         let challengeHTML = '';
         if(project.challenge) {
@@ -798,6 +930,7 @@ class PortfolioApp {
                             </div>
                             
                             ${liveUrlHTML}
+                            ${docsHTML}
                         </div>
                     </div>
                     
@@ -809,6 +942,7 @@ class PortfolioApp {
         // Show project page, hide projects list
         projectsContainer.style.display = 'none';
         projectPage.style.display = 'block';
+        if (this.updateMenuMarker) this.updateMenuMarker('projects');
         
         // Initialize 3D banner if model exists
         if (project.model3D && typeof window.init3DBanner === 'function') {
@@ -835,14 +969,72 @@ class PortfolioApp {
         
         // Scroll to top
         window.scrollTo(0, 0);
+
+        // Setup gallery lightbox interactions
+        const lightboxEl = document.getElementById('lightbox');
+        const lightboxImage = lightboxEl && lightboxEl.querySelector('.lightbox-image');
+        const lightboxClose = lightboxEl && lightboxEl.querySelector('.lightbox-close');
+        const lightboxPrev = lightboxEl && lightboxEl.querySelector('.lightbox-prev');
+        const lightboxNext = lightboxEl && lightboxEl.querySelector('.lightbox-next');
+
+        const galleryImgs = projectPage.querySelectorAll('.project-gallery .gallery-item img');
+        const images = Array.from(galleryImgs).map(img => img.dataset.full || img.src.replace('-thumb',''));
+
+        let currentIndex = 0;
+
+        function showLightbox(idx) {
+            if (!lightboxEl || !lightboxImage) return;
+            currentIndex = idx;
+            lightboxImage.src = images[currentIndex];
+            lightboxEl.style.display = 'flex';
+        }
+
+        function closeLightbox() {
+            if (!lightboxEl) return;
+            lightboxEl.style.display = 'none';
+            lightboxImage.src = '';
+        }
+
+        function nextImage() { showLightbox((currentIndex + 1) % images.length); }
+        function prevImage() { showLightbox((currentIndex - 1 + images.length) % images.length); }
+
+        // Attach click handlers
+        galleryImgs.forEach((img, i) => {
+            img.addEventListener('click', (e) => {
+                e.stopPropagation();
+                showLightbox(i);
+            });
+        });
+
+        if (lightboxClose) lightboxClose.addEventListener('click', closeLightbox);
+        if (lightboxPrev) lightboxPrev.addEventListener('click', (e) => { e.stopPropagation(); prevImage(); });
+        if (lightboxNext) lightboxNext.addEventListener('click', (e) => { e.stopPropagation(); nextImage(); });
+
+        // click outside image to close
+        const overlay = lightboxEl && lightboxEl.querySelector('.lightbox-overlay');
+        if (overlay) overlay.addEventListener('click', closeLightbox);
+
+        // keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (!lightboxEl || lightboxEl.style.display !== 'flex') return;
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowRight') nextImage();
+            if (e.key === 'ArrowLeft') prevImage();
+        });
     }
     
     showProjects() {
         const projectPage = document.getElementById('projectPage');
         const projectsContainer = document.getElementById('projectsContainer');
+
+        if (!projectPage || !projectsContainer) {
+            window.location.href = 'index.html';
+            return;
+        }
         
         projectPage.style.display = 'none';
         projectsContainer.style.display = 'block';
+        if (this.updateMenuMarker) this.updateMenuMarker('projects');
         
         this.selectedProject = null;
         
