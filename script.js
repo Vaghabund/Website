@@ -673,49 +673,14 @@ class PortfolioApp {
                 }
             };
 
-            // Click handlers for menu links
-            links.forEach(link => {
-                link.addEventListener('click', (ev) => {
-                    ev.preventDefault();
-                    const t = link.dataset.target;
-                    if (t === 'projects') {
-                        const path = window.location.pathname && window.location.pathname.toLowerCase();
-                        if (path && (path.includes('about.html') || path.includes('archive.html'))) {
-                            window.location.href = 'index.html';
-                            return;
-                        }
-                        if (typeof this.showProjects === 'function') this.showProjects();
-                    } else if (t === 'about') {
-                        if (!(window.location.pathname && window.location.pathname.toLowerCase().includes('about.html'))) {
-                            window.location.href = 'about.html';
-                            return;
-                        }
-                    } else if (t === 'archive') {
-                        if (!(window.location.pathname && window.location.pathname.toLowerCase().includes('archive.html'))) {
-                            window.location.href = 'archive.html';
-                            return;
-                        }
-                    }
-                    this.updateMenuMarker(t);
-                });
-            });
+            // Click handlers removed - now handled in header.js for SPA navigation
 
             // Keep marker positioned on resize
             window.addEventListener('resize', () => {
                 const active = links.find(l => l.classList.contains('active')) || links[0];
                 updateMarkerTo(active);
             });
-            // initial marker state — choose based on current page
-            setTimeout(() => {
-                const path = (window.location.pathname || '').toLowerCase();
-                if (path.includes('about.html')) {
-                    this.updateMenuMarker('about');
-                } else if (path.includes('archive.html')) {
-                    this.updateMenuMarker('archive');
-                } else {
-                    this.updateMenuMarker('projects');
-                }
-            }, 80);
+            // Initial marker state now handled in header.js
         }
     }
     
@@ -1071,6 +1036,7 @@ class PortfolioApp {
 // ============================================
 // Initialize on page load
 // ============================================
+window.PortfolioApp = PortfolioApp;
 window.addEventListener('DOMContentLoaded', () => {
-    new PortfolioApp();
+    window.portfolioApp = new PortfolioApp();
 });
