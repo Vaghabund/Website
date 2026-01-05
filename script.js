@@ -761,7 +761,10 @@ class PortfolioApp {
                         </div>
                         <div class="project-image">
                                     <a href="#" class="project-thumb" data-see-project-id="${project.id}">
-                                        <img class="simple-img" src="${project.image}" alt="${project.title}" />
+                                        <picture>
+                                            <source type="image/webp" srcset="${project.image.replace(/\.(png|jpe?g)$/i, '.webp')}" />
+                                            <img class="simple-img" src="${project.image}" alt="${project.title}" loading="lazy" />
+                                        </picture>
                                     </a>
                                 </div>
                     </div>
@@ -819,8 +822,8 @@ class PortfolioApp {
                         <h3>Gallery</h3>
                         <div class="gallery-grid">
                                         ${imageItems.map((img, i) => {
-                                            const thumb = img.replace(/\.(png|jpe?g)$/i, '-thumb.jpg');
-                                            const thumbWebp = img.replace(/\.(png|jpe?g)$/i, '-thumb.webp');
+                                            const thumb = img.replace(/\.(png|jpe?g|webp)$/i, '-thumb.jpg');
+                                            const thumbWebp = img.replace(/\.(png|jpe?g|webp)$/i, '-thumb.webp');
                                             return `
                                                 <div class="gallery-item">
                                                     <picture>
@@ -899,7 +902,10 @@ class PortfolioApp {
                     ${banner3DHTML}
                     
                     <div class="project-hero-image">
-                        <img class="simple-img" src="${project.heroImage || project.image}" alt="${project.title}" />
+                        <picture>
+                            <source type="image/webp" srcset="${(project.heroImage || project.image).replace(/\.(png|jpe?g)$/i, '.webp')}" />
+                            <img class="simple-img" src="${project.heroImage || project.image}" alt="${project.title}" loading="lazy" />
+                        </picture>
                     </div>
                     
                     <div class="project-details-grid">
