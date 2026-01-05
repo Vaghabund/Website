@@ -758,7 +758,7 @@ class PortfolioApp {
                         </div>
                         <div class="project-image">
                                     <a href="#" class="project-thumb" data-see-project-id="${project.id}">
-                                        <img class="simple-img" src="${project.image}" alt="${project.title}" />
+                                        <img class="simple-img" src="${project.image}" alt="${project.title}" loading="lazy" />
                                     </a>
                                 </div>
                     </div>
