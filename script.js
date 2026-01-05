@@ -34,9 +34,9 @@ const projectsData = [
         year: '2025',
         description: 'A modern web application built with React and Node.js, featuring real-time collaboration and advanced data visualization.',
         fullDescription: 'Project Alpha represents a comprehensive solution for team collaboration in data-intensive environments. Built with modern web technologies, it provides real-time synchronization, advanced analytics, and intuitive user interfaces that make complex data accessible to all team members.',
-        image: 'media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_01.png',
-        thumbnailImage: 'media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_02.png',
-        heroImage: 'media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_03.png',
+        image: 'media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_01.webp',
+        thumbnailImage: 'media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_02.webp',
+        heroImage: 'media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_03.webp',
         model3D: '', // Path to 3D model (empty for now, add .glb file to models/ folder)
         model3DOptions: { // Optional 3D banner settings
             interactionType: 'cursor-follow',
@@ -896,7 +896,7 @@ class PortfolioApp {
                     ${banner3DHTML}
                     
                     <div class="project-hero-image">
-                        <img class="simple-img" src="${project.heroImage || project.image}" alt="${project.title}" />
+                        <img class="simple-img" src="${project.heroImage || project.image}" alt="${project.title}" loading="lazy" />
                     </div>
                     
                     <div class="project-details-grid">
