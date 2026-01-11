@@ -4,16 +4,9 @@
     <img src="media/logo/Name_bold.svg" alt="" class="header-background-logo" aria-hidden="true">
     <div class="container row row--header">
         <div class="col col--shrink">
-            <div class="name-capsule pill">
-                <div class="name-inner" aria-hidden="true"></div>
-                <h1 class="header-name" id="headerName">
-                    <img src="media/logo/Name.svg" alt="Joel Tenenberg" class="name-image">
-                </h1>
-            </div>
-        </div>
-        <div class="col col--shrink">
             <div class="logo-capsule pill" id="logoContainer">
                 <img src="media/logo/LOGO.svg" alt="Logo" class="logo-image">
+                <span class="logo-text">Joel Tenenberg</span>
             </div>
         </div>
         <div class="col"></div>
@@ -23,6 +16,12 @@
                 <a href="index.html" class="menu-link" data-target="projects" data-page="index">Projects</a>
                 <a href="about.html" class="menu-link" data-target="about" data-page="about">About</a>
                 <a href="archive.html" class="menu-link" data-target="archive" data-page="archive">Archive</a>
+            </div>
+            
+            <div id="themeToggle" class="theme-toggle-capsule pill">
+                <div id="themeMarker" class="theme-inner" aria-hidden="true"></div>
+                <div class="theme-btn" data-theme="dark">Dark</div>
+                <div class="theme-btn" data-theme="light">Light</div>
             </div>
         </nav>
         <div class="header-separator"></div>
@@ -83,12 +82,12 @@
         
         // Function to update marker position
         const updateMarkerTo = (linkEl) => {
-            if (!linkEl || !marker || !siteMenu) return;
+            if (!linkEl || !marker) return;
             const linkRect = linkEl.getBoundingClientRect();
-            const menuRect = siteMenu.getBoundingClientRect();
-            const left = Math.round(linkRect.left - menuRect.left);
+            const parentRect = marker.parentElement.getBoundingClientRect();
+            const left = linkRect.left - parentRect.left;
             marker.style.transform = `translateX(${left}px)`;
-            marker.style.width = `${Math.round(linkRect.width)}px`;
+            marker.style.width = `${linkRect.width}px`;
         };
         
         // Function to update active state and marker
@@ -187,12 +186,63 @@
             }
             updateActiveLink(target);
         }, 50);
+
+        // Initialize theme toggle
+        initThemeToggle();
         
         // Handle browser back/forward
         window.addEventListener('popstate', (e) => {
             if (e.state && e.state.page) {
                 window.location.reload(); // Simple fallback for back button
             }
+        });
+    }
+
+    function initThemeToggle() {
+        const themeBtns = document.querySelectorAll('.theme-btn');
+        const themeMarker = document.getElementById('themeMarker');
+        const body = document.body;
+
+        const updateThemeMarker = (activeBtn) => {
+            if (!activeBtn || !themeMarker) return;
+            const btnRect = activeBtn.getBoundingClientRect();
+            const parentRect = themeMarker.parentElement.getBoundingClientRect();
+            const left = btnRect.left - parentRect.left;
+            themeMarker.style.transform = `translateX(${left}px)`;
+            themeMarker.style.width = `${btnRect.width}px`;
+        };
+
+        const setTheme = (theme, animate = true) => {
+            body.setAttribute('data-theme', theme);
+            localStorage.setItem('portfolio-theme', theme);
+            
+            themeBtns.forEach(btn => {
+                const isActive = btn.dataset.theme === theme;
+                btn.classList.toggle('active', isActive);
+                if (isActive) updateThemeMarker(btn);
+            });
+
+            if (!animate) {
+                body.style.transition = 'none';
+                setTimeout(() => body.style.transition = '', 100);
+            }
+
+            // Notify script.js about theme change for metaballs/3D background
+            window.dispatchEvent(new CustomEvent('themechanged', { detail: { theme } }));
+        };
+
+        themeBtns.forEach(btn => {
+            btn.addEventListener('click', () => setTheme(btn.dataset.theme));
+        });
+
+        // Load saved theme or default to dark
+        const savedTheme = localStorage.getItem('portfolio-theme') || 'dark';
+        setTheme(savedTheme, false);
+
+        // Resize handler for theme marker
+        window.addEventListener('resize', () => {
+            const active = Array.from(themeBtns).find(b => b.classList.contains('active'));
+            if (active) updateThemeMarker(active);
         });
     }
 })();

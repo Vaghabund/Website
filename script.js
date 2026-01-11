@@ -42,7 +42,7 @@ const projectsData = [
             interactionType: 'cursor-follow',
             autoRotate: true,
             modelScale: 1.5,
-            backgroundColor: 0xf5f5f5,
+            backgroundColor: 0x000000,
             maxRotation: 15,
             lerpFactor: 0.08
         },
@@ -188,21 +188,25 @@ class LogoAnimation {
     }
     
     draw() {
-        // Clear with white background
-        this.ctx.fillStyle = 'rgba(255, 255, 255, 1)';
-        this.ctx.fillRect(0, 0, this.size, this.size);
+        // Clear with transparent background (was white)
+        this.ctx.clearRect(0, 0, this.size, this.size);
         
-        // Draw balls with same style as main animation - solid black with blur
+        // Check current theme
+        const theme = document.body.getAttribute('data-theme') || 'dark';
+        const isDark = theme === 'dark';
+        const color = isDark ? '255, 255, 255' : '0, 0, 0';
+        
+        // Draw balls with same style as main animation
         this.ctx.globalCompositeOperation = 'source-over';
         for(const b of this.balls) {
-            // Add blur effect
-            this.ctx.shadowColor = 'rgba(0,0,0,0.8)';
-            this.ctx.shadowBlur = 8;
+            // Add subtle glow
+            this.ctx.shadowColor = `rgba(${color}, 0.4)`;
+            this.ctx.shadowBlur = 6;
             this.ctx.shadowOffsetX = 0;
             this.ctx.shadowOffsetY = 0;
             
-            // Solid black fill
-            this.ctx.fillStyle = 'rgba(0,0,0,1)';
+            // Fill
+            this.ctx.fillStyle = `rgba(${color}, 0.9)`;
             this.ctx.beginPath();
             this.ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
             this.ctx.fill();
@@ -403,8 +407,8 @@ class MetaballAnimation {
             const dy = this.mouseY - ball.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
-            if(distance < 250) {
-                const force = (250 - distance) / 250;
+            if(distance < 400) {
+                const force = (400 - distance) / 400;
                 ball.vx += (dx / distance) * force * 0.8;
                 ball.vy += (dy / distance) * force * 0.8;
             }
@@ -436,6 +440,11 @@ class MetaballAnimation {
         // Clear canvas completely
         this.ctx.clearRect(0, 0, this.width, this.height);
         
+        // Check current theme
+        const theme = document.body.getAttribute('data-theme') || 'dark';
+        const isDark = theme === 'dark';
+        const color = isDark ? '255, 255, 255' : '0, 0, 0';
+        
         // Apply group transform
         this.ctx.save();
         const gx = this.groupTransform.x;
@@ -444,15 +453,15 @@ class MetaballAnimation {
         this.ctx.translate(gx, gy);
         this.ctx.scale(gs, gs);
         
-        // Solid black metaballs with edge blur
+        // Metaballs with edge blur
         this.ctx.globalCompositeOperation = 'source-over';
         for(const b of this.balls) {
-            this.ctx.shadowColor = 'rgba(0,0,0,0.9)';
+            this.ctx.shadowColor = `rgba(${color}, 0.4)`;
             this.ctx.shadowBlur = 40;
             this.ctx.shadowOffsetX = 0;
             this.ctx.shadowOffsetY = 0;
             
-            this.ctx.fillStyle = 'rgba(0,0,0,1)';
+            this.ctx.fillStyle = `rgba(${color}, 0.95)`;
             this.ctx.beginPath();
             this.ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
             this.ctx.fill();
@@ -467,10 +476,10 @@ class MetaballAnimation {
         this.cctx.clearRect(0, 0, this.width, this.height);
         if(this.mouseMoved && this.mouseX > 0 && this.mouseY > 0) {
             this.cctx.save();
-            const g = this.cctx.createRadialGradient(this.mouseX, this.mouseY, 0, this.mouseX, this.mouseY, 10);
-            g.addColorStop(0, 'rgba(0,0,0,0.8)');
-            g.addColorStop(0.7, 'rgba(0,0,0,0.3)');
-            g.addColorStop(1, 'rgba(0,0,0,0)');
+            const g = this.cctx.createRadialGradient(this.mouseX, this.mouseY, 0, this.mouseX, this.mouseY, 15);
+            g.addColorStop(0, `rgba(${color}, 0.6)`);
+            g.addColorStop(0.5, `rgba(${color}, 0.2)`);
+            g.addColorStop(1, `rgba(${color}, 0)`);
             this.cctx.fillStyle = g;
             this.cctx.beginPath();
             this.cctx.arc(this.mouseX, this.mouseY, 10, 0, Math.PI * 2);
@@ -522,12 +531,31 @@ class PortfolioApp {
         // Setup event listeners
         this.setupEventListeners();
         
+        // Setup video
+        this.setupVideo();
+        
         // Header name stretch removed — keep name static
         
         // Setup draggable image
         this.setupDraggableImage();
     }
     
+    setupVideo() {
+        const introVideo = document.getElementById('greyhoundVideo');
+        if (introVideo) {
+            // Force play in case browser blocked autoplay
+            introVideo.play().catch(e => console.log("Autoplay prevented:", e));
+            
+            introVideo.addEventListener('click', () => {
+                if (introVideo.paused) {
+                    introVideo.play();
+                } else {
+                    introVideo.pause();
+                }
+            });
+        }
+    }
+
     setupDraggableImage() {
         const draggable = document.getElementById('draggableImage');
         if (!draggable) return;
@@ -612,20 +640,19 @@ class PortfolioApp {
     }
     
     setupEventListeners() {
-        // Header name click - go back to projects
-        document.getElementById('headerName').addEventListener('click', () => {
-            this.selectedProject = null;
-            this.showProjects();
-        });
-        
-        // Logo click - show fullscreen animation
-        document.getElementById('logoContainer').addEventListener('click', () => {
-            this.showAnimationPopup();
-        });
-        
-        // Close button
-        document.getElementById('closeButton').addEventListener('click', () => {
-            this.closeAnimationPopup();
+        // Logo click - show fullscreen animation (using delegation to handle deferred header rendering)
+        document.addEventListener('click', (e) => {
+            const logoContainer = e.target.closest('#logoContainer');
+            if (logoContainer) {
+                this.showAnimationPopup();
+                return;
+            }
+            
+            const closeBtn = e.target.closest('#closeButton');
+            if (closeBtn) {
+                this.closeAnimationPopup();
+                return;
+            }
         });
 
         // Delegate click for elements with `data-see-project-id` to ensure thumbnails and buttons work
@@ -656,10 +683,10 @@ class PortfolioApp {
             const updateMarkerTo = (linkEl) => {
                 if (!linkEl || !marker) return;
                 const linkRect = linkEl.getBoundingClientRect();
-                const menuRect = siteMenu.getBoundingClientRect();
-                const left = Math.round(linkRect.left - menuRect.left);
+                const parentRect = marker.parentElement.getBoundingClientRect();
+                const left = linkRect.left - parentRect.left;
                 marker.style.transform = `translateX(${left}px)`;
-                marker.style.width = `${Math.round(linkRect.width)}px`;
+                marker.style.width = `${linkRect.width}px`;
             };
 
             this.updateMenuMarker = (target) => {
@@ -694,28 +721,14 @@ class PortfolioApp {
             li.className = 'project-item';
             
             li.innerHTML = `
-                <div class="project-header" data-project-id="${project.id}" style="display: grid; grid-template-columns: 1fr 1fr; align-items: baseline; gap: 20px;">
-                    <div style="display: flex; align-items: baseline; gap: 12px;">
-                        <h3 class="project-title" style="text-align: left; color: black; word-wrap: break-word; margin: 0;">${project.title}</h3>
-                        <span class="project-subtitle" style="color: black; font-size: 0.9rem;">${project.subtitle}</span>
+                <div class="project-header" data-project-id="${project.id}">
+                    <div class="project-info-group">
+                        <h3 class="project-title">${project.title}</h3>
+                        <span class="project-subtitle">${project.subtitle}</span>
                     </div>
-                    <span class="project-year" style="text-align: right; color: black;">${project.year}</span>
+                    <span class="project-year">${project.year}</span>
                 </div>
 
-                <style>
-                    @media (max-width: 768px) {
-                        .project-header .project-subtitle,
-                        .project-header .project-year {
-                            display: none;
-                        }
-                        .project-header {
-                            grid-template-columns: 1fr;
-                        }
-                        .project-title {
-                            text-align: left;
-                        }
-                    }
-                </style>
                 <div class="project-details" data-project-details-id="${project.id}">
                     <div class="project-content">
                         <div class="project-description">
@@ -855,9 +868,9 @@ class PortfolioApp {
         }
         
         projectPage.innerHTML = `
-            <button class="back-button" id="backButton">← Back to Projects</button>
-            
-            <div class="project-page-content">
+            <div class="project-page-content container">
+                <button class="back-button" id="backButton">← Back to Projects</button>
+                
                 <header class="project-page-header">
                     <h1 class="project-page-title">${project.title}</h1>
                     <p class="project-page-subtitle">${project.subtitle}</p>
@@ -913,13 +926,26 @@ class PortfolioApp {
         // Show project page, hide projects list
         projectsContainer.style.display = 'none';
         projectPage.style.display = 'block';
+        
+        // Hide main page video intro
+        const introVideoContainer = document.querySelector('.project-video-intro');
+        if (introVideoContainer) introVideoContainer.style.display = 'none';
+        
+        // Remove video class to restore padding
+        const portMain = document.getElementById('portfolioMain');
+        if (portMain) portMain.classList.remove('with-video');
+
         if (this.updateMenuMarker) this.updateMenuMarker('projects');
         
         // Initialize 3D banner if model exists
         if (project.model3D && typeof window.init3DBanner === 'function') {
             // Small delay to ensure DOM is ready
             setTimeout(() => {
-                const options = project.model3DOptions || {};
+                const options = { ...(project.model3DOptions || {}) };
+                // Override background color based on theme
+                const isLight = document.body.getAttribute('data-theme') === 'light';
+                options.backgroundColor = isLight ? 0xffffff : 0x000000;
+                
                 this.currentBanner = window.init3DBanner(
                     `threeBanner-${project.id}`,
                     project.model3D,
@@ -1005,6 +1031,20 @@ class PortfolioApp {
         
         projectPage.style.display = 'none';
         projectsContainer.style.display = 'block';
+        
+        // Show and play main page video intro
+        const introVideoContainer = document.querySelector('.project-video-intro');
+        if (introVideoContainer) {
+            introVideoContainer.style.display = 'block';
+            
+            // Add video class to remove padding
+            const portMain = document.getElementById('portfolioMain');
+            if (portMain) portMain.classList.add('with-video');
+
+            const introVideo = introVideoContainer.querySelector('video');
+            if (introVideo) introVideo.play().catch(e => console.log("Autoplay prevented:", e));
+        }
+
         if (this.updateMenuMarker) this.updateMenuMarker('projects');
         
         this.selectedProject = null;
