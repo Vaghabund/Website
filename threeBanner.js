@@ -117,9 +117,7 @@ class ThreeBanner {
                 
                 this.scene.add(this.model);
             },
-            (xhr) => {
-                console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-            },
+            null, // progress callback - not needed
             (error) => {
                 console.error('Error loading model:', error);
                 this.createPlaceholderGeometry();

@@ -37,11 +37,14 @@ const projectsData = [
         image: 'media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_01.png',
         thumbnailImage: 'media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_02.png',
         heroImage: 'media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_03.png',
-        model3D: '', // Path to 3D model (empty for now, add .glb file to models/ folder)
+        model3D: 'media/models/Harpy v24.gltf', // Path to 3D model
         model3DOptions: { // Optional 3D banner settings
             interactionType: 'cursor-follow',
             autoRotate: true,
-            backgroundColor: 0xffffff
+            modelScale: 1.5,
+            backgroundColor: 0xf5f5f5,
+            maxRotation: 15,
+            lerpFactor: 0.08
         },
         challenge: 'The main challenge was creating a system that could handle real-time data updates while maintaining performance and user experience across different devices and network conditions.',
         solution: 'We implemented a WebSocket-based architecture with optimistic updates and conflict resolution, paired with a responsive design system that adapts to various screen sizes and interaction methods.',
@@ -670,50 +673,20 @@ class PortfolioApp {
                 }
             };
 
-            // Click handlers for menu links
-            links.forEach(link => {
-                link.addEventListener('click', (ev) => {
-                    ev.preventDefault();
-                    const t = link.dataset.target;
-                    if (t === 'projects') {
-                        // If we're on the about page, navigate back to index
-                        if (window.location.pathname && window.location.pathname.toLowerCase().includes('about.html')) {
-                            window.location.href = 'index.html';
-                            return;
-                        }
-                        // Otherwise, show projects in-place
-                        if (typeof this.showProjects === 'function') this.showProjects();
-                    } else if (t === 'about') {
-                        // Navigate to the dedicated about page
-                        if (!(window.location.pathname && window.location.pathname.toLowerCase().includes('about.html'))) {
-                            window.location.href = 'about.html';
-                            return;
-                        }
-                        // already on about page — nothing else needed
-                    }
-                    this.updateMenuMarker(t);
-                });
-            });
+            // Click handlers removed - now handled in header.js for SPA navigation
 
             // Keep marker positioned on resize
             window.addEventListener('resize', () => {
                 const active = links.find(l => l.classList.contains('active')) || links[0];
                 updateMarkerTo(active);
             });
-            // initial marker state — choose based on current page
-            setTimeout(() => {
-                const path = (window.location.pathname || '').toLowerCase();
-                if (path.includes('about.html')) {
-                    this.updateMenuMarker('about');
-                } else {
-                    this.updateMenuMarker('projects');
-                }
-            }, 80);
+            // Initial marker state now handled in header.js
         }
     }
     
     renderProjects() {
         const projectList = document.getElementById('projectList');
+        if (!projectList) return;
         projectList.innerHTML = '';
         
         projectsData.forEach(project => {
@@ -753,7 +726,10 @@ class PortfolioApp {
                         </div>
                         <div class="project-image">
                                     <a href="#" class="project-thumb" data-see-project-id="${project.id}">
-                                        <img class="simple-img" src="${project.image}" alt="${project.title}" />
+                                        <picture>
+                                            <source type="image/webp" srcset="${project.image.replace(/\.(png|jpe?g)$/i, '.webp')}" />
+                                            <img class="simple-img" src="${project.image}" alt="${project.title}" loading="lazy" />
+                                        </picture>
                                     </a>
                                 </div>
                     </div>
@@ -811,8 +787,8 @@ class PortfolioApp {
                         <h3>Gallery</h3>
                         <div class="gallery-grid">
                                         ${imageItems.map((img, i) => {
-                                            const thumb = img.replace(/\.(png|jpe?g)$/i, '-thumb.jpg');
-                                            const thumbWebp = img.replace(/\.(png|jpe?g)$/i, '-thumb.webp');
+                                            const thumb = img.replace(/\.(png|jpe?g|webp)$/i, '-thumb.jpg');
+                                            const thumbWebp = img.replace(/\.(png|jpe?g|webp)$/i, '-thumb.webp');
                                             return `
                                                 <div class="gallery-item">
                                                     <picture>
@@ -891,7 +867,10 @@ class PortfolioApp {
                     ${banner3DHTML}
                     
                     <div class="project-hero-image">
-                        <img class="simple-img" src="${project.heroImage || project.image}" alt="${project.title}" />
+                        <picture>
+                            <source type="image/webp" srcset="${(project.heroImage || project.image).replace(/\.(png|jpe?g)$/i, '.webp')}" />
+                            <img class="simple-img" src="${project.heroImage || project.image}" alt="${project.title}" loading="lazy" />
+                        </picture>
                     </div>
                     
                     <div class="project-details-grid">
@@ -1018,6 +997,11 @@ class PortfolioApp {
     showProjects() {
         const projectPage = document.getElementById('projectPage');
         const projectsContainer = document.getElementById('projectsContainer');
+
+        if (!projectPage || !projectsContainer) {
+            window.location.href = 'index.html';
+            return;
+        }
         
         projectPage.style.display = 'none';
         projectsContainer.style.display = 'block';
@@ -1052,6 +1036,7 @@ class PortfolioApp {
 // ============================================
 // Initialize on page load
 // ============================================
+window.PortfolioApp = PortfolioApp;
 window.addEventListener('DOMContentLoaded', () => {
-    new PortfolioApp();
+    window.portfolioApp = new PortfolioApp();
 });
