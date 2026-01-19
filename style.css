@@ -1360,6 +1360,7 @@ button:hover,
 
 /* Archive card base styles - edge-to-edge images */
 .archive-section .project-card {
+    position: relative;
     aspect-ratio: var(--ratio, 4/3);
     border-radius: 0;
     background: #000;
