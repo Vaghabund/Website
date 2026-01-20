@@ -174,12 +174,12 @@ body {
     max-width: 1300px;
     margin: 0 auto;
     width: 100%;
-    padding: 0 var(--space-xl);
+    padding: 0 12px;
 }
 
 /* Section - vertical spacing wrapper */
 .section {
-    padding: var(--space-4xl) var(--space-xl);
+    padding: var(--space-4xl) 12px;
 }
 
 .section--header {
@@ -191,7 +191,7 @@ body {
     backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
     -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
     z-index: 100;
-    padding: var(--space-lg) var(--space-xl); /* Reduced side padding slightly for edge logo */
+    padding: var(--space-lg) 12px; /* Reduced side padding slightly for edge logo */
     border-bottom: 1px solid var(--glass-border);
     overflow: hidden;
 }
@@ -362,13 +362,13 @@ body {
    ========================== */
 
 .pill {
-    --pill-height: 50px;
+    --pill-height: 38px;
     position: relative;
     display: inline-flex;
     align-items: center;
     height: var(--pill-height);
     padding: 0 16px; /* horizontal padding adjusts spacing */
-    border-radius: 25px;
+    border-radius: 19px;
     background: var(--glass-bg);
     backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
     -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
@@ -472,11 +472,11 @@ body {
     position: absolute;
     left: -1px;
     top: -1px;
-    height: var(--pill-height);
+    height: calc(var(--pill-height) + 2px);
     width: 50%;
     background: var(--marker-bg);
     border: 1px solid var(--marker-border);
-    border-radius: 25px;
+    border-radius: 19px;
     z-index: 2;
     transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
                 background-color 0.3s ease;
@@ -485,16 +485,13 @@ body {
 .theme-btn {
     position: relative;
     z-index: 3;
-    padding: 0 16px;
+    padding: 0 20px;
     height: var(--pill-height);
     display: flex;
     align-items: center;
     justify-content: center;
     text-decoration: none;
     color: var(--color-text-lighter);
-    font-family: 'Benzin', var(--font-family);
-    font-size: 0.85rem;
-    font-weight: 500;
     transition: color 0.4s ease;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -530,6 +527,17 @@ body {
     position: relative;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+}
+
+/* ==========================
+   Footer
+   ========================== */
+.section--footer {
+    padding: var(--space-4xl) 12px;
+}
+.section--footer .container {
+    display: flex;
     justify-content: center;
 }
 
