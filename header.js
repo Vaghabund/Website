@@ -14,7 +14,6 @@
                 <div id="menuMarker" class="menu-inner" aria-hidden="true"></div>
                 <a href="index.html" class="menu-link" data-target="projects" data-page="index">Projects</a>
                 <a href="about.html" class="menu-link" data-target="about" data-page="about">About</a>
-                <a href="archive.html" class="menu-link" data-target="archive" data-page="archive">Archive</a>
             </div>
         </nav>
         <div class="header-separator"></div>
@@ -174,8 +173,6 @@
             let target = 'projects';
             if (currentPage.includes('about.html')) {
                 target = 'about';
-            } else if (currentPage.includes('archive.html')) {
-                target = 'archive';
             }
             updateActiveLink(target);
         }, 50);
