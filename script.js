@@ -674,6 +674,25 @@ class PortfolioApp {
             });
         }
 
+        // Delegate click for archive grid project cards
+        const archiveSection = document.getElementById('archiveSection');
+        if (archiveSection) {
+            archiveSection.addEventListener('click', (e) => {
+                const btn = e.target.closest && e.target.closest('[data-see-project-id]');
+                if (btn) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const pid = btn.getAttribute('data-see-project-id');
+                    const project = projectsData.find(p => String(p.id) === String(pid));
+                    if (project) {
+                        this.showProjectDetail(project);
+                    } else {
+                        console.warn('Project not found for id', pid);
+                    }
+                }
+            });
+        }
+
         // Simple header menu marker behavior
         const siteMenu = document.getElementById('siteMenu');
         if (siteMenu) {
