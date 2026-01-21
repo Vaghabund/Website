@@ -2,10 +2,18 @@
     const footerMarkup = `
 <footer class="section section--footer">
     <div class="container">
-        <div id="themeToggle" class="theme-toggle-capsule pill" aria-label="Theme toggle">
-            <div id="themeMarker" class="theme-inner" aria-hidden="true"></div>
-            <div class="theme-btn" data-theme="dark" title="Dark"></div>
-            <div class="theme-btn" data-theme="light" title="Light"></div>
+        <div class="footer-content">
+            <div id="themeToggle" class="theme-toggle-capsule pill" aria-label="Theme toggle">
+                <div id="themeMarker" class="theme-inner" aria-hidden="true"></div>
+                <div class="theme-btn" data-theme="dark" title="Dark"></div>
+                <div class="theme-btn" data-theme="light" title="Light"></div>
+            </div>
+            <nav class="footer-links" aria-label="Footer navigation">
+                <a href="https://github.com/Vaghabund" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub</a>
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="footer-link">Instagram</a>
+                <a href="mailto:joel@tenenberg.net" class="footer-link">Contact</a>
+                <a href="impressum.html" class="footer-link">Impressum</a>
+            </nav>
         </div>
     </div>
 </footer>`;
