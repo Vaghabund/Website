@@ -171,15 +171,21 @@ body {
    ============================================ */
 
 .container {
-    max-width: 1300px;
-    margin: 0 auto;
     width: 100%;
-    padding: 0 12px;
+    padding: 0;
+    margin: 0;
+}
+
+/* Default container padding for content sections (not archive) */
+.section .container,
+main .container,
+#portfolioMain .container {
+    padding: 0 24px;
 }
 
 /* Section - vertical spacing wrapper */
 .section {
-    padding: var(--space-4xl) 12px;
+    padding: var(--space-4xl) 0;
 }
 
 .section--header {
@@ -191,7 +197,7 @@ body {
     backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
     -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
     z-index: 100;
-    padding: var(--space-lg) 12px; /* Reduced side padding slightly for edge logo */
+    padding: var(--space-lg) 0;
     border-bottom: 1px solid var(--glass-border);
     overflow: hidden;
 }
@@ -218,6 +224,8 @@ body {
 .section--header > .container {
     position: relative;
     z-index: 1;
+    padding: 0 24px;
+    max-width: 100%;
 }
 
 /* Row - flex/grid container */
@@ -508,8 +516,27 @@ body {
 
 @media (max-width: 768px) {
     #siteMenu { gap: 12px; padding-left: 8px; }
-    .menu-capsule { padding: 8px 10px; gap: 8px; }
-    .menu-inner { height: calc(100% - 8px); }
+    .menu-capsule { padding: 0; gap: 0; }
+    .menu-inner { height: var(--pill-height); }
+    
+    .section .container,
+    main .container,
+    #portfolioMain .container {
+        padding: 0 12px;
+    }
+    
+    .section--header > .container {
+        padding: 0 12px;
+    }
+    
+    .section--footer .container {
+        padding: 0 12px;
+    }
+    
+    .project-video-intro {
+        height: 15vh;
+        min-height: 150px;
+    }
 }
 
 @keyframes spin {
@@ -534,11 +561,12 @@ body {
    Footer
    ========================== */
 .section--footer {
-    padding: var(--space-4xl) 12px;
+    padding: var(--space-4xl) 0;
 }
 .section--footer .container {
     display: flex;
     justify-content: center;
+    padding: 0 24px;
 }
 
 #sharedHeader {
@@ -595,15 +623,15 @@ body {
 
 .close-button-topleft {
     position: fixed;
-    top: 20px;
-    right: 20px;
+    top: var(--space-lg);
+    left: 24px;
     background: var(--glass-bg);
     backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
     -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
     border: 1px solid var(--glass-border);
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
+    padding: 0 20px;
+    height: var(--pill-height);
+    border-radius: 999px;
     font-size: 24px;
     cursor: pointer;
     color: var(--color-text-lighter);
@@ -792,12 +820,7 @@ main.page-enter {
     line-height: var(--line-height-normal);
     transition: color 0.3s ease;
 }
-    font-weight: 500;
-    color: var(--text);
-    margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 0.01em;
-}
+
 
 .project-subtitle {
     font-family: var(--font-family);
@@ -962,11 +985,13 @@ button:hover,
     justify-content: center;
     cursor: pointer;
     overflow: hidden;
+    height: 20vh;
+    min-height: 200px;
 }
 
 .intro-video {
     width: 100%;
-    height: auto;
+    height: 100%;
     display: block;
     object-fit: cover;
 }
@@ -1219,16 +1244,6 @@ button:hover,
     padding: var(--space-md) 0 var(--space-5xl) 0;
 }
 
-.archive-section {
-    margin-top: var(--space-xl);
-    background: rgba(0, 0, 0, 0.03);
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
-    padding: var(--space-4xl);
-    border-radius: 40px;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
 .archive-heading {
     display: flex;
     align-items: baseline;
@@ -1295,7 +1310,7 @@ button:hover,
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: contain; /* show full image without cropping */
+    object-fit: cover; /* show full image without cropping */
     background: transparent;
 }
 
@@ -1361,23 +1376,22 @@ button:hover,
 
 /* Archive section container - override default styles for full-width grid */
 .archive-section {
-    overflow-x: hidden;
-    padding: 0;
     background: transparent;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     border-radius: 0;
     border: none;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
 }
 
 /* Scoped grid layout for archive page only */
 .archive-section .projects-grid {
-    width: 100vw;
-    margin-left: calc(50% - 50vw);
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(18vw, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 1rem;
-    padding: 1rem 1rem 0 1rem;
+    padding: 1rem;
     grid-auto-flow: dense;
 }
 
@@ -1396,7 +1410,8 @@ button:hover,
 }
 
 /* Span utility classes for flexible collage layout */
-.archive-section .project-card.span-2 {
+.archive-section .project-card.span-2,
+.archive-section .project-card.two-col {
     grid-column: span 2;
 }
 
@@ -1410,7 +1425,7 @@ button:hover,
     inset: 0;
     width: 100%;
     height: 100%;
-    aspect-ratio: auto;
+    aspect-ratio: var(--ratio, 4/3);
     background: #000;
 }
 
@@ -1495,11 +1510,12 @@ button:hover,
 /* Responsive breakpoints for archive grid */
 @media (max-width: 1024px) {
     .archive-section .projects-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         gap: 1rem;
     }
     
-    .archive-section .project-card.span-2 {
+    .archive-section .project-card.span-2,
+    .archive-section .project-card.two-col {
         grid-column: span 2;
     }
     
@@ -1510,12 +1526,13 @@ button:hover,
 
 @media (max-width: 768px) {
     .archive-section .projects-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 1rem;
     }
     
     .archive-section .project-card.span-2,
-    .archive-section .project-card.span-3 {
+    .archive-section .project-card.span-3,
+    .archive-section .project-card.two-col {
         grid-column: span 1;
     }
     

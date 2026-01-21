@@ -644,7 +644,10 @@ class PortfolioApp {
         document.addEventListener('click', (e) => {
             const logoContainer = e.target.closest('#logoContainer');
             if (logoContainer) {
-                this.showAnimationPopup();
+                // Only allow animation on desktop
+                if (window.innerWidth > 768) {
+                    this.showAnimationPopup();
+                }
                 return;
             }
             
@@ -1076,8 +1079,10 @@ class PortfolioApp {
         const overlay = document.getElementById('animationOverlay');
         overlay.style.display = 'block';
         
-        // Initialize metaball animation
-        this.metaballAnimation = new MetaballAnimation('metaballCanvas', 'cursorCanvas');
+        // Only initialize metaball animation on desktop (larger screens)
+        if (window.innerWidth > 768) {
+            this.metaballAnimation = new MetaballAnimation('metaballCanvas', 'cursorCanvas');
+        }
     }
     
     closeAnimationPopup() {

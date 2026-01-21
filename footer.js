@@ -66,9 +66,9 @@
             btn.addEventListener('click', () => setTheme(btn.dataset.theme));
         });
 
-        // Initial theme: saved or system preference (dark/light only)
+        // Initial theme: always dark, unless saved preference exists
         const saved = localStorage.getItem('portfolio-theme');
-        const initial = saved ? saved : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        const initial = saved ? saved : 'dark';
         setTheme(initial, false);
 
         window.addEventListener('resize', () => {
