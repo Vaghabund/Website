@@ -1361,9 +1361,15 @@ button:hover,
 
 /* Scoped grid layout for archive page only */
 .archive-section .projects-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(18vw, 1fr));
+    gap: 1rem;
     grid-auto-flow: dense;
+    width: 100vw;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    margin-left: calc(-50vw + 50%);
+    margin-right: calc(-50vw + 50%);
 }
 
 /* Archive card base styles - edge-to-edge images */
@@ -1381,7 +1387,8 @@ button:hover,
 }
 
 /* Span utility classes for flexible collage layout */
-.archive-section .project-card.span-2 {
+.archive-section .project-card.span-2,
+.archive-section .project-card.two-col {
     grid-column: span 2;
 }
 
@@ -1480,27 +1487,30 @@ button:hover,
 /* Responsive breakpoints for archive grid */
 @media (max-width: 1024px) {
     .archive-section .projects-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
+        grid-template-columns: repeat(auto-fill, minmax(25vw, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .archive-section .projects-grid {
+        grid-template-columns: repeat(auto-fill, minmax(45vw, 1fr));
     }
     
-    .archive-section .project-card.span-2 {
-        grid-column: span 2;
-    }
-    
-    .archive-section .project-card.span-3 {
+    .archive-section .project-card.span-2,
+    .archive-section .project-card.two-col {
         grid-column: span 2;
     }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 480px) {
     .archive-section .projects-grid {
         grid-template-columns: 1fr;
-        gap: 10px;
+        gap: 0.75rem;
     }
     
     .archive-section .project-card.span-2,
-    .archive-section .project-card.span-3 {
+    .archive-section .project-card.span-3,
+    .archive-section .project-card.two-col {
         grid-column: span 1;
     }
     
