@@ -1359,6 +1359,11 @@ button:hover,
    Archive Section - Collage Grid Overrides
    ============================================ */
 
+/* Archive section container - prevent horizontal overflow from full-width grid */
+.archive-section {
+    overflow-x: hidden;
+}
+
 /* Scoped grid layout for archive page only */
 .archive-section .projects-grid {
     width: 100vw;
