@@ -164,6 +164,7 @@ html, body {
 
 body {
     background: var(--bg);
+    color: var(--text);
 }
 
 /* ============================================
@@ -533,9 +534,19 @@ main .container,
         padding: 0 12px;
     }
     
+    .row--header .col--shrink {
+        margin-left: 8px;
+    }
+    
     .project-video-intro {
         height: 15vh;
         min-height: 150px;
+    }
+}
+
+@media (max-width: 600px) {
+    .row--header .col--shrink {
+        margin-left: 4px;
     }
 }
 
@@ -938,15 +949,15 @@ main.page-enter {
 }
 
 .project-item:hover .project-title {
-    color: #000;
+    color: var(--pill-hover-text);
 }
 
 .project-item:hover .project-year {
-    color: rgba(0, 0, 0, 0.6);
+    color: var(--pill-hover-text);
 }
 
 .project-item:hover .project-subtitle {
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--pill-hover-text);
 }
  
 /* ============================================
@@ -1078,7 +1089,7 @@ button:hover,
     font-family: var(--font-family);
     font-size: 1.2rem;
     line-height: 1.6;
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-text-light);
     margin-bottom: var(--space-xl);
 }
 
@@ -1105,14 +1116,14 @@ button:hover,
     font-size: 0.8rem;
     font-weight: 500;
     margin-bottom: var(--space-sm);
-    color: rgba(0, 0, 0, 0.3);
+    color: var(--color-text-lighter);
     text-transform: uppercase;
     letter-spacing: 0.1em;
 }
 
 .project-info-item p, .tech-list li {
     font-family: var(--font-family);
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-text-light);
     font-size: 1.1rem;
     font-weight: 400;
 }
@@ -1153,7 +1164,7 @@ button:hover,
     font-size: 1rem;
     font-weight: 500;
     margin-bottom: var(--space-2xl);
-    color: rgba(0, 0, 0, 0.4);
+    color: var(--color-text-lighter);
     text-transform: uppercase;
     letter-spacing: 0.1em;
 }
@@ -1258,7 +1269,7 @@ button:hover,
     font-family: var(--font-family);
     font-size: 1.2rem;
     line-height: 1.6;
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-text-light);
     margin-bottom: var(--space-lg);
 }
 

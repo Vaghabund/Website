@@ -10,7 +10,7 @@
             </div>
             <nav class="footer-links" aria-label="Footer navigation">
                 <a href="https://github.com/Vaghabund" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub</a>
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="footer-link">Instagram</a>
+                <a href="https://www.instagram.com/vaghabund/" target="_blank" rel="noopener noreferrer" class="footer-link">Instagram</a>
                 <a href="mailto:joel@tenenberg.net" class="footer-link">Contact</a>
                 <a href="impressum.html" class="footer-link">Impressum</a>
             </nav>

@@ -543,14 +543,40 @@ class PortfolioApp {
     setupVideo() {
         const introVideo = document.getElementById('greyhoundVideo');
         if (introVideo) {
-            // Force play in case browser blocked autoplay
-            introVideo.play().catch(e => console.log("Autoplay prevented:", e));
+            // Ensure video is loaded before attempting to play
+            const attemptPlay = () => {
+                introVideo.play()
+                    .then(() => console.log("Video playing"))
+                    .catch(e => {
+                        console.log("Autoplay prevented, attempting with gesture:", e);
+                        // On iOS, sometimes need to wait for user interaction
+                        // But we can try again if metadata loads
+                        if (introVideo.readyState >= 2) {
+                            introVideo.play().catch(err => console.log("Play failed:", err));
+                        }
+                    });
+            };
             
+            // Try to play when ready
+            if (introVideo.readyState >= 2) {
+                attemptPlay();
+            } else {
+                introVideo.addEventListener('canplay', attemptPlay, { once: true });
+            }
+            
+            // Click to toggle play/pause
             introVideo.addEventListener('click', () => {
                 if (introVideo.paused) {
                     introVideo.play();
                 } else {
                     introVideo.pause();
+                }
+            });
+            
+            // Resume play on visibility change (iOS Safari)
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden && introVideo.paused) {
+                    introVideo.play().catch(e => console.log("Resume play failed:", e));
                 }
             });
         }
