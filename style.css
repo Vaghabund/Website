@@ -1359,10 +1359,25 @@ button:hover,
    Archive Section - Collage Grid Overrides
    ============================================ */
 
+/* Archive section container - override default styles for full-width grid */
+.archive-section {
+    overflow-x: hidden;
+    padding: 0;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-radius: 0;
+    border: none;
+}
+
 /* Scoped grid layout for archive page only */
 .archive-section .projects-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(18vw, 1fr));
+    gap: 1rem;
+    padding: 1rem 1rem 0 1rem;
     grid-auto-flow: dense;
 }
 
@@ -1481,7 +1496,7 @@ button:hover,
 @media (max-width: 1024px) {
     .archive-section .projects-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
+        gap: 1rem;
     }
     
     .archive-section .project-card.span-2 {
@@ -1493,10 +1508,10 @@ button:hover,
     }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
     .archive-section .projects-grid {
         grid-template-columns: 1fr;
-        gap: 10px;
+        gap: 1rem;
     }
     
     .archive-section .project-card.span-2,
