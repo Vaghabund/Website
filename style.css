@@ -1724,16 +1724,9 @@ button:hover,
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.lightbox-close:hover,
-.lightbox-prev:hover,
-.lightbox-next:hover {
-    background: var(--pill-hover-bg);
-    color: var(--pill-hover-text);
-    border-color: transparent;
-}
+
 
 .lightbox-prev,
 .lightbox-next {

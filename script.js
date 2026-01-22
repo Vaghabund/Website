@@ -64,8 +64,6 @@ const projectsData = [
             'media/projects/OperationalAnalysisofPhotogrametry/images/ransacfilter.png',
             'media/projects/OperationalAnalysisofPhotogrametry/images/Tower_jpeg.jpg',
             'media/projects/OperationalAnalysisofPhotogrametry/images/Rundgang_01.png',
-            'media/projects/OperationalAnalysisofPhotogrametry/documents/Map of Operational Analysis.pdf',
-            'media/projects/OperationalAnalysisofPhotogrametry/documents/MA DC_Joel Tenenberg_Operational Analysis of Photogrammetry.pdf'
         ],
         thesis: 'media/projects/OperationalAnalysisofPhotogrametry/documents/MA DC_Joel Tenenberg_Operational Analysis of Photogrammetry.pdf',
         map: 'media/projects/OperationalAnalysisofPhotogrametry/documents/Map of Operational Analysis.pdf'
