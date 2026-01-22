@@ -13,16 +13,27 @@ A lightweight, modern portfolio website featuring an interactive metaball animat
 
 ## Structure
 
-The website is built with pure HTML, CSS, and JavaScript:
+The website is built with pure HTML, CSS, and JavaScript in a modular architecture:
 
-- `index.html` - Main HTML structure with header, portfolio, and animation overlay
-- `style.css` - Comprehensive styling with modern design patterns
-- `script.js` - All interactive functionality including:
-  - Logo animation (small orbital metaballs in header)
-  - Fullscreen metaball animation with physics simulation
-  - Portfolio project list with expand/collapse
-  - Project detail page navigation
-  - Smooth animations and transitions
+### JavaScript Modules
+- `js/data/projects.js` - Project data and metadata
+- `js/animations/logo.js` - Logo animation (orbital metaballs in header)
+- `js/animations/metaball.js` - Fullscreen metaball animation with physics simulation
+- `js/components/lightbox.js` - Image gallery lightbox component
+- `js/app/portfolio.js` - Main portfolio application logic
+- `script_new.js` - Application orchestrator and initialization
+
+### CSS Modules
+- `css/base/` - Variables, typography, and font definitions
+- `css/layout/` - Base layout, header, and footer styles
+- `css/components/` - Reusable components (navigation, buttons, projects, lightbox, etc.)
+- `css/utilities/` - Helper classes and responsive breakpoints
+- `style-new.css` - Main CSS import file
+
+### Pages
+- `index.html` - Portfolio showcase and project gallery
+- `about.html` - About page with bio and CV download
+- `impressum.html` - Legal information (Impressum)
 
 ## How to Run
 
@@ -59,10 +70,11 @@ The site showcases multiple projects with:
 
 To customize the portfolio:
 
-1. **Update Projects**: Edit the `projectsData` array in `script.js` to add/modify projects
-2. **Change Colors**: Modify CSS variables and colors in `style.css`
-3. **Adjust Fonts**: Update the font imports at the top of `style.css`
-4. **Modify Animation**: Tweak metaball physics in the `MetaballAnimation` class
+1. **Update Projects**: Edit the `projectsData` array in `js/data/projects.js` to add/modify projects
+2. **Change Colors**: Modify CSS variables in `css/base/variables.css`
+3. **Adjust Fonts**: Update font definitions in `css/base/typography.css`
+4. **Modify Animations**: Tweak physics in `js/animations/metaball.js` or `js/animations/logo.js`
+5. **Customize Components**: Edit individual component files in `css/components/` or `js/components/`
 
 ## Browser Compatibility
 
@@ -75,9 +87,11 @@ Works in all modern browsers that support:
 ## Architecture
 
 Built with clean, maintainable code:
+- **Modular file structure** - Organized into logical directories for easy navigation
+- **Separation of concerns** - Data, animations, components, and styling are isolated
 - **Object-oriented design** with ES6 classes
-- **Modular structure** separating concerns (animation, navigation, UI)
+- **Component-based CSS** - Each UI component has its own stylesheet
 - **Event-driven architecture** for user interactions
-- **No dependencies** - pure vanilla JavaScript
+- **No build dependencies** - Pure vanilla JavaScript with no bundlers required
 
 Enjoy the portfolio! 🎉
