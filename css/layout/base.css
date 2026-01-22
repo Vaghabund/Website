@@ -1,0 +1,96 @@
+/* ============================================
+   Base Layout & Container Styles
+   ============================================ */
+
+/* Header height variable */
+:root {
+    --header-height: 98px;
+}
+
+/* Container - Full-width wrapper */
+.container {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+/* Default container padding for content sections */
+.section .container,
+main .container,
+#portfolioMain .container {
+    padding: 0 24px;
+}
+
+/* Section - Vertical spacing wrapper */
+.section {
+    padding: var(--space-4xl) 0;
+}
+
+/* Row - Flex/grid container */
+.row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xl);
+}
+
+.row--2col {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: var(--space-3xl);
+    align-items: center;
+}
+
+/* Column - Flex/grid child */
+.col {
+    flex: 1;
+}
+
+.col--shrink {
+    flex-shrink: 0;
+}
+
+/* Main content spacing adjustments */
+main,
+#portfolioMain {
+    padding-top: var(--header-height);
+    width: 100%;
+    margin: 0 auto;
+    z-index: 1;
+}
+
+/* Landing video specific: sit behind the header */
+#portfolioMain.with-video {
+    padding-top: 0;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+/* Page transition animations */
+main {
+    transition: transform 400ms cubic-bezier(0.4, 0, 0.2, 1), 
+                opacity 400ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+main.page-exit {
+    transform: translateX(-50px);
+    opacity: 0;
+}
+
+main.page-enter {
+    transform: translateX(50px);
+    opacity: 0;
+}
+
+/* Responsive Layout */
+@media (max-width: 768px) {
+    .section .container,
+    main .container,
+    #portfolioMain .container {
+        padding: 0 12px;
+    }
+    
+    .row--2col {
+        grid-template-columns: 1fr;
+        gap: var(--space-xl);
+    }
+}

@@ -1,0 +1,205 @@
+/* ============================================
+   Project Page Styles
+   ============================================ */
+
+.project-page {
+    animation: fadeInUp 0.5s ease;
+}
+
+.back-button {
+    margin-bottom: var(--space-3xl);
+}
+
+.project-video-intro {
+    width: 100%;
+    position: relative;
+    margin-top: 0; 
+    margin-bottom: var(--space-4xl);
+    display: flex;
+    justify-content: center;
+    cursor: pointer;
+    overflow: hidden;
+    height: 20vh;
+    min-height: 200px;
+}
+
+.intro-video {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+.project-page-header {
+    margin-bottom: var(--space-4xl);
+}
+
+.project-page-title {
+    font-family: 'Benzin', var(--font-family);
+    font-size: 3.5rem;
+    font-weight: 500;
+    margin-bottom: 15px;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    line-height: 1;
+}
+
+.project-page-subtitle {
+    font-family: 'Benzin', var(--font-family);
+    font-size: 1.2rem;
+    color: rgba(0, 0, 0, 0.4);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.project-hero-image {
+    margin-bottom: var(--space-4xl);
+    border-radius: 0;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+}
+
+.project-details-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: var(--space-4xl);
+    margin-bottom: var(--space-4xl);
+}
+
+.project-description-section h3 {
+    font-family: 'Benzin', var(--font-family);
+    font-size: 1rem;
+    font-weight: 500;
+    margin: var(--space-4xl) 0 var(--space-lg) 0;
+    color: rgba(0, 0, 0, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.project-description-section h3:first-child {
+    margin-top: 0;
+}
+
+.project-description-section p {
+    font-family: var(--font-family);
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: var(--color-text-light);
+    margin-bottom: var(--space-xl);
+}
+
+.project-info-section {
+    background: rgba(0, 0, 0, 0.03);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    padding: var(--space-3xl);
+    border-radius: 0;
+    height: fit-content;
+}
+
+.project-info-item {
+    margin-bottom: var(--space-3xl);
+}
+
+.project-info-item:last-child {
+    margin-bottom: 0;
+}
+
+.project-info-item h4 {
+    font-family: 'Benzin', var(--font-family);
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-bottom: var(--space-sm);
+    color: var(--color-text-lighter);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.project-info-item p, 
+.tech-list li {
+    font-family: var(--font-family);
+    color: var(--color-text-light);
+    font-size: 1.1rem;
+    font-weight: 400;
+}
+
+.tech-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.tech-list li {
+    margin-bottom: var(--space-xs);
+}
+
+.project-link {
+    color: #fff;
+    text-decoration: underline;
+    font-weight: 500;
+    transition: opacity 0.3s ease;
+}
+
+.project-link:hover {
+    opacity: 0.7;
+}
+
+.project-link.btn {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+}
+
+/* Project Gallery */
+.project-gallery {
+    margin-top: var(--space-5xl);
+}
+
+.project-gallery h3 {
+    font-family: 'Benzin', var(--font-family);
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: var(--space-2xl);
+    color: var(--color-text-lighter);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1rem;
+}
+
+.gallery-item img {
+    border-radius: 0;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.gallery-item:hover img {
+    transform: scale(1.02);
+}
+
+/* Responsive Project Page */
+@media (max-width: 768px) {
+    .project-page-title {
+        font-size: 2rem;
+    }
+    
+    .project-details-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-3xl);
+    }
+    
+    .gallery-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .project-video-intro {
+        height: 15vh;
+        min-height: 150px;
+    }
+}

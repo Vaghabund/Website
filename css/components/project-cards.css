@@ -1,0 +1,182 @@
+/* ============================================
+   Project List & Cards
+   ============================================ */
+
+.project-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.project-item {
+    background: var(--item-bg);
+    border-radius: 40px;
+    border: 1px solid var(--glass-border);
+    padding: var(--space-lg) var(--space-2xl);
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: var(--space-md);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+}
+
+.project-item:hover {
+    background: var(--btn-hover-bg);
+    border-color: var(--btn-hover-bg);
+    transform: translateY(-2px);
+}
+
+.project-item:hover .project-title,
+.project-item:hover .project-subtitle,
+.project-item:hover .project-year,
+.project-item:hover .project-description {
+    color: var(--text-inverse);
+}
+
+.project-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+    gap: var(--space-lg);
+}
+
+.project-info-group {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+}
+
+.project-title {
+    font-family: 'Benzin', var(--font-family);
+    font-size: 1.5rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--text);
+    transition: color 0.3s ease;
+}
+
+.project-subtitle {
+    font-family: var(--font-family);
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--color-text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: color 0.3s ease;
+}
+
+.project-year {
+    font-family: var(--font-family);
+    font-size: 0.9rem;
+    color: var(--color-text-lighter);
+    transition: color 0.3s ease;
+}
+
+.project-description {
+    margin-top: var(--space-sm);
+    color: var(--color-text-light);
+    font-size: 1rem;
+    max-width: 600px;
+    line-height: var(--line-height-normal);
+    transition: color 0.3s ease;
+}
+
+.projects-separator {
+    height: 1px;
+    background: linear-gradient(to right, rgba(0,0,0,0.1), rgba(0,0,0,0.05));
+    margin: var(--space-xl) 0;
+    width: 100%;
+}
+
+.project-thumbnail {
+    width: 60px;
+    height: var(--space-3xl);
+    border-radius: var(--radius-none);
+    overflow: hidden;
+}
+
+.expand-icon {
+    font-size: var(--font-size-xl);
+    font-weight: 300;
+    color: var(--color-text-lighter);
+    transition: transform var(--transition-normal);
+}
+
+.project-details {
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height var(--transition-smooth),
+                opacity var(--transition-slow) ease-in-out,
+                padding var(--transition-smooth);
+    padding: 0;
+}
+
+.project-details.expanded {
+    max-height: 500px;
+    opacity: 1;
+    padding: var(--space-xl) 0 var(--space-3xl) 0;
+}
+
+.project-content {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: var(--space-2xl);
+    padding: var(--space-md) 0;
+    transform: translateY(-10px);
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.project-details.expanded .project-content {
+    transform: translateY(0);
+}
+
+.project-description {
+    padding-top: 10px;
+}
+
+.project-description p {
+    font-family: var(--font-family);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: rgba(0, 0, 0, 0.7);
+    margin-bottom: var(--space-lg);
+}
+
+.project-image img {
+    border-radius: 25px;
+    box-shadow: 0 15px 45px rgba(0,0,0,0.08);
+    transition: transform 0.4s ease;
+}
+
+.project-image:hover img {
+    transform: scale(1.02);
+}
+
+/* Responsive Project Cards */
+@media (max-width: 768px) {
+    .project-header {
+        grid-template-columns: 1fr;
+    }
+    
+    .project-subtitle, 
+    .project-year {
+        display: none;
+    }
+    
+    .project-content {
+        grid-template-columns: 1fr;
+        gap: var(--space-xl);
+        padding: 0 0 var(--space-2xl) 0;
+    }
+    
+    .project-image {
+        order: -1;
+    }
+}
