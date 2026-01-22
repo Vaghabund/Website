@@ -168,14 +168,17 @@
         });
         
         // Initial marker position based on current page
-        setTimeout(() => {
-            const currentPage = window.location.pathname.toLowerCase();
-            let target = 'projects';
-            if (currentPage.includes('about.html')) {
-                target = 'about';
-            }
-            updateActiveLink(target);
-        }, 50);
+        // Use requestAnimationFrame to ensure layout is complete before positioning
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                const currentPage = window.location.pathname.toLowerCase();
+                let target = 'projects';
+                if (currentPage.includes('about.html')) {
+                    target = 'about';
+                }
+                updateActiveLink(target);
+            });
+        });
 
         // Handle browser back/forward
         window.addEventListener('popstate', (e) => {
