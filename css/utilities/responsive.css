@@ -1,0 +1,17 @@
+/* ============================================
+   Responsive Media Queries
+   ============================================ */
+
+/* Tablet and below */
+@media (max-width: 768px) {
+    /* Reduce header padding on mobile */
+    .project-header {
+        grid-template-columns: 1fr 60px 60px 30px;
+        gap: 10px;
+    }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+    /* Additional mobile-specific adjustments can be added here */
+}

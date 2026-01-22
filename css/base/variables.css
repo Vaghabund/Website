@@ -1,0 +1,147 @@
+/* ============================================
+   Design Tokens (CSS Variables)
+   ============================================ */
+:root {
+    /* Base Themes: Dark (Default) */
+    --bg: #000000;
+    --text: #ffffff;
+    --text-inverse: #000000;
+    --color-text-light: rgba(255, 255, 255, 0.7);
+    --color-text-lighter: rgba(255, 255, 255, 0.4);
+
+    --glass-bg: rgba(0, 0, 0, 0.15);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-blur: 25px;
+    --glass-saturate: 180%;
+
+    --marker-bg: #fff;
+    --marker-text: #000;
+    --marker-border: rgba(255, 255, 255, 0.4);
+
+    --pill-hover-bg: #fff;
+    --pill-hover-text: #000;
+
+    --btn-bg: rgba(255, 255, 255, 0.1);
+    --btn-text: #fff;
+    --btn-hover-bg: #fff;
+    --btn-hover-text: #000;
+
+    --item-bg: rgba(255, 255, 255, 0.03);
+    --item-hover-bg: #fff;
+    --item-hover-text: #000;
+
+    /* Spacing (small, large) */
+    --space-sm: 8px;
+    --space-lg: 24px;
+
+    /* Typography (small, large) */
+    --font-s: 0.9rem;
+    --font-l: 1.2rem;
+
+    /* Misc */
+    --radius-md: 6px;
+    --transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+    /* Compatibility aliases */
+    --color-background: var(--bg);
+    --color-background-alt: var(--bg);
+    --color-text: var(--text);
+    --color-primary: var(--text);
+    --color-border: var(--text);
+
+    --space-xs: var(--space-sm);
+    --space-md: var(--space-sm);
+    --space-xl: var(--space-lg);
+    --space-2xl: var(--space-lg);
+    --space-3xl: calc(var(--space-lg) * 1.5);
+    --space-4xl: calc(var(--space-lg) * 2.5);
+    --space-5xl: calc(var(--space-lg) * 3.5);
+
+    --font-family: 'Elza', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-size-base: var(--font-s);
+    --font-size-sm: var(--font-s);
+    --font-size-md: var(--font-l);
+    --font-size-lg: 1.5rem;
+    --font-size-xl: 1.5rem;
+    --font-size-2xl: 2.8rem;
+    --font-size-3xl: 3rem;
+    --line-height-tight: 1;
+    --line-height-normal: 1.6;
+    --line-height-relaxed: 1.7;
+
+    --radius-none: 0;
+    --radius-sm: var(--radius-md);
+    --radius-lg: var(--radius-md);
+    --radius-xl: calc(var(--radius-md) * 2);
+    --radius-full: 999px;
+
+    /* Glass Effects */
+    --glass-blur: 25px;
+    --glass-saturate: 180%;
+
+    --blur-light: 0.5px;
+    --blur-heavy: 6px;
+
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    --transition-slow: 0.5s ease;
+    --transition-smooth: var(--transition-normal);
+}
+
+[data-theme="light"] {
+    --bg: #ffffff;
+    --text: #000000;
+    --text-inverse: #ffffff;
+    --color-text-light: rgba(0, 0, 0, 0.6);
+    --color-text-lighter: rgba(0, 0, 0, 0.4);
+
+    --glass-bg: rgba(255, 255, 255, 0.6);
+    --glass-border: rgba(0, 0, 0, 0.1);
+
+    --marker-bg: #000;
+    --marker-text: #fff;
+    --marker-border: rgba(0, 0, 0, 0.1);
+
+    --pill-hover-bg: #000;
+    --pill-hover-text: #fff;
+
+    --btn-bg: rgba(0, 0, 0, 0.05);
+    --btn-text: #000;
+    --btn-hover-bg: #000;
+    --btn-hover-text: #fff;
+
+    --item-bg: rgba(0, 0, 0, 0.03);
+    --item-hover-bg: #000;
+    --item-hover-text: #fff;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+::-webkit-scrollbar {
+    display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+* {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+html, body {
+    height: 100%;
+    overflow-x: hidden;
+    font-family: var(--font-family);
+    -webkit-overflow-scrolling: touch;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+}
+
+/* ============================================

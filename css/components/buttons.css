@@ -1,0 +1,42 @@
+/* ============================================
+   Button Styles (Unified)
+   ============================================ */
+
+.btn,
+button,
+input[type="button"],
+input[type="submit"],
+.see-project-link,
+.pdf-open-btn,
+.cv-download,
+.back-button {
+    font-family: 'Benzin', var(--font-family);
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    color: var(--color-text-lighter);
+    border: 1px solid var(--glass-border);
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.btn:hover,
+button:hover,
+.see-project-link:hover,
+.back-button:hover,
+.cv-download:hover,
+.pdf-open-btn:hover {
+    background: var(--pill-hover-bg);
+    color: var(--pill-hover-text);
+    border-color: var(--marker-border);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
