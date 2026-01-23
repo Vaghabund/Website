@@ -21,14 +21,14 @@ The website is built with pure HTML, CSS, and JavaScript in a modular architectu
 - `js/animations/metaball.js` - Fullscreen metaball animation with physics simulation
 - `js/components/lightbox.js` - Image gallery lightbox component
 - `js/app/portfolio.js` - Main portfolio application logic
-- `script_new.js` - Application orchestrator and initialization
+- `script.js` - Application orchestrator and initialization
 
 ### CSS Modules
 - `css/base/` - Variables, typography, and font definitions
 - `css/layout/` - Base layout, header, and footer styles
 - `css/components/` - Reusable components (navigation, buttons, projects, lightbox, etc.)
 - `css/utilities/` - Helper classes and responsive breakpoints
-- `style-new.css` - Main CSS import file
+- `style.css` - Main CSS import file
 
 ### Pages
 - `index.html` - Portfolio showcase and project gallery
