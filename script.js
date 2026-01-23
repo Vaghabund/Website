@@ -11,6 +11,9 @@
 // Initialize on page load
 // ============================================
 window.addEventListener('DOMContentLoaded', () => {
-    // Initialize portfolio app
+    // Expose PortfolioApp class globally for SPA re-initialization
+    window.PortfolioApp = PortfolioApp;
+    
+    // Initialize portfolio app instance
     window.portfolioApp = new PortfolioApp();
 });
