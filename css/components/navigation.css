@@ -73,6 +73,11 @@
     z-index: 2;
 }
 
+/* Prevent transition on initial load */
+.menu-inner.no-transition {
+    transition: none;
+}
+
 .menu-link {
     font-family: 'Benzin', var(--font-family);
     color: var(--color-text-lighter);

@@ -82,6 +82,31 @@
             marker.style.width = `${linkRect.width}px`;
         };
         
+        // Initialize marker position on the active link
+        const initializeMarker = () => {
+            const activeLink = document.querySelector('.menu-link.active');
+            if (activeLink && marker) {
+                // Disable transitions for initial positioning
+                marker.classList.add('no-transition');
+                
+                // Force layout recalculation
+                void marker.offsetHeight;
+                updateMarkerTo(activeLink);
+                
+                // Re-enable transitions after positioning
+                requestAnimationFrame(() => {
+                    marker.classList.remove('no-transition');
+                });
+            }
+        };
+        
+        // Initialize after layout is stable
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                initializeMarker();
+            });
+        });
+        
         // Function to update active state and marker
         const updateActiveLink = (target) => {
             const activeLink = Array.from(menuLinks).find(l => l.dataset.target === target);
@@ -178,6 +203,14 @@
                 }
                 updateActiveLink(target);
             });
+        });
+        
+        // Additional fallback for deployed sites - ensure position after full load
+        window.addEventListener('load', () => {
+            const active = Array.from(menuLinks).find(l => l.classList.contains('active'));
+            if (active) {
+                setTimeout(() => updateMarkerTo(active), 50);
+            }
         });
 
         // Handle browser back/forward
