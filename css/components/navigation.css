@@ -113,6 +113,12 @@
     padding: 0;
 }
 
+/* Make theme toggle thinner without affecting other pills */
+.theme-toggle-capsule.pill {
+    --pill-height: 30px; /* reduce height */
+    border-radius: calc(var(--pill-height) / 2);
+}
+
 .theme-inner {
     position: absolute;
     left: -1px;
@@ -121,7 +127,7 @@
     width: 50%;
     background: var(--marker-bg);
     border: 1px solid var(--marker-border);
-    border-radius: 19px;
+    border-radius: calc(var(--pill-height) / 2);
     z-index: 2;
     transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
                 background-color 0.3s ease;

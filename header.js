@@ -65,6 +65,8 @@
                 link.classList.add('active');
             }
         });
+
+        // (Reverted) header background click navigation removed per request
     });
     
     function initSPANavigation() {
@@ -174,6 +176,12 @@
                             // Re-initialize the portfolio app for the new page
                             if (window.PortfolioApp) {
                                 window.portfolioApp = new window.PortfolioApp();
+                            }
+
+                            // Re-initialize lightbox for new galleries
+                            if (window.siteLightbox || window.Lightbox) {
+                                window.siteLightbox = window.siteLightbox || new window.Lightbox();
+                                window.siteLightbox.init('.project-gallery .gallery-item img');
                             }
                         }
                     } catch (error) {

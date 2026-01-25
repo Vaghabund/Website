@@ -11,6 +11,7 @@ class PortfolioApp {
     init() {
         // Render projects
         this.renderProjects();
+        this.renderArchiveGrid();
         
         // Setup event listeners
         this.setupEventListeners();
@@ -154,9 +155,15 @@ class PortfolioApp {
         document.addEventListener('click', (e) => {
             const logoContainer = e.target.closest('#logoContainer');
             if (logoContainer) {
-                // Only allow animation on desktop
-                if (window.innerWidth > 768) {
-                    this.showAnimationPopup();
+                const onHome = window.location.pathname.toLowerCase().includes('index.html');
+                if (onHome) {
+                    // Only allow animation on desktop when on landing page
+                    if (window.innerWidth > 768) {
+                        this.showAnimationPopup();
+                    }
+                } else {
+                    // Navigate back home from project or other pages
+                    window.location.href = 'index.html';
                 }
                 return;
             }
@@ -167,44 +174,6 @@ class PortfolioApp {
                 return;
             }
         });
-
-        // Delegate click for elements with `data-see-project-id` to ensure thumbnails and buttons work
-        const projectList = document.getElementById('projectList');
-        if (projectList) {
-            projectList.addEventListener('click', (e) => {
-                const btn = e.target.closest && e.target.closest('[data-see-project-id]');
-                if (btn) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const pid = btn.getAttribute('data-see-project-id');
-                    const project = projectsData.find(p => String(p.id) === String(pid));
-                    if (project) {
-                        this.showProjectDetail(project);
-                    } else {
-                        console.warn('Project not found for id', pid);
-                    }
-                }
-            });
-        }
-
-        // Delegate click for archive grid project cards
-        const archiveSection = document.getElementById('archiveSection');
-        if (archiveSection) {
-            archiveSection.addEventListener('click', (e) => {
-                const btn = e.target.closest && e.target.closest('[data-see-project-id]');
-                if (btn) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const pid = btn.getAttribute('data-see-project-id');
-                    const project = projectsData.find(p => String(p.id) === String(pid));
-                    if (project) {
-                        this.showProjectDetail(project);
-                    } else {
-                        console.warn('Project not found for id', pid);
-                    }
-                }
-            });
-        }
 
         // Simple header menu marker behavior
         const siteMenu = document.getElementById('siteMenu');
@@ -265,18 +234,18 @@ class PortfolioApp {
                     <div class="project-content">
                         <div class="project-description">
                             <p>${project.description}</p>
-                            <button class="see-project-link" data-see-project-id="${project.id}">
+                            <a class="see-project-link" href="${project.detailPage || '#'}">
                                 See project →
-                            </button>
+                            </a>
                         </div>
                         <div class="project-image">
-                                    <a href="#" class="project-thumb" data-see-project-id="${project.id}">
-                                        <picture>
-                                            <source type="image/webp" srcset="${project.image.replace(/\.(png|jpe?g)$/i, '.webp')}" />
-                                            <img class="simple-img" src="${project.image}" alt="${project.title}" loading="lazy" />
-                                        </picture>
-                                    </a>
-                                </div>
+                            <a href="${project.detailPage || '#'}" class="project-thumb">
+                                <picture>
+                                    <source type="image/webp" srcset="${project.image.replace(/\.(png|jpe?g)$/i, '.webp')}" />
+                                    <img class="simple-img" src="${project.image}" alt="${project.title}" loading="lazy" />
+                                </picture>
+                            </a>
+                        </div>
                     </div>
                 </div>
             `;
@@ -286,13 +255,37 @@ class PortfolioApp {
             // Add event listener for project header
             const header = li.querySelector('.project-header');
             header.addEventListener('click', () => this.toggleProject(project.id));
-            
-            // Add event listener for "See project" button
-            const seeProjectBtn = li.querySelector('.see-project-link');
-            seeProjectBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.showProjectDetail(project);
-            });
+        });
+    }
+
+    renderArchiveGrid() {
+        const archiveGrid = document.querySelector('#archiveSection .projects-grid');
+        if (!archiveGrid) return;
+
+        archiveGrid.innerHTML = '';
+
+        projectsData.forEach(project => {
+            const card = document.createElement('a');
+            card.className = 'project-card';
+            card.href = project.detailPage || '#';
+            card.setAttribute('aria-label', `${project.title} — ${project.subtitle}`);
+            const cardImage = project.cardImage || project.thumbnailImage || project.image;
+            const webpSource = cardImage ? cardImage.replace(/\.(png|jpe?g)$/i, '.webp') : '';
+
+            card.innerHTML = `
+                <div class="project-media">
+                    <picture>
+                        ${cardImage ? `<source type="image/webp" srcset="${webpSource}">` : ''}
+                        ${cardImage ? `<img src="${cardImage}" alt="${project.title}" loading="lazy">` : ''}
+                    </picture>
+                </div>
+                <div class="project-caption">
+                    <span class="project-title">${project.title}</span>
+                    <span class="project-meta">${project.subtitle}</span>
+                </div>
+            `;
+
+            archiveGrid.appendChild(card);
         });
     }
     

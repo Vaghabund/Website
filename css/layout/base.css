@@ -65,6 +65,13 @@ main,
     padding-right: 0;
 }
 
+/* Project pages: support same banner behavior */
+main.with-video {
+    padding-top: 0;
+    padding-left: 0;
+    padding-right: 0;
+}
+
 /* Page transition animations */
 main {
     transition: transform 400ms cubic-bezier(0.4, 0, 0.2, 1), 

@@ -29,6 +29,9 @@
 const projectsData = [
     {
         id: 1,
+        slug: 'operational-analysis',
+        detailPage: 'project-operational-analysis.html',
+        cardRatio: '4/3',
         title: 'Operational Analysis of Photogrammetry',
         subtitle: 'Master Thesis',
         year: '2025',
@@ -37,6 +40,7 @@ const projectsData = [
         image: 'media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_01.png',
         thumbnailImage: 'media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_02.png',
         heroImage: 'media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_03.png',
+        cardImage: 'media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_01-small.jpg',
         model3D: 'media/models/Harpy v24.gltf', // Path to 3D model
         model3DOptions: { // Optional 3D banner settings
             interactionType: 'cursor-follow',
@@ -70,6 +74,9 @@ const projectsData = [
     },
     {
         id: 2,
+        slug: 'project-beta',
+        detailPage: 'project-beta.html',
+        cardRatio: '4/3',
         title: 'Project Beta',
         subtitle: 'UI/UX Design',
         year: '2024',
@@ -90,6 +97,9 @@ const projectsData = [
     },
     {
         id: 3,
+        slug: 'project-gamma',
+        detailPage: 'project-gamma.html',
+        cardRatio: '16/9',
         title: 'Project Gamma',
         subtitle: 'Mobile App',
         year: '2023',
@@ -110,6 +120,9 @@ const projectsData = [
     },
     {
         id: 4,
+        slug: 'project-delta',
+        detailPage: 'project-delta.html',
+        cardRatio: '1/1',
         title: 'Project Delta',
         subtitle: 'Brand Identity',
         year: '2023',
