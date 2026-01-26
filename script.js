@@ -28,4 +28,37 @@ window.addEventListener('DOMContentLoaded', () => {
     initLB();
     // Also initialize after full load in case gallery renders later
     window.addEventListener('load', initLB);
+    
+    // iOS video autoplay fix
+    const initVideoAutoplay = () => {
+        const video = document.getElementById('greyhoundVideo');
+        if (video) {
+            // Ensure video is muted and has playsinline for iOS
+            video.muted = true;
+            video.playsInline = true;
+            
+            // Attempt to play the video
+            const playPromise = video.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.catch(() => {
+                    // Autoplay was prevented, try to play on user interaction
+                    const playOnInteraction = () => {
+                        video.play().catch(() => {});
+                    };
+                    
+                    // Add multiple interaction listeners for iOS
+                    // Using { once: true } automatically removes listeners after first trigger
+                    document.addEventListener('touchstart', playOnInteraction, { once: true, passive: true });
+                    document.addEventListener('click', playOnInteraction, { once: true });
+                    document.addEventListener('scroll', playOnInteraction, { once: true, passive: true });
+                });
+            }
+        }
+    };
+    
+    // Initialize video autoplay
+    initVideoAutoplay();
+    // Also try after full page load
+    window.addEventListener('load', initVideoAutoplay);
 });

@@ -28,6 +28,10 @@
     height: 100%;
     display: block;
     object-fit: cover;
+    /* Optimize video rendering for iOS */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: transform;
 }
 
 /* Ensure picture wrapper stretches full width/height */
@@ -230,6 +234,14 @@
     .project-video-intro {
         height: 15vh;
         min-height: 150px;
+    }
+}
+
+/* Additional mobile optimizations for very small screens */
+@media (max-width: 400px) {
+    .project-video-intro {
+        height: 12vh;
+        min-height: 120px;
     }
 }
 
