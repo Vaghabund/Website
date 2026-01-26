@@ -45,13 +45,10 @@ window.addEventListener('DOMContentLoaded', () => {
                     // Autoplay was prevented, try to play on user interaction
                     const playOnInteraction = () => {
                         video.play().catch(() => {});
-                        // Remove listeners after successful play attempt
-                        document.removeEventListener('touchstart', playOnInteraction);
-                        document.removeEventListener('click', playOnInteraction);
-                        document.removeEventListener('scroll', playOnInteraction);
                     };
                     
                     // Add multiple interaction listeners for iOS
+                    // Using { once: true } automatically removes listeners after first trigger
                     document.addEventListener('touchstart', playOnInteraction, { once: true, passive: true });
                     document.addEventListener('click', playOnInteraction, { once: true });
                     document.addEventListener('scroll', playOnInteraction, { once: true, passive: true });
