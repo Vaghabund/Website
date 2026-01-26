@@ -90,6 +90,10 @@ main.page-enter {
 
 /* Responsive Layout */
 @media (max-width: 768px) {
+    :root {
+        --header-height: 82px;
+    }
+    
     .section .container,
     main .container,
     #portfolioMain .container {
@@ -99,5 +103,17 @@ main.page-enter {
     .row--2col {
         grid-template-columns: 1fr;
         gap: var(--space-xl);
+    }
+}
+
+@media (max-width: 600px) {
+    :root {
+        --header-height: 76px;
+    }
+}
+
+@media (max-width: 400px) {
+    :root {
+        --header-height: 72px;
     }
 }
