@@ -31,7 +31,7 @@ class PortfolioApp {
             // Ensure video is loaded before attempting to play
             const attemptPlay = () => {
                 introVideo.play()
-                    .then(() => console.log("Video playing"))
+                    .then(() => {})
                     .catch(e => {
                         console.log("Autoplay prevented, attempting with gesture:", e);
                         // On iOS, sometimes need to wait for user interaction
