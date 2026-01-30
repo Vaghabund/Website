@@ -33,11 +33,11 @@ class PortfolioApp {
                 introVideo.play()
                     .then(() => {})
                     .catch(e => {
-                        console.log("Autoplay prevented, attempting with gesture:", e);
+                        // Autoplay prevented, attempting with gesture
                         // On iOS, sometimes need to wait for user interaction
                         // But we can try again if metadata loads
                         if (introVideo.readyState >= 2) {
-                            introVideo.play().catch(err => console.log("Play failed:", err));
+                            introVideo.play().catch(() => {});
                         }
                     });
             };
@@ -61,7 +61,7 @@ class PortfolioApp {
             // Resume play on visibility change (iOS Safari)
             document.addEventListener('visibilitychange', () => {
                 if (!document.hidden && introVideo.paused) {
-                    introVideo.play().catch(e => console.log("Resume play failed:", e));
+                    introVideo.play().catch(() => {});
                 }
             });
         }
@@ -567,7 +567,7 @@ class PortfolioApp {
             if (portMain) portMain.classList.add('with-video');
 
             const introVideo = introVideoContainer.querySelector('video');
-            if (introVideo) introVideo.play().catch(e => console.log("Autoplay prevented:", e));
+            if (introVideo) introVideo.play().catch(() => {});
         }
 
         if (this.updateMenuMarker) this.updateMenuMarker('projects');
