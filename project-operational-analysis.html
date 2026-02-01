@@ -24,39 +24,63 @@
 
             <header class="project-page-header">
                 <h1 class="project-page-title">Operational Analysis of Photogrammetry</h1>
-                <p class="project-page-subtitle">Master Thesis · 2025</p>
             </header>
 
             <div class="project-page-body">
 
                 <div class="project-details-grid">
                     <div class="project-description-section">
-                        <h3>Overview</h3>
-                        <p>An exploration of how photogrammetry can be operationalized for rapid site capture. The project combines iterative image pipelines, point cloud validation, and lightweight 3D visualization to translate raw captures into usable spatial intelligence.</p>
+                        <p><strong>Tracing the Transductive</strong> | Master's Thesis, Universität der Künste Berlin &amp; TU Berlin</p>
 
-                        <h3>Challenge</h3>
-                        <p>Capturing consistent geometry across varying light conditions and lens distortions while keeping processing fast enough for on-site decisions.</p>
+                       <p>Photogrammetry powers Google Maps, autonomous navigation, and biometric systems but operates as a black box. This research investigates how photogrammetry actively constructs spatial knowledge rather than neutrally capturing it, examining the interdependent algorithmic choices that determine what can be known about space.</p>
 
-                        <h3>Solution</h3>
-                        <p>Built a modular workflow: calibrated capture presets, feature matching with outlier rejection, and quick-look renders to flag gaps before leaving the field. A companion UI lets collaborators review frames, point clouds, and reconstruction steps in sequence.</p>
+                        <picture>
+                            <source type="image/webp" srcset="media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_02.webp">
+                            <img src="media/projects/OperationalAnalysisofPhotogrametry/images/Masterpräsi_02.png" alt="Operational analysis visualization" style="width: 100%; margin: var(--space-3xl) 0; display: block;">
+                        </picture>
+
+                        <h4>Overview</h4>
+
+                        <p>Photogrammetry is typically understood as objective 3D reconstruction from photographs. This thesis challenges that assumption through Operational Analysis (Friedrich &amp; Hoel, 2023), examining how each algorithmic step (feature detection, matching, pose estimation, point cloud construction) restructures conditions for the next, creating cascading effects where early choices determine final outcomes.</p>
+
+                        <p>Each transformation encodes assumptions presented as inevitable physics. A corner detection threshold determines which features matter; a matching tolerance decides which correspondences are valid. These selections shape what spatial information survives the pipeline and what is lost.</p>
+
+                        <h4>Challenge</h4>
+
+                        <p>Black-box algorithms obscure their workings in multiple dimensions. Parameter-level choices directly determine what spatial information survives and what is lost; edge cases fall outside statistical norms and disappear entirely. Users encounter results (point clouds, meshes) without engaging the transformations that produced them, creating what Simondon diagnosed in 1958 as a rift between technical reality and human understanding. Linear descriptions further miss the mesh-like, recursive interdependencies of algorithmic processing, necessitating a different representation method.</p>
+
+                        <h4>Solution</h4>
+
+                        <p>The research decomposes photogrammetry into operative moments: precise instances where the algorithm transforms data and restructures the pipeline. These are organized in a diagrammatic map that visualizes both sequence and interdependency, revealing network structure that text obscures. Mapping itself generates understanding; the act of spatializing algorithmic logic forces granular examination and returns agency to human operators.</p>
+
+                        <p>A working installation implements ORB-SLAM3 in TouchDesigner, visualizing each computational step (feature detection, matching, triangulation) with all parameters adjustable. Users can modify corner detection sensitivity or matching tolerance and immediately observe cascading effects through the pipeline, transforming photogrammetry from opaque black box into an interrogable system. This reveals photogrammetry as contingent on specific choices: neither inevitable nor neutral.</p>
+
                     </div>
 
                     <div class="project-info-section">
                         <div class="project-info-item">
                             <h4>Role</h4>
-                            <p>Research, pipeline design, visualization</p>
+                            <p>Research, Planning, Execution</p>
+                        </div>
+                        <div class="project-info-item">
+                            <h4>Project</h4>
+                            <p>Master Thesis · 2025</p>
+                        </div>
+                        <div class="project-info-item">
+                            <h4>Tags</h4>
+                            <p>photogrammetry, TouchDesigner, Python, computervision, 3Dprinting</p>
                         </div>
                         <div class="project-info-item">
                             <h4>Timeline</h4>
-                            <p>4 months</p>
+                            <p>6 months</p>
                         </div>
                         <div class="project-info-item">
                             <h4>Technologies</h4>
                             <ul class="tech-list">
-                                <li>Photogrammetry</li>
                                 <li>TouchDesigner</li>
                                 <li>Python</li>
-                                <li>OpenCV</li>
+                                <li>ORB-SLAM3</li>
+                                <li>SfM</li>
                             </ul>
                         </div>
                         <div class="project-info-item">
@@ -106,12 +130,6 @@
                             <picture>
                                 <source type="image/webp" srcset="media/projects/OperationalAnalysisofPhotogrametry/images/Rundgang_01-small.webp">
                                 <img class="simple-img" src="media/projects/OperationalAnalysisofPhotogrametry/images/Rundgang_01-small.jpg" alt="Rundgang documentation" loading="lazy">
-                            </picture>
-                        </div>
-                        <div class="gallery-item">
-                            <picture>
-                                <source type="image/webp" srcset="media/projects/OperationalAnalysisofPhotogrametry/images/MAP of Operational Analysis-small.webp">
-                                <img class="simple-img" src="media/projects/OperationalAnalysisofPhotogrametry/images/MAP of Operational Analysis-small.jpg" alt="Operational analysis map" loading="lazy">
                             </picture>
                         </div>
                     </div>

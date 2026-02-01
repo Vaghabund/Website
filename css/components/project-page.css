@@ -55,7 +55,7 @@
 .project-page-subtitle {
     font-family: 'Benzin', var(--font-family);
     font-size: 1.2rem;
-    color: rgba(0, 0, 0, 0.4);
+    color: var(--color-text-lighter);
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -76,11 +76,11 @@
 }
 
 .project-description-section h3 {
-    font-family: 'Benzin', var(--font-family);
-    font-size: 1rem;
+    font-family: 'Benzin', sans-serif;
+    font-size: 1.4rem;
     font-weight: 500;
     margin: var(--space-4xl) 0 var(--space-lg) 0;
-    color: rgba(0, 0, 0, 0.4);
+    color: var(--color-text-lighter);
     text-transform: uppercase;
     letter-spacing: 0.1em;
 }
@@ -90,11 +90,42 @@
 }
 
 .project-description-section p {
-    font-family: var(--font-family);
+    font-family: 'Inter', var(--font-family);
     font-size: 1.2rem;
     line-height: 1.6;
     color: var(--color-text-light);
     margin-bottom: var(--space-xl);
+}
+
+/* Ensure subheadings are larger than body text and use the same color family */
+.project-description-section h4 {
+    font-family: 'Inter', var(--font-family);
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--color-text-lighter);
+    margin-top: var(--space-3xl);
+    margin-bottom: var(--space-sm);
+}
+
+.project-description-section h5 {
+    font-family: 'Inter', var(--font-family);
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--color-text-lighter);
+    margin-top: var(--space-2xl);
+    margin-bottom: var(--space-sm);
+}
+
+/* Make list text follow body color for cohesion */
+.project-description-section ul,
+.project-description-section li {
+    font-family: 'Inter', var(--font-family);
+    color: var(--color-text-light);
+}
+
+/* Add natural padding to the project content container to match header alignment */
+.project-page-content.container {
+    padding: var(--space-3xl) 24px;
 }
 
 .project-info-section {
@@ -144,19 +175,37 @@
 }
 
 .project-link {
-    color: #fff;
-    text-decoration: underline;
+    font-family: 'Benzin', var(--font-family);
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    color: var(--color-text-lighter);
+    border: 1px solid var(--glass-border);
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-size: 0.9rem;
     font-weight: 500;
-    transition: opacity 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .project-link:hover {
-    opacity: 0.7;
+    background: var(--pill-hover-bg);
+    color: var(--pill-hover-text);
+    border-color: var(--marker-border);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
 }
 
 .project-link.btn {
-    color: rgba(255, 255, 255, 0.8);
-    text-decoration: none;
+    color: var(--color-text-lighter);
+}
+
+.project-link.btn:hover {
+    color: var(--pill-hover-text);
 }
 
 /* Project Gallery */
