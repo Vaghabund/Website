@@ -27,4 +27,5 @@ npm-debug.log*
 
 # Old/backup files
 script-old.js
+*.backup
 react-app/
