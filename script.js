@@ -21,7 +21,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const initLB = () => {
         if (window.Lightbox) {
             window.siteLightbox = window.siteLightbox || new window.Lightbox();
-            window.siteLightbox.init('.project-gallery .gallery-item img');
+            window.siteLightbox.init('.lightbox-trigger');
         }
     };
     // Initialize after DOM is ready

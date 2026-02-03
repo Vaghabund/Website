@@ -74,9 +74,27 @@
 
 .project-details-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 1fr minmax(0, 65ch) 1fr;
     gap: var(--space-4xl);
     margin-bottom: var(--space-4xl);
+    width: 100%;
+    align-items: start;
+}
+
+.project-description-section h2 {
+    font-family: 'Benzin', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 500;
+    margin: var(--space-4xl) 0 var(--space-lg) 0;
+    color: var(--color-text-lighter);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.project-description-section {
+    max-width: 65ch;
+    /* Place the text column in the middle grid track */
+    grid-column: 2;
 }
 
 .project-description-section h3 {
@@ -99,6 +117,13 @@
     line-height: 1.6;
     color: var(--color-text-light);
     margin-bottom: var(--space-xl);
+}
+
+.project-subtitle-inline {
+    font-family: 'Benzin', var(--font-family);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 /* Ensure subheadings are larger than body text and use the same color family */
@@ -140,6 +165,32 @@
     padding: var(--space-3xl);
     border-radius: 0;
     height: fit-content;
+    min-width: 280px;
+    max-width: 340px;
+    width: 100%;
+    /* Place in the right free column and align to its left edge */
+    grid-column: 3;
+    justify-self: start;
+    /* Stay aligned to top and match text column height */
+    align-self: start;
+    height: 100%;
+}
+
+/* Responsive: simplify layout on narrow screens */
+@media (max-width: 900px) {
+    .project-details-grid {
+        grid-template-columns: 1fr;
+    }
+    .project-description-section {
+        grid-column: 1;
+    }
+    .project-info-section {
+        position: static;
+        grid-column: 1;
+        justify-self: stretch;
+        max-width: none;
+        display: none; /* hide sidebar on small screens for readability */
+    }
 }
 
 .project-info-item {
@@ -212,7 +263,21 @@
     color: var(--pill-hover-text);
 }
 
-/* Project Gallery */
+/* Make inline images clickable with lightbox */
+.project-description-section .lightbox-trigger {
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+    max-width: 100%;
+    height: auto;
+    display: block;
+    width: 100%;
+    margin: var(--space-3xl) auto;
+}
+
+.project-description-section .lightbox-trigger:hover {
+    opacity: 0.85;
+}
+
 .project-gallery {
     margin-top: var(--space-5xl);
 }

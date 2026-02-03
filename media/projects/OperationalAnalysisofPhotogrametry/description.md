@@ -31,13 +31,7 @@ Photogrammetry has become invisible infrastructure, embedded in Google Maps, aut
 
 ## Overview
 
-Photogrammetry, the reconstruction of 3D space from overlapping photographs, is typically understood as an objective representation technology. This thesis challenges that assumption by developing a systematic method for mapping photogrammetry's internal mechanisms and exposing the values embedded in its operations.
-
-Using Operational Analysis (Friedrich & Hoel, 2023), the project examines each algorithmic step not in isolation but as part of an interdependent network. Feature detection, image matching, pose estimation, and point cloud construction do not simply process data. Each operative moment restructures the conditions for the next, creating a cascading effect where early decisions reverberate through the entire pipeline.
-
-The work traces how photogrammetry transforms visible images into machine-readable data through successive quantifications: brightness values become corner detections, detections become binary descriptors, descriptors become geometric correspondences, correspondences become 3D coordinates. At each transformation, certain information is selected while other information is discarded. These selections are presented as objective, inevitable consequences of physics and mathematics, yet they actually encode specific assumptions about what counts as valid spatial information.
-
-The thesis argues that understanding these operative moments, the precise instants where algorithmic work happens, is the prerequisite for challenging algorithmic opacity and reclaiming human agency over technical systems.
+Photogrammetry, the reconstruction of 3D space from overlapping photographs, is typically understood as an objective representation technology. This thesis challenges that assumption by developing a systematic method for mapping photogrammetry's internal mechanisms and exposing the values embedded in its operations. Using Operational Analysis (Friedrich & Hoel, 2023), the project examines each algorithmic step not in isolation but as part of an interdependent network. Feature detection, image matching, pose estimation, and point cloud construction do not simply process data. Each operative moment restructures the conditions for the next, creating a cascading effect where early decisions reverberate through the entire pipeline. The work traces how photogrammetry transforms visible images into machine-readable data through successive quantifications: brightness values become corner detections, detections become binary descriptors, descriptors become geometric correspondences, correspondences become 3D coordinates. At each transformation, certain information is selected while other information is discarded. These selections are presented as objective, inevitable consequences of physics and mathematics, yet they actually encode specific assumptions about what counts as valid spatial information. The thesis argues that understanding these operative moments, the precise instants where algorithmic work happens, is the prerequisite for challenging algorithmic opacity and reclaiming human agency over technical systems.
 
 ## Challenge
 
@@ -51,35 +45,18 @@ Contemporary computational sensing operates through black-box systems where inte
 
 ## Solution
 
-The project pursues algorithmic transparency through operational mapping and practical reconstruction.
-
 ### Operational Mapping
 
-Rather than accepting algorithms as monolithic, the research decomposes photogrammetry into operative moments, precise instances where the algorithm actively transforms data and restructures the pipeline. These moments are organized and displayed on a actual map (see also Map of Operational Analysis.pdf).
-
-This two-dimensional analytical space enables simultaneous mapping of both the sequence of operations and the entangled dependencies within each step. The resulting diagrammatic map visualizes these relationships spatially, revealing the network structure that textual description obscures.
-
-Crucially, mapping itself generates understanding. The act of spatializing algorithmic logic forces granular examination of each component's dependencies and connections. The map is both a research method and a communication tool.
+Rather than accepting algorithms as monolithic, the research decomposes photogrammetry into operative moments, precise instances where the algorithm actively transforms data and restructures the pipeline. These moments are organized and displayed on a actual map (see also Map of Operational Analysis.pdf). This two-dimensional analytical space enables simultaneous mapping of both the sequence of operations and the entangled dependencies within each step. The resulting diagrammatic map visualizes these relationships spatially, revealing the network structure that textual description obscures. Crucially, mapping itself generates understanding. The act of spatializing algorithmic logic forces granular examination of each component's dependencies and connections. The map is both a research method and a communication tool.
 
 ### Practical Reconstruction: The Glass Box
 
-Theory alone cannot overcome black-box opacity. The project includes a working installation, a real-time implementation of ORB-SLAM3 (a Structure-from-Motion algorithm) built in TouchDesigner. The system continuously scans a physical space, visualizes each computational step on screens (feature detection, matching, triangulation), and exposes all parameters as adjustable variables.
-
-Users can modify corner detection sensitivity, matching tolerance, or maximum point cloud size and immediately observe how these changes cascade through the pipeline, producing radically different spatial reconstructions. This direct feedback loop transforms photogrammetry from an opaque black box into an interrogable system.
-
-The installation demonstrates that photogrammetry is neither inevitable nor neutral. Its operation is contingent on specific parameter choices. Making those choices visible and adjustable returns agency to human operators and reveals the algorithmic system as a constructed object rather than a force of nature.
+Theory alone cannot overcome black-box opacity. The project includes a working installation, a real-time implementation of ORB-SLAM3 (a Structure-from-Motion algorithm) built in TouchDesigner. The system continuously scans a physical space, visualizes each computational step on screens (feature detection, matching, triangulation), and exposes all parameters as adjustable variables. Users can modify corner detection sensitivity, matching tolerance, or maximum point cloud size and immediately observe how these changes cascade through the pipeline, producing radically different spatial reconstructions. This direct feedback loop transforms photogrammetry from an opaque black box into an interrogable system. The installation demonstrates that photogrammetry is neither inevitable nor neutral. Its operation is contingent on specific parameter choices. Making those choices visible and adjustable returns agency to human operators and reveals the algorithmic system as a constructed object rather than a force of nature.
 
 ### Theoretical Grounding: Transduction
 
-The analysis draws on Gilbert Simondon's concept of transduction, the process by which technical systems organize themselves through adaptive interaction with their environments. Photogrammetry continuously individuates itself; each operative moment structures conditions for the next. Understanding photogrammetry means mapping these transductive processes: where does information flow get regulated? Where do validity decisions happen? How do physical constraints (camera calibration, lighting) interact with algorithmic logic?
+The analysis draws on Gilbert Simondon's concept of transduction, the process by which technical systems organize themselves through adaptive interaction with their environments. Photogrammetry continuously individuates itself; each operative moment structures conditions for the next. Understanding photogrammetry means mapping these transductive processes: where does information flow get regulated? Where do validity decisions happen? How do physical constraints (camera calibration, lighting) interact with algorithmic logic? By identifying transductive moments, the project makes visible the technical object's becoming, how photogrammetry emerges from the interplay of mathematical principles, algorithmic choices, physical constraints, and situated contexts of use.
 
-By identifying transductive moments, the project makes visible the technical object's becoming, how photogrammetry emerges from the interplay of mathematical principles, algorithmic choices, physical constraints, and situated contexts of use.
-## Deliverables
-
-- Master's Thesis (50 pages): Theoretical framework, detailed operational analysis, diagrammatic map
-- Interactive Installation: Real-time photogrammetry system with parameter controls and visualization
-- Operational Map (Fig. 6): Diagrammatic visualization of algorithmic structure and interdependencies
-- TouchDesigner Implementation: Working code integrating ORB-SLAM3, OpenCV, Python, and custom visualizations
 
 ## Gallery Images
 

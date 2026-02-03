@@ -11,14 +11,12 @@
             "id": "bf84c8c6ae858246",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "image",
               "state": {
-                "file": "media/projects/OperationalAnalysisofPhotogrametry/description.md",
-                "mode": "source",
-                "source": false
+                "file": "media/projects/OperationalAnalysisofPhotogrametry/images/ransacfilter-thumb.jpg"
               },
-              "icon": "lucide-file",
-              "title": "description"
+              "icon": "lucide-image",
+              "title": "ransacfilter-thumb"
             }
           }
         ]
@@ -53,7 +51,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "tag:computer vision",
+                "query": "",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -74,13 +72,11 @@
               "title": "Bookmarks"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "right": {
     "id": "5b4a283384c0a67a",
@@ -172,5 +168,12 @@
     }
   },
   "active": "bf84c8c6ae858246",
-  "lastOpenFiles": []
+  "lastOpenFiles": [
+    "media/projects/OperationalAnalysisofPhotogrametry/images/Pointcoud-thumb.webp",
+    "media/projects/OperationalAnalysisofPhotogrametry/images/analysis-small.webp",
+    "media/projects/OperationalAnalysisofPhotogrametry/images/keypoints-thumb.webp",
+    "media/projects/OperationalAnalysisofPhotogrametry/images/keypoints-small.webp",
+    "media/projects/OperationalAnalysisofPhotogrametry/images/MAP of Operational Analysis-thumb.jpg",
+    "media/projects/OperationalAnalysisofPhotogrametry/description.md"
+  ]
 }
