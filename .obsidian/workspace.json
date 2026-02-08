@@ -11,12 +11,14 @@
             "id": "bf84c8c6ae858246",
             "type": "leaf",
             "state": {
-              "type": "image",
+              "type": "markdown",
               "state": {
-                "file": "media/projects/OperationalAnalysisofPhotogrametry/images/ransacfilter-thumb.jpg"
+                "file": "media/projects/VisionoftheHybrid/description.md",
+                "mode": "source",
+                "source": false
               },
-              "icon": "lucide-image",
-              "title": "ransacfilter-thumb"
+              "icon": "lucide-file",
+              "title": "description"
             }
           }
         ]
@@ -169,11 +171,16 @@
   },
   "active": "bf84c8c6ae858246",
   "lastOpenFiles": [
+    "media/projects/OperationalAnalysisofPhotogrametry/description.md",
+    "media/projects/VisionoftheHybrid/description.md",
+    "media/projects/VisionoftheHybrid/images/Poster_Vision_Text opt-01.png",
+    "media/projects/VisionoftheHybrid/images",
+    "media/projects/README.md",
+    "media/projects/OperationalAnalysisofPhotogrametry/images/ransacfilter-thumb.jpg",
     "media/projects/OperationalAnalysisofPhotogrametry/images/Pointcoud-thumb.webp",
     "media/projects/OperationalAnalysisofPhotogrametry/images/analysis-small.webp",
     "media/projects/OperationalAnalysisofPhotogrametry/images/keypoints-thumb.webp",
     "media/projects/OperationalAnalysisofPhotogrametry/images/keypoints-small.webp",
-    "media/projects/OperationalAnalysisofPhotogrametry/images/MAP of Operational Analysis-thumb.jpg",
-    "media/projects/OperationalAnalysisofPhotogrametry/description.md"
+    "media/projects/OperationalAnalysisofPhotogrametry/images/MAP of Operational Analysis-thumb.jpg"
   ]
 }
