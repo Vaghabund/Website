@@ -9,9 +9,9 @@ tags:
   - Python
   - computervision
   - 3Dprinting
-thumbnail: images/Masterpräsi_02.png
-hero: images/Masterpräsi_03.png
-image: images/Masterpräsi_01.png
+thumbnail: images/masterpraesi-02.png
+hero: images/masterpraesi-03.png
+image: images/masterpraesi-01.png
 model3D: ""
 technologies:
   - TouchDesigner
@@ -47,7 +47,7 @@ Contemporary computational sensing operates through black-box systems where inte
 
 ### Operational Mapping
 
-Rather than accepting algorithms as monolithic, the research decomposes photogrammetry into operative moments, precise instances where the algorithm actively transforms data and restructures the pipeline. These moments are organized and displayed on a actual map (see also Map of Operational Analysis.pdf). This two-dimensional analytical space enables simultaneous mapping of both the sequence of operations and the entangled dependencies within each step. The resulting diagrammatic map visualizes these relationships spatially, revealing the network structure that textual description obscures. Crucially, mapping itself generates understanding. The act of spatializing algorithmic logic forces granular examination of each component's dependencies and connections. The map is both a research method and a communication tool.
+Rather than accepting algorithms as monolithic, the research decomposes photogrammetry into operative moments, precise instances where the algorithm actively transforms data and restructures the pipeline. These moments are organized and displayed on a actual map (see also map-of-operational-analysis.pdf). This two-dimensional analytical space enables simultaneous mapping of both the sequence of operations and the entangled dependencies within each step. The resulting diagrammatic map visualizes these relationships spatially, revealing the network structure that textual description obscures. Crucially, mapping itself generates understanding. The act of spatializing algorithmic logic forces granular examination of each component's dependencies and connections. The map is both a research method and a communication tool.
 
 ### Practical Reconstruction: The Glass Box
 
@@ -60,19 +60,22 @@ The analysis draws on Gilbert Simondon's concept of transduction, the process by
 
 ## Gallery Images
 
-- images/Masterpräsi_01.png
-- images/Masterpräsi_02.png
-- images/Masterpräsi_03.png
-- images/Masterpräsi_04.png
+- images/masterpraesi-01.png
+- images/masterpraesi-02.png
+- images/masterpraesi-03.png
+- images/masterpraesi-04.png
 - images/analysis.png
 - images/keypoints.png
 - images/matching.png
-- images/Pointcoud.png
+- images/pointcoud.png
 - images/ransacfilter.png
-- images/Tower_jpeg.jpg
-- images/Rundgang_01.png
+- images/tower-jpeg.jpg
+- images/rundgang-01.png
 
 ## Documents
 
-- documents/Map of Operational Analysis.pdf
-- documents/MA DC_Joel Tenenberg_Operational Analysis of Photogrammetry.pdf
+- documents/map-of-operational-analysis.pdf
+- documents/ma-dc-joel-tenenberg-operational-analysis-of-photogrammetry.pdf
+
+
+

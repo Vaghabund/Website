@@ -9,7 +9,7 @@ tags:
   - 3Dmodelling
   - post-humanism
   - AI-co-authorship
-thumbnail:
+thumbnail: media/projects/vision-of-the-hybrid/images/poster-vision-text-opt-02.png
 hero:
 image:
 model3D: ""
