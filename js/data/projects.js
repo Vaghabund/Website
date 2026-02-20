@@ -85,7 +85,7 @@ const projectsData = [
         image: 'media/projects/vision-of-the-hybrid/images/poster-vision-text-opt-02.png',
         thumbnailImage: 'media/projects/vision-of-the-hybrid/images/poster-vision-text-opt-02.png',
         heroImage: 'media/projects/vision-of-the-hybrid/images/poster-vision-text-opt-01.png',
-        cardImage: 'media/projects/vision-of-the-hybrid/images/poster-vision-text-opt-02-small.jpg',
+        cardImage: 'media/projects/vision-of-the-hybrid/images/Hero-small.jpg',
         role: '—',
         timeline: '6 months',
         technologies: ['Blender', 'Cinema4D', 'NomadSculpt', 'Aftereffects', 'whisper'],

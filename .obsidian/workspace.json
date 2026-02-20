@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "media/projects/vision-of-the-hybrid/description.md",
+                "file": "media/about/bio.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "description"
+              "title": "bio"
             }
           }
         ]
@@ -171,8 +171,15 @@
   },
   "active": "bf84c8c6ae858246",
   "lastOpenFiles": [
-    "media/projects/operational-analysis-of-photogrammetry/description.md",
+    "media/about/profile.jpg",
+    "media/about/profile-thumb.webp",
+    "media/about/profile-small.jpg",
+    "media/about/profile.webp",
+    "media/about/bio.md",
+    "media/about/README.md",
+    "media/about/bio-template.md",
     "media/projects/vision-of-the-hybrid/description.md",
+    "media/projects/operational-analysis-of-photogrammetry/description.md",
     "media/projects/vision-of-the-hybrid/images/poster-vision-text-opt-01.png",
     "media/projects/vision-of-the-hybrid/images",
     "media/projects/README.md",
@@ -184,5 +191,3 @@
     "media/projects/operational-analysis-of-photogrammetry/images/map-of-operational-analysis-thumb.jpg"
   ]
 }
-
-

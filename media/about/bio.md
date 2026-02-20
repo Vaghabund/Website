@@ -1,35 +1,25 @@
 ---
-name: "Your Name"
-title: "Designer & Developer"
-location: "Your City"
-email: "contact@example.com"
-website: "https://yourwebsite.com"
+name: Joel Tenenberg
+title: Art Director
+location: Berlin
+email: joel@tenenberg.net
+website: joel.tenenberg.net
 linkedin: ""
-github: ""
+github: https://github.com/Vaghabund
 twitter: ""
-profileImage: "profile.jpg"
-profileImageAlt: "profile2.jpg"
-resumePDF: "../cv/resume.pdf"
+profileImage: profile.jpg
+profileImageAlt: profile2.jpg
+resumePDF: ../cv/resume.pdf
 ---
 
 # About Me
 
-Brief introduction about yourself goes here. Replace this with your actual bio content.
+I'm Joel an art director and spatial thinker working at the intersection of brand experience, computational design, and physical space.
 
-## Background
+My background is rooted in architecture, which gave me a precise understanding of how environments shape behavior and perception. Over time, that interest evolved from drawing spaces to designing the systems and experiences that give them meaning. Today I work in brand experience, leading creative direction across the early phases where ideas are still fluid and the most important decisions get made.
 
-Your background, education, and experience.
+I'm drawn to problems that sit between disciplines. The kind where spatial logic, visual language, and interactive systems need to speak the same language. I think parametrically, prototype quickly, and always keep one eye on what actually has to hold up in the real world.
 
-## Expertise
+When I'm not in a brief, I'm usually tinkering computer vision experiments, maker projects, generative tools. Curiosity is my most consistent working method.
 
-- Skill 1
-- Skill 2
-- Skill 3
-
-## Approach
-
-Your methodology and philosophy.
-
-## Let's Connect
-
-Contact information and how people can reach you.
+If you're working on something that lives at the edge of space, technology, or brand I'd love to hear about it. Let's talk.

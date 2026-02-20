@@ -34,6 +34,30 @@
         if (container && !container.classList.contains('header-loaded')) {
             renderSharedHeader(container);
         }
+
+        // Headroom: hide header on scroll-down, reveal on scroll-up
+        const initHeadroom = () => {
+            const headerEl = document.querySelector('.section--header');
+            if (!headerEl) return;
+            let lastScrollY = window.scrollY;
+            const threshold = 80;
+            window.addEventListener('scroll', () => {
+                const scrollY = window.scrollY;
+                if (scrollY < threshold) {
+                    headerEl.classList.remove('headroom--unpinned');
+                    headerEl.classList.add('headroom--pinned');
+                } else if (scrollY > lastScrollY) {
+                    headerEl.classList.add('headroom--unpinned');
+                    headerEl.classList.remove('headroom--pinned');
+                } else {
+                    headerEl.classList.remove('headroom--unpinned');
+                    headerEl.classList.add('headroom--pinned');
+                }
+                lastScrollY = scrollY;
+            }, { passive: true });
+        };
+        // Run after header is injected (setTimeout(0) ensures the innerHTML has settled)
+        setTimeout(initHeadroom, 0);
         
         // Scale header background logo to fit window width
         const scaleHeaderLogo = () => {

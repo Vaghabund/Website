@@ -6,6 +6,13 @@
     padding: var(--space-4xl) 0;
 }
 
+.footer-rule {
+    width: 100%;
+    height: 1px;
+    background: var(--glass-border);
+    margin-bottom: var(--space-4xl);
+}
+
 .section--footer .container {
     display: flex;
     justify-content: center;
@@ -14,9 +21,11 @@
 
 .footer-content {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: var(--space-md);
+    justify-content: center;
+    gap: var(--space-lg);
+    flex-wrap: wrap;
 }
 
 .footer-links {

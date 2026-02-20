@@ -83,7 +83,6 @@
     color: var(--color-text-lighter);
     text-decoration: none;
     padding: 0 24px;
-    padding-top: 1px;
     display: inline-flex;
     align-items: center;
     height: var(--pill-height);
@@ -123,7 +122,7 @@
     position: absolute;
     left: -1px;
     top: -1px;
-    height: calc(var(--pill-height) + 2px);
+    height: var(--pill-height);
     width: 50%;
     background: var(--marker-bg);
     border: 1px solid var(--marker-border);
