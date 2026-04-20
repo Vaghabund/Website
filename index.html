@@ -239,6 +239,12 @@
       justify-content: space-between;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
+      /* reset <button> defaults */
+      background: none;
+      border: none;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
     }
     .m-header::after {
       content: '+';
@@ -975,7 +981,45 @@ inputEl.addEventListener('input',   () => { if (!inputEl.value) clearLines(); })
 // ─────────────────────────────────────────────
 // Mobile accordion view
 // ─────────────────────────────────────────────
-async function buildMobileView() {
+async function loadMobileItem(p, content) {
+  // Fetch text and image list in parallel
+  const [mdText, imgSrcs] = await Promise.all([
+    (async () => {
+      if (p.id === 'about') {
+        const raw = await fetch('media/about/bio.md').then(r => r.ok ? r.text() : null).catch(() => null);
+        return raw ? stripMd(raw) : null;
+      }
+      return fetchMdBody(p.id);
+    })(),
+    (async () => {
+      if (p.id === 'about') {
+        return ['media/about/profile-small.webp', 'media/about/profile2-small.webp'];
+      }
+      const detail = await fetchDetail(p.id);
+      const base   = `media/projects/${p.id}/`;
+      return (detail.images || []).map(i => i.startsWith('media/') ? i : base + i);
+    })(),
+  ]);
+
+  if (mdText) {
+    const textEl = document.createElement('div');
+    textEl.className = 'm-text';
+    textEl.textContent = mdText;
+    content.appendChild(textEl);
+  }
+
+  const altBase = p.id === 'about' ? 'Profile photo of Joel Tenenberg' : `${p.title} — project image`;
+  imgSrcs.forEach((src, idx) => {
+    const img     = document.createElement('img');
+    img.src       = src;
+    img.alt       = p.id === 'about' ? `${altBase} ${idx + 1}` : altBase;
+    img.className = 'm-img';
+    img.loading   = 'lazy';
+    content.appendChild(img);
+  });
+}
+
+function buildMobileView() {
   const container = document.getElementById('mobile-view');
   if (!container) return;
 
@@ -989,57 +1033,36 @@ async function buildMobileView() {
     const item    = document.createElement('div');
     item.className = 'm-item';
 
-    const header  = document.createElement('div');
-    header.className = 'm-header';
-    header.textContent = p.title;
-
     const content = document.createElement('div');
     content.className = 'm-content';
+    content.id = `m-content-${p.id}`;
+
+    const header  = document.createElement('button');
+    header.type = 'button';
+    header.className = 'm-header';
+    header.textContent = p.title;
+    header.setAttribute('aria-controls', content.id);
+    header.setAttribute('aria-expanded', 'false');
 
     header.addEventListener('click', () => {
       const isOpen = header.classList.contains('open');
       // Close all open items
-      container.querySelectorAll('.m-header.open').forEach(h => h.classList.remove('open'));
+      container.querySelectorAll('.m-header.open').forEach(h => {
+        h.classList.remove('open');
+        h.setAttribute('aria-expanded', 'false');
+      });
       container.querySelectorAll('.m-content.open').forEach(c => c.classList.remove('open'));
       // Open this one only if it was previously closed
       if (!isOpen) {
         header.classList.add('open');
+        header.setAttribute('aria-expanded', 'true');
         content.classList.add('open');
+        // Lazy-load content on first open
+        if (!content.dataset.loaded) {
+          content.dataset.loaded = 'true';
+          loadMobileItem(p, content).catch(console.error);
+        }
       }
-    });
-
-    // ── Text ────────────────────────────────
-    let mdText = null;
-    if (p.id === 'about') {
-      const raw = await fetch('media/about/bio.md').then(r => r.ok ? r.text() : null).catch(() => null);
-      mdText = raw ? stripMd(raw) : null;
-    } else {
-      mdText = await fetchMdBody(p.id);
-    }
-    if (mdText) {
-      const textEl = document.createElement('div');
-      textEl.className = 'm-text';
-      textEl.textContent = mdText;
-      content.appendChild(textEl);
-    }
-
-    // ── Images ──────────────────────────────
-    let imgSrcs = [];
-    const altBase = p.id === 'about' ? 'Profile photo of Joel Tenenberg' : `${p.title} — project image`;
-    if (p.id === 'about') {
-      imgSrcs = ['media/about/profile-small.webp', 'media/about/profile2-small.webp'];
-    } else {
-      const detail = await fetchDetail(p.id);
-      const base   = `media/projects/${p.id}/`;
-      imgSrcs = (detail.images || []).map(i => i.startsWith('media/') ? i : base + i);
-    }
-    imgSrcs.forEach((src, idx) => {
-      const img     = document.createElement('img');
-      img.src       = src;
-      img.alt       = p.id === 'about' ? `${altBase} ${idx + 1}` : altBase;
-      img.className = 'm-img';
-      img.loading   = 'lazy';
-      content.appendChild(img);
     });
 
     item.appendChild(header);
@@ -1049,10 +1072,10 @@ async function buildMobileView() {
 }
 
 if (window.matchMedia('(max-width: 600px)').matches) {
-  buildMobileView().catch(console.error);
+  buildMobileView();
+} else {
+  init().catch(console.error);
 }
-
-init().catch(console.error);
 </script>
 </body>
 </html>
