@@ -1,6 +1,6 @@
 ---
 year: "2025"
-role: "Lead Researcher"
+role: "Master Student"
 timeline: "12 months"
 tools:
   - TouchDesigner
