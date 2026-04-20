@@ -1,0 +1,7 @@
+Vision of the Hybrid. Artistic project, 2024, Politics of Design, Universität der Künste Berlin. Non-linear storytelling, worldbuilding, posthumanism, post-humanism, AI co-authorship.
+
+A speculative design project centered on a 3D-printed sculptural object and a non-linear narrative co-written with artificial intelligence. The work questions fixed categories of identity, gender, class, race, and technology. Drawing on Rosi Braidotti's concept of relational thinking, the human condition is framed as contested and reversible — not a fixed category but something shaped and reshaped by the technologies we create.
+
+At the center is a 3D-printed physical object designed to provoke rather than instruct. Visitors engage with it through tactile exploration. The accompanying narrative, co-authored with AI using the Whisper speech model, is non-linear and fragmented — seven diary-like entries narrating an ambiguous relationship between a human and an uncanny object. The object is described as a catalyst, dissolving boundaries and creating space for questions about otherness, hybridity, and multiple futures.
+
+The project is a personal materialized vision of the posthuman. It imagines worlds beyond current structures of power. Tools: Blender, Cinema4D, NomadSculpt, Aftereffects, Whisper AI. Keywords: 3D printing, 3D modelling, sculpture, object, narrative, identity, technology, speculative design, posthuman, AI writing, worldbuilding, Braidotti, feminist theory, otherness, hybrid, future.

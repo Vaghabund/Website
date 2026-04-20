@@ -58,24 +58,5 @@ Theory alone cannot overcome black-box opacity. The project includes a working i
 The analysis draws on Gilbert Simondon's concept of transduction, the process by which technical systems organize themselves through adaptive interaction with their environments. Photogrammetry continuously individuates itself; each operative moment structures conditions for the next. Understanding photogrammetry means mapping these transductive processes: where does information flow get regulated? Where do validity decisions happen? How do physical constraints (camera calibration, lighting) interact with algorithmic logic? By identifying transductive moments, the project makes visible the technical object's becoming, how photogrammetry emerges from the interplay of mathematical principles, algorithmic choices, physical constraints, and situated contexts of use.
 
 
-## Gallery Images
-
-- images/masterpraesi-01.png
-- images/masterpraesi-02.png
-- images/masterpraesi-03.png
-- images/masterpraesi-04.png
-- images/analysis.png
-- images/keypoints.png
-- images/matching.png
-- images/pointcoud.png
-- images/ransacfilter.png
-- images/tower-jpeg.jpg
-- images/rundgang-01.png
-
-## Documents
-
-- documents/map-of-operational-analysis.pdf
-- documents/ma-dc-joel-tenenberg-operational-analysis-of-photogrammetry.pdf
-
 
 
