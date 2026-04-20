@@ -206,6 +206,73 @@
     margin-left: 10px; display: none;
   }
   @keyframes pulse { 0%,100%{opacity:.2} 50%{opacity:.9} }
+
+  /* ─────────────────────────────────────────────
+     Mobile accordion view (≤ 600 px)
+     ───────────────────────────────────────────── */
+  #mobile-view { display: none; }
+
+  @media (max-width: 600px) {
+    html, body { overflow: auto; }
+    #canvas-root, #line-overlay, #lightbox, #text-lightbox { display: none !important; }
+
+    #mobile-view {
+      display: block;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      overflow-y: auto;
+      background: #0a0a0a;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .m-item { border-bottom: 1px solid rgba(255,255,255,0.09); }
+
+    .m-header {
+      padding: 18px 20px;
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.72);
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .m-header::after {
+      content: '+';
+      font-size: 20px;
+      color: rgba(255,255,255,0.25);
+      line-height: 1;
+      margin-left: 12px;
+      flex-shrink: 0;
+    }
+    .m-header.open { color: rgba(255,255,255,0.9); }
+    .m-header.open::after { content: '−'; }
+
+    .m-content {
+      display: none;
+      padding: 0 20px 24px;
+    }
+    .m-content.open { display: block; }
+
+    .m-text {
+      font-size: 12px;
+      line-height: 1.75;
+      color: rgba(255,255,255,0.42);
+      margin-bottom: 18px;
+      white-space: pre-wrap;
+    }
+
+    .m-img {
+      display: block;
+      width: 100%;
+      margin-bottom: 10px;
+      object-fit: cover;
+    }
+    .m-img:last-child { margin-bottom: 0; }
+  }
 </style>
 </head>
 <body>
@@ -245,6 +312,8 @@
   </div>
 </div>
 
+
+<div id="mobile-view"></div>
 
 <script type="module">
 import PROJECTS from './projects.js';
@@ -902,6 +971,86 @@ async function runQuery(t) {
 sendBtn.addEventListener('click', () => runQuery(inputEl.value));
 inputEl.addEventListener('keydown', e => { if (e.key === 'Enter') runQuery(inputEl.value); });
 inputEl.addEventListener('input',   () => { if (!inputEl.value) clearLines(); });
+
+// ─────────────────────────────────────────────
+// Mobile accordion view
+// ─────────────────────────────────────────────
+async function buildMobileView() {
+  const container = document.getElementById('mobile-view');
+  if (!container) return;
+
+  // Non-about projects first, about last
+  const mobileProjects = [
+    ...PROJECTS.filter(p => p.id !== 'about'),
+    PROJECTS.find(p => p.id === 'about'),
+  ].filter(Boolean);
+
+  for (const p of mobileProjects) {
+    const item    = document.createElement('div');
+    item.className = 'm-item';
+
+    const header  = document.createElement('div');
+    header.className = 'm-header';
+    header.textContent = p.title;
+
+    const content = document.createElement('div');
+    content.className = 'm-content';
+
+    header.addEventListener('click', () => {
+      const isOpen = header.classList.contains('open');
+      // Close all open items
+      container.querySelectorAll('.m-header.open').forEach(h => h.classList.remove('open'));
+      container.querySelectorAll('.m-content.open').forEach(c => c.classList.remove('open'));
+      // Open this one only if it was previously closed
+      if (!isOpen) {
+        header.classList.add('open');
+        content.classList.add('open');
+      }
+    });
+
+    // ── Text ────────────────────────────────
+    let mdText = null;
+    if (p.id === 'about') {
+      const raw = await fetch('media/about/bio.md').then(r => r.ok ? r.text() : null).catch(() => null);
+      mdText = raw ? stripMd(raw) : null;
+    } else {
+      mdText = await fetchMdBody(p.id);
+    }
+    if (mdText) {
+      const textEl = document.createElement('div');
+      textEl.className = 'm-text';
+      textEl.textContent = mdText;
+      content.appendChild(textEl);
+    }
+
+    // ── Images ──────────────────────────────
+    let imgSrcs = [];
+    const altBase = p.id === 'about' ? 'Profile photo of Joel Tenenberg' : `${p.title} — project image`;
+    if (p.id === 'about') {
+      imgSrcs = ['media/about/profile-small.webp', 'media/about/profile2-small.webp'];
+    } else {
+      const detail = await fetchDetail(p.id);
+      const base   = `media/projects/${p.id}/`;
+      imgSrcs = (detail.images || []).map(i => i.startsWith('media/') ? i : base + i);
+    }
+    imgSrcs.forEach((src, idx) => {
+      const img     = document.createElement('img');
+      img.src       = src;
+      img.alt       = p.id === 'about' ? `${altBase} ${idx + 1}` : altBase;
+      img.className = 'm-img';
+      img.loading   = 'lazy';
+      content.appendChild(img);
+    });
+
+    item.appendChild(header);
+    item.appendChild(content);
+    container.appendChild(item);
+  }
+}
+
+if (window.matchMedia('(max-width: 600px)').matches) {
+  buildMobileView().catch(console.error);
+}
 
 init().catch(console.error);
 </script>
