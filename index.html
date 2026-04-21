@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Joel Tenenberg</title>
 <link rel="stylesheet" href="style.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"
+  }
+}
+</script>
 </head>
 <body>
 
@@ -15,7 +23,7 @@
         <circle cx="1" cy="1" r="1" fill="rgba(255,255,255,0.1)"/>
       </pattern>
     </defs>
-    <rect width="4000" height="3000" fill="url(#dots)"/>
+    <rect width="8000" height="4000" fill="url(#dots)"/>
   </svg>
   <svg id="cluster-svg"></svg>
   <div id="input-wrap">
@@ -41,6 +49,11 @@
     <div id="tlb-title"></div>
     <div id="tlb-body"></div>
   </div>
+</div>
+
+<div id="model-lightbox">
+  <button id="mlb-close">&#x2715;</button>
+  <div id="mlb-canvas-wrap"></div>
 </div>
 
 <div id="mobile-view"></div>

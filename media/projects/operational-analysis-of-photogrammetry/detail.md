@@ -12,15 +12,15 @@ links:
   - label: "Map"
     url: "media/projects/operational-analysis-of-photogrammetry/documents/map-of-operational-analysis.pdf"
 images:
-  - images/masterpraesi-01.png
-  - images/masterpraesi-02.png
-  - images/masterpraesi-03.png
-  - images/masterpraesi-04.png
-  - images/analysis.png
-  - images/keypoints.png
-  - images/matching.png
-  - images/pointcoud.png
-  - images/ransacfilter.png
-  - images/tower-jpeg.jpg
-  - images/rundgang-01.png
+  - images/masterpraesi-01.webp
+  - images/masterpraesi-02.webp
+  - images/masterpraesi-03.webp
+  - images/masterpraesi-04.webp
+  - images/analysis.webp
+  - images/keypoints.webp
+  - images/matching.webp
+  - images/pointcoud.webp
+  - images/ransacfilter.webp
+  - images/tower-jpeg.webp
+  - images/rundgang-01.webp
 ---

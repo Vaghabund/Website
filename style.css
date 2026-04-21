@@ -1,4 +1,5 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+img { -webkit-user-drag: none; pointer-events: none; user-select: none; }
 
 html, body {
   width: 100%; height: 100%;
@@ -17,7 +18,7 @@ html, body {
 #canvas-root {
   position: absolute;
   top: 0; left: 0;
-  width: 4000px; height: 3000px;
+  width: 8000px; height: 4000px;
   transform-origin: 0 0;
   cursor: grab;
 }
@@ -27,7 +28,7 @@ html, body {
 #cluster-svg {
   position: absolute;
   top: 0; left: 0;
-  width: 4000px; height: 3000px;
+  width: 8000px; height: 4000px;
   pointer-events: none;
   overflow: visible;
 }
@@ -36,7 +37,41 @@ html, body {
   position: absolute;
   border: 1px solid rgba(255,255,255,0.09);
   background: rgba(10,10,10,0.92);
+  display: flex;
+  flex-direction: column;
 }
+
+/* Top bar — drag handle for individual node */
+.node-bar {
+  flex-shrink: 0;
+  height: 20px;
+  padding: 0 8px;
+  display: flex; align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  cursor: grab;
+  user-select: none;
+}
+.node-bar:active { cursor: grabbing; }
+.node-bar-label {
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.18);
+  pointer-events: none;
+}
+
+/* Resize handle — bottom-right dot */
+.node-resize {
+  position: absolute;
+  bottom: 4px; right: 4px;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.18);
+  cursor: nwse-resize;
+  z-index: 10;
+  transition: background 0.15s;
+}
+.node-resize:hover { background: rgba(255,255,255,0.45); }
 
 .node-title {
   padding: 10px 14px;
@@ -45,7 +80,7 @@ html, body {
   color: rgba(255,255,255,0.75);
   letter-spacing: 0.02em;
   white-space: nowrap;
-  cursor: default;
+  cursor: grab;
 }
 .node-title.is-about {
   font-size: 13px;
@@ -54,10 +89,10 @@ html, body {
 .node-title:active { cursor: grabbing; }
 
 .node-image {
-  width: 190px;
   cursor: pointer;
   transition: border-color 0.2s;
 }
+.node-image .node-content { overflow: hidden; flex: 1; }
 .node-image:hover { border-color: rgba(255,255,255,0.22); }
 .image-stack { position: relative; width: 100%; }
 .image-stack::before,
@@ -81,13 +116,17 @@ html, body {
 }
 
 .node-text {
-  width: 210px;
-  padding: 13px 15px;
   font-size: 11px;
   line-height: 1.7;
   color: rgba(255,255,255,0.42);
   cursor: pointer;
   transition: border-color 0.2s;
+}
+.node-text .text-body { white-space: pre-wrap; }
+.node-text .node-content {
+  padding: 13px 15px;
+  flex: 1;
+  overflow: hidden;
 }
 .node-text:hover { border-color: rgba(255,255,255,0.18); }
 .text-toggle {
@@ -96,15 +135,73 @@ html, body {
 }
 
 .node-detail {
-  width: 148px;
+}
+.node-detail .node-content {
   padding: 11px 13px;
   display: flex; flex-direction: column; gap: 8px;
+  flex: 1; overflow: hidden;
 }
 .detail-row   { display: flex; flex-direction: column; gap: 2px; }
 .detail-label { font-size: 8.5px; color: rgba(255,255,255,0.2); letter-spacing: 0.09em; text-transform: uppercase; }
 .detail-value { font-size: 10px; color: rgba(255,255,255,0.42); line-height: 1.45; }
 .detail-link  { font-size: 10px; color: rgba(255,255,255,0.32); text-decoration: none; display: block; margin-bottom: 2px; }
 .detail-link:hover { color: rgba(255,255,255,0.72); }
+
+/* 3D model node */
+.node-model {
+  width: 220px;
+  height: 220px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.node-model:hover { border-color: rgba(255,255,255,0.18); }
+.node-model.active {
+  border-color: rgba(255,255,255,0.32);
+  cursor: default;
+}
+.node-model .node-content {
+  flex: 1;
+  overflow: hidden;
+  display: block;
+  position: relative;
+}
+.node-model canvas {
+  display: block;
+  position: absolute;
+  top: 0; left: 0;
+}
+.model-hint {
+  position: absolute; bottom: 7px; left: 0; right: 0;
+  text-align: center;
+  font-size: 9px; color: rgba(255,255,255,0.22); letter-spacing: 0.06em;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.node-model.active .model-hint { opacity: 0; }
+
+/* Model lightbox */
+#model-lightbox {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.96); z-index: 100;
+  align-items: center; justify-content: center;
+}
+#model-lightbox.open { display: flex; }
+#mlb-canvas-wrap {
+  width: min(88vw, 88vh);
+  height: min(88vw, 88vh);
+}
+#mlb-canvas-wrap canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+#mlb-close {
+  position: fixed; top: 16px; right: 20px;
+  background: none; border: none; color: rgba(255,255,255,0.4);
+  font-size: 20px; cursor: pointer; transition: color 0.15s; z-index: 101;
+}
+#mlb-close:hover { color: rgba(255,255,255,0.9); }
 
 /* Search line overlay — fixed viewport, above canvas */
 #line-overlay {

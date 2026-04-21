@@ -11,4 +11,8 @@ links:
 images:
   - images/01.jpg
   - images/02.jpg
+texts:
+  - file: description.md
+    label: "Overview"
+model: "models/object.glb"
 ---

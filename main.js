@@ -1,5 +1,7 @@
 import PROJECTS from './projects.js';
 
+document.addEventListener('contextmenu', e => { if (e.target.tagName === 'IMG') e.preventDefault(); });
+
 // ─────────────────────────────────────────────
 // Markdown fetch + strip (shared)
 // ─────────────────────────────────────────────
@@ -27,7 +29,7 @@ async function fetchMdBody(id) {
 function parseFrontmatter(txt) {
   const m = txt.match(/^---\n([\s\S]*?)\n---/);
   if (!m) return {};
-  const LIST_KEYS = new Set(['images', 'tools', 'links']);
+  const LIST_KEYS = new Set(['images', 'tools', 'links', 'texts']);
   const out = {};
   const lines = m[1].split('\n');
   let key = null, listKey = null, listObj = null;
@@ -96,7 +98,7 @@ async function loadMobileItem(p, content) {
     })(),
     (async () => {
       if (p.id === 'about') {
-        return ['media/about/profile-small.webp', 'media/about/profile2-small.webp'];
+        return ['media/about/profile-small.webp'];
       }
       const detail = await fetchDetail(p.id);
       const base   = `media/projects/${p.id}/`;
@@ -212,17 +214,23 @@ const CANVAS_CX = 2000, CANVAS_CY = 1500;
 const SZ = {
   title:  { w: 220, h: 38  },
   image:  { w: 190, h: 154 }, // 190 × (190 * 3/4) + border
-  text:   { w: 210, h: 108 },
+  text:   { w: 210, h: 373 },
   detail: { w: 148, h: 100 },
+  model:  { w: 220, h: 220 },
 };
 
-// Spiral placement for non-about projects
-function spiralPos(i) {
-  const a = i * 2.399963, r = 420 * Math.sqrt(i + 1);
+// Fibonacci/golden-angle phyllotaxis around the search bar.
+// Each successive cluster is placed at the golden angle (137.5°) further
+// around, and radius grows with sqrt(i) so density stays even.
+const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5)); // ≈ 2.3999 rad
+const FIB_RADIUS   = 620; // scale factor — increase to spread clusters further
+function fibPos(i) {
+  const a = i * GOLDEN_ANGLE;
+  const r = FIB_RADIUS * Math.sqrt(i + 1);
   return { x: CANVAS_CX + r * Math.cos(a), y: CANVAS_CY + r * Math.sin(a) };
 }
 let si = 0;
-PROJECTS.forEach(p => { if (p.id !== 'about') Object.assign(p, spiralPos(si++)); });
+PROJECTS.forEach(p => { if (p.id !== 'about') Object.assign(p, fibPos(si++)); });
 
 // ─────────────────────────────────────────────
 // Satellite positions — tight, non-overlapping
@@ -230,21 +238,20 @@ PROJECTS.forEach(p => { if (p.id !== 'about') Object.assign(p, spiralPos(si++));
 // Distance from title centre: half-diagonal of the satellite node
 // + half-diagonal of the title node + gap.
 // ─────────────────────────────────────────────
-const GAP = 22; // canvas px between node edges
+const GAP = 8; // canvas px between node edges
 const SECTOR = (2 * Math.PI) / 3;
 
 function halfDiag(type) {
   return Math.sqrt(SZ[type].w ** 2 + SZ[type].h ** 2) / 2;
 }
 
-function satPos(p, typeIndex) {
-  const types  = ['image', 'text', 'detail'];
-  const type   = types[typeIndex];
+// slotIndex: 0-based position around the title, type: key into SZ
+function satPos(p, slotIndex, type, totalSlots) {
+  const n      = Math.max(totalSlots, 3);
   const rand   = seededRand(strSeed(p.id + 'base'));
   const base   = rand() * 2 * Math.PI;
-  const jitter = seededRand(strSeed(p.id + type));
-  const angle  = base + typeIndex * SECTOR + (jitter() - 0.5) * 0.35;
-  // edge-to-edge gap: distance between centres = diag/2 of each + gap
+  const jitter = seededRand(strSeed(p.id + type + slotIndex));
+  const angle  = base + slotIndex * (2 * Math.PI / n) + (jitter() - 0.5) * 0.3;
   const dist   = halfDiag('title') + halfDiag(type) + GAP;
   return {
     x: p.x + dist * Math.cos(angle),
@@ -268,7 +275,8 @@ const lineSvg         = document.getElementById('line-overlay');
 const clusterRects    = {};
 const clusterTitlePos = {};
 const clusterNodes    = {}; // id → { titleEl, cx, cy, satellites:[{el,ox,oy,w,h}] }
-let   lineScores      = {};
+const nodePositions   = {}; // nodeKey → { el }  — for per-node search lines
+let   lineScores      = {}; // nodeKey → normalised score
 const inputWrap  = document.getElementById('input-wrap');
 // Place input at canvas centre — it now lives inside #canvas-root and scales with zoom
 inputWrap.style.left = CANVAS_CX + 'px';
@@ -313,12 +321,17 @@ let clusterDragging = null; // { id, startCx, startCy, mouseStartX, mouseStartY 
 // Pan
 let dragging = false, dragStart = { x: 0, y: 0 }, panStart = { x: 0, y: 0 };
 document.addEventListener('mousedown', e => {
-  if (e.target.closest('#input-wrap,#lightbox,#text-lightbox,.node-image,.detail-link,.node-text')) return;
+  if (e.target.closest('#input-wrap,#lightbox,#text-lightbox,.node-image,.detail-link,.node-text,.node-model,.node-bar,.node-resize')) return;
   // Check if clicking a title node
   const titleEl = e.target.closest('.node-title');
   if (titleEl && titleEl._clusterId) {
     e.stopPropagation();
     const c = clusterNodes[titleEl._clusterId];
+    // Refresh ox/oy from live DOM so individually-dragged satellites keep their position
+    for (const s of c.satellites) {
+      s.ox = parseInt(s.el.style.left) + s.w / 2 - c.cx;
+      s.oy = parseInt(s.el.style.top)  + s.h / 2 - c.cy;
+    }
     clusterDragging = { id: titleEl._clusterId, startCx: c.cx, startCy: c.cy, mouseStartX: e.clientX, mouseStartY: e.clientY };
     canvasRoot.classList.add('dragging');
     return;
@@ -433,6 +446,75 @@ function placeCentered(node, cx, cy, w, h) {
   place(node, cx - w / 2, cy - h / 2);
 }
 
+// Wrap a node element with a top bar (drag handle) + resize dot.
+// Returns { nodeEl, content } where content is where the node's body goes.
+// label: short string shown in the bar  clusterId: for curve redraw
+function makeNode(cls, label, clusterId, w, h, { resizable = true } = {}) {
+  const nodeEl  = el('div', `node ${cls}`);
+  nodeEl.style.width  = w + 'px';
+  if (h) nodeEl.style.height = h + 'px';
+  nodeEl._clusterId = clusterId;
+
+  const bar = el('div', 'node-bar');
+  bar.appendChild(el('span', 'node-bar-label', label));
+  nodeEl.appendChild(bar);
+
+  const content = el('div', 'node-content');
+  nodeEl.appendChild(content);
+
+  const resizeHandle = resizable ? el('div', 'node-resize') : null;
+  if (resizeHandle) nodeEl.appendChild(resizeHandle);
+
+  // Per-node drag via bar — suppresses click if mouse moved
+  bar.addEventListener('mousedown', e => {
+    e.stopPropagation();
+    const startX = e.clientX, startY = e.clientY;
+    const startL = parseInt(nodeEl.style.left), startT = parseInt(nodeEl.style.top);
+    let moved = false;
+    function onMove(e) {
+      if (!moved && Math.hypot(e.clientX - startX, e.clientY - startY) > 4) moved = true;
+      nodeEl.style.left = Math.round(startL + (e.clientX - startX) / zoom) + 'px';
+      nodeEl.style.top  = Math.round(startT + (e.clientY - startY) / zoom) + 'px';
+      redrawClusterCurves();
+      redrawLines();
+    }
+    function onUp() {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup',  onUp);
+      if (moved) nodeEl.addEventListener('click', e => e.stopPropagation(), { once: true, capture: true });
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup',  onUp);
+  });
+
+  // Resize via bottom-right dot
+  if (!resizeHandle) return { nodeEl, content };
+  resizeHandle.addEventListener('mousedown', e => {
+    e.stopPropagation();
+    const startX = e.clientX, startY = e.clientY;
+    const startW = nodeEl.offsetWidth, startH = nodeEl.offsetHeight;
+    let moved = false;
+    function onMove(e) {
+      if (!moved && Math.hypot(e.clientX - startX, e.clientY - startY) > 4) moved = true;
+      const newW = Math.max(80,  startW + (e.clientX - startX) / zoom);
+      const newH = Math.max(40,  startH + (e.clientY - startY) / zoom);
+      nodeEl.style.width  = Math.round(newW) + 'px';
+      nodeEl.style.height = Math.round(newH) + 'px';
+      redrawClusterCurves();
+      if (nodeEl._refreshText) nodeEl._refreshText();
+    }
+    function onUp() {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup',  onUp);
+      if (moved) nodeEl.addEventListener('click', e => e.stopPropagation(), { once: true, capture: true });
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup',  onUp);
+  });
+
+  return { nodeEl, content };
+}
+
 // ─────────────────────────────────────────────
 // Cluster bezier curves (inside canvas, scale with nodes)
 // ─────────────────────────────────────────────
@@ -469,16 +551,23 @@ function catmullPath(hull) {
 }
 
 function redrawClusterCurves() {
-  if (!Object.keys(clusterRects).length) return;
+  if (!Object.keys(clusterNodes).length) return;
   clusterSvg.innerHTML = '';
   const PAD = 18;
-  for (const [, rects] of Object.entries(clusterRects)) {
+  for (const [, c] of Object.entries(clusterNodes)) {
     const pts = [];
-    for (const r of rects) {
-      pts.push({ x: r.x - PAD,       y: r.y - PAD       });
-      pts.push({ x: r.x + r.w + PAD, y: r.y - PAD       });
-      pts.push({ x: r.x + r.w + PAD, y: r.y + r.h + PAD });
-      pts.push({ x: r.x - PAD,       y: r.y + r.h + PAD });
+    // Collect live DOM rects: title + all satellites
+    const els = [c.titleEl, ...c.satellites.map(s => s.el)];
+    for (const e of els) {
+      const x = parseInt(e.style.left)  || 0;
+      const y = parseInt(e.style.top)   || 0;
+      const w = e.offsetWidth  || 0;
+      const h = e.offsetHeight || 0;
+      if (!w || !h) continue;
+      pts.push({ x: x - PAD,     y: y - PAD     });
+      pts.push({ x: x + w + PAD, y: y - PAD     });
+      pts.push({ x: x + w + PAD, y: y + h + PAD });
+      pts.push({ x: x - PAD,     y: y + h + PAD });
     }
     const hull = convexHull(pts);
     if (hull.length < 3) continue;
@@ -495,30 +584,220 @@ function redrawClusterCurves() {
 // Build clusters
 // ─────────────────────────────────────────────
 
-function buildImageNode(p, images, rects) {
-  if (!images?.length) return;
-  const sat     = satPos(p, 0);
-  const imgNode = el('div', 'node node-image');
-  const stack   = el('div', 'image-stack');
-  const img     = document.createElement('img');
-  // images in detail.md are relative to the project folder
-  const base    = `media/projects/${p.id}/`;
-  const srcs    = images.map(i => i.startsWith('media/') ? i : base + i);
-  img.src = srcs[0]; img.alt = ''; img.loading = 'lazy';
-  stack.appendChild(img);
-  if (srcs.length > 1) stack.appendChild(el('div', 'image-count', String(srcs.length)));
-  imgNode.appendChild(stack);
-  imgNode.addEventListener('click', e => { e.stopPropagation(); openImgLb(srcs, 0); });
-  placeCentered(imgNode, sat.x, sat.y, SZ.image.w, SZ.image.h);
-  rects.push({ x: sat.x - SZ.image.w / 2, y: sat.y - SZ.image.h / 2, w: SZ.image.w, h: SZ.image.h });
-  clusterNodes[p.id].satellites.push({ el: imgNode, ox: sat.x - p.x, oy: sat.y - p.y, w: SZ.image.w, h: SZ.image.h });
+let threeCache = null;
+async function loadThree() {
+  if (threeCache) return threeCache;
+  const THREE = await import('three');
+  const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
+  const { OrbitControls } = await import('three/addons/controls/OrbitControls.js');
+  threeCache = { THREE, GLTFLoader, OrbitControls };
+  return threeCache;
 }
 
-function buildDetailNode(p, detail, rects) {
-  const sat      = satPos(p, 2);
-  const detailEl = el('div', 'node node-detail');
-  const tools    = Array.isArray(detail.tools) ? detail.tools : [];
-  const links    = Array.isArray(detail.links) ? detail.links : [];
+// Shared model lightbox — one Three.js renderer reused across all models
+const modelLightbox   = document.getElementById('model-lightbox');
+const mlbCanvasWrap   = document.getElementById('mlb-canvas-wrap');
+document.getElementById('mlb-close').onclick = closeModelLb;
+modelLightbox.addEventListener('click', e => { if (e.target === modelLightbox) closeModelLb(); });
+
+let mlbRenderer = null, mlbControls = null, mlbRaf = null, mlbScene = null, mlbCamera = null;
+
+function closeModelLb() {
+  modelLightbox.classList.remove('open');
+  if (mlbControls) mlbControls.autoRotate = true;
+}
+
+async function openModelLb(src) {
+  modelLightbox.classList.add('open');
+  mlbCanvasWrap.innerHTML = '';
+
+  const { THREE, GLTFLoader, OrbitControls } = await loadThree();
+  const W = mlbCanvasWrap.offsetWidth  || 600;
+  const H = mlbCanvasWrap.offsetHeight || 600;
+
+  const canvas = document.createElement('canvas');
+  mlbCanvasWrap.appendChild(canvas);
+
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(W, H);
+  renderer.setClearColor(0x080808, 1);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.4;
+  mlbRenderer = renderer;
+
+  const scene  = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, W / H, 0.01, 1000);
+  camera.position.set(0, 0, 3);
+  mlbCamera = camera; mlbScene = scene;
+
+  scene.add(new THREE.AmbientLight(0xffffff, 1.5));
+  const d1 = new THREE.DirectionalLight(0xffffff, 2.5); d1.position.set(3, 4, 3); scene.add(d1);
+  const d2 = new THREE.DirectionalLight(0xffffff, 1.0); d2.position.set(-3, -2, -2); scene.add(d2);
+
+  const controls = new OrbitControls(camera, canvas);
+  controls.enableZoom = true; controls.enablePan = false;
+  controls.autoRotate = true; controls.autoRotateSpeed = 0.8;
+  controls.enableDamping = true; controls.dampingFactor = 0.07;
+  mlbControls = controls;
+
+  new GLTFLoader().load(src, gltf => {
+    const obj = gltf.scene;
+    const box = new THREE.Box3().setFromObject(obj);
+    const ctr = box.getCenter(new THREE.Vector3());
+    const sz  = box.getSize(new THREE.Vector3()).length();
+    obj.position.sub(ctr);
+    obj.scale.multiplyScalar(2.2 / sz);
+    scene.add(obj);
+  }, undefined, err => console.warn('GLB load error', src, err));
+
+  if (mlbRaf) cancelAnimationFrame(mlbRaf);
+  function render() { mlbRaf = requestAnimationFrame(render); controls.update(); renderer.render(scene, camera); }
+  render();
+}
+
+function buildModelNode(p, modelPath, rects, slotIndex, totalSlots) {
+  if (!modelPath) return;
+  const src = modelPath.startsWith('media/') ? modelPath : `media/projects/${p.id}/${modelPath}`;
+  const sat  = satPos(p, slotIndex, 'model', totalSlots);
+  const W = SZ.model.w, H = SZ.model.h;
+  const BAR_H = 20;
+  const CW = W, CH = H - BAR_H;
+
+  const { nodeEl, content } = makeNode('node-model', '3d model', p.id, W, H);
+
+  const hint = el('div', 'model-hint', 'click to open');
+  content.appendChild(hint);
+
+  // Click anywhere on the node (except bar) → open lightbox
+  nodeEl.addEventListener('click', e => {
+    if (e.target.closest('.node-bar')) return;
+    e.stopPropagation();
+    openModelLb(src);
+  });
+
+  placeCentered(nodeEl, sat.x, sat.y, W, H);
+  rects.push({ x: sat.x - W/2, y: sat.y - H/2, w: W, h: H });
+  clusterNodes[p.id].satellites.push({ el: nodeEl, ox: sat.x - p.x, oy: sat.y - p.y, w: W, h: H });
+
+  loadThree().then(({ THREE, GLTFLoader, OrbitControls }) => {
+    requestAnimationFrame(() => {
+    // Use actual content dimensions after layout
+    const CW2 = content.offsetWidth  || CW;
+    const CH2 = content.offsetHeight || CH;
+
+    const canvas = document.createElement('canvas');
+    content.insertBefore(canvas, hint);
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(CW2, CH2);
+    canvas.style.position = 'absolute';
+    canvas.style.top = '0'; canvas.style.left = '0';
+    renderer.setClearColor(0x0a0a0a, 1);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.4;
+
+    const scene  = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, CW2 / CH2, 0.01, 1000);
+    camera.position.set(0, 0, 3);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 1.5));
+    const d1 = new THREE.DirectionalLight(0xffffff, 2.5); d1.position.set(3, 4, 3); scene.add(d1);
+    const d2 = new THREE.DirectionalLight(0xffffff, 1.0); d2.position.set(-3, -2, -2); scene.add(d2);
+
+    const controls = new OrbitControls(camera, canvas);
+    controls.enableZoom = false; controls.enablePan = false;
+    controls.autoRotate = true; controls.autoRotateSpeed = 1.2;
+    controls.enableDamping = true; controls.dampingFactor = 0.08;
+
+    new GLTFLoader().load(src, gltf => {
+      const obj = gltf.scene;
+      const box = new THREE.Box3().setFromObject(obj);
+      obj.position.sub(box.getCenter(new THREE.Vector3()));
+      obj.scale.multiplyScalar(2.2 / box.getSize(new THREE.Vector3()).length());
+      scene.add(obj);
+    }, undefined, err => console.warn('GLB load error', src, err));
+
+    function render() { requestAnimationFrame(render); controls.update(); renderer.render(scene, camera); }
+    render();
+    }); // end requestAnimationFrame
+  }); // end loadThree().then
+}
+
+function buildImageNode(p, images, rects, slotIndex, totalSlots) {
+  if (!images?.length) return;
+  const sat  = satPos(p, slotIndex, 'image', totalSlots);
+  const srcs = images; // paths already resolved by caller (full .webp)
+  const thumbSrc = src => src.replace(/(\.\w+)$/, '-small.webp');
+  const { nodeEl, content } = makeNode('node-image', 'images', p.id, SZ.image.w, SZ.image.h);
+  const stack = el('div', 'image-stack');
+  const img   = document.createElement('img');
+  img.src = thumbSrc(srcs[0]); img.alt = ''; img.loading = 'lazy';
+  stack.appendChild(img);
+  if (srcs.length > 1) stack.appendChild(el('div', 'image-count', String(srcs.length)));
+  content.appendChild(stack);
+  nodeEl.addEventListener('click', e => { e.stopPropagation(); openImgLb(srcs, 0); });
+  placeCentered(nodeEl, sat.x, sat.y, SZ.image.w, SZ.image.h);
+  rects.push({ x: sat.x - SZ.image.w / 2, y: sat.y - SZ.image.h / 2, w: SZ.image.w, h: SZ.image.h });
+  clusterNodes[p.id].satellites.push({ el: nodeEl, ox: sat.x - p.x, oy: sat.y - p.y, w: SZ.image.w, h: SZ.image.h });
+}
+
+function buildTextNode(p, label, fullText, rects, slotIndex, totalSlots) {
+  const sat = satPos(p, slotIndex, 'text', totalSlots);
+  const { nodeEl, content } = makeNode('node-text', label, p.id, SZ.text.w, SZ.text.h);
+  const body   = el('div', 'text-body');
+  const toggle = el('span', 'text-toggle');
+  content.appendChild(body);
+  content.appendChild(toggle);
+
+  // Dynamically show full text or truncated depending on available content height
+  function refreshText() {
+    const BAR_H = 20, PAD = 26; // bar + vertical padding
+    const available = nodeEl.offsetHeight - BAR_H - PAD;
+    body.textContent = fullText;
+    const lineH = parseFloat(getComputedStyle(body).lineHeight) || 18;
+    const fits  = body.scrollHeight <= available + lineH; // one line tolerance
+    if (fits) {
+      body.textContent = fullText;
+      toggle.textContent = '';
+      toggle.style.display = 'none';
+    } else {
+      // Binary-search the character count that fits
+      let lo = 0, hi = fullText.length;
+      while (hi - lo > 4) {
+        const mid = (lo + hi) >> 1;
+        body.textContent = fullText.slice(0, mid) + '…';
+        if (body.scrollHeight <= available) lo = mid; else hi = mid;
+      }
+      body.textContent = fullText.slice(0, lo) + '…';
+      toggle.style.display = '';
+      toggle.textContent = 'read more';
+    }
+  }
+
+  nodeEl.style.cursor = 'pointer';
+  nodeEl.addEventListener('click', e => { e.stopPropagation(); openTxtLb(label, fullText); });
+  nodeEl._refreshText = refreshText;
+  requestAnimationFrame(refreshText);
+
+  // Register for per-node search lines
+  const nodeKey = `${p.id}::${label.toLowerCase().replace(/\s+/g, '-')}`;
+  nodeEl._nodeKey = nodeKey;
+  nodePositions[nodeKey] = { el: nodeEl };
+
+  placeCentered(nodeEl, sat.x, sat.y, SZ.text.w, SZ.text.h);
+  rects.push({ x: sat.x - SZ.text.w / 2, y: sat.y - SZ.text.h / 2, w: SZ.text.w, h: SZ.text.h });
+  clusterNodes[p.id].satellites.push({ el: nodeEl, ox: sat.x - p.x, oy: sat.y - p.y, w: SZ.text.w, h: SZ.text.h });
+}
+
+function buildDetailNode(p, detail, rects, slotIndex, totalSlots) {
+  const sat   = satPos(p, slotIndex, 'detail', totalSlots);
+  const tools = Array.isArray(detail.tools) ? detail.tools : [];
+  const links = Array.isArray(detail.links) ? detail.links : [];
+  const { nodeEl, content } = makeNode('node-detail', 'detail', p.id, SZ.detail.w, null, { resizable: false });
   [
     detail.year     && ['Year',     detail.year],
     detail.role     && ['Role',     detail.role],
@@ -528,7 +807,7 @@ function buildDetailNode(p, detail, rects) {
     const row = el('div', 'detail-row');
     row.appendChild(el('div', 'detail-label', lbl));
     row.appendChild(el('div', 'detail-value', val));
-    detailEl.appendChild(row);
+    content.appendChild(row);
   });
   if (links.length) {
     const row = el('div', 'detail-row');
@@ -540,19 +819,20 @@ function buildDetailNode(p, detail, rects) {
       a.addEventListener('click', e => e.stopPropagation());
       row.appendChild(a);
     });
-    detailEl.appendChild(row);
+    content.appendChild(row);
   }
-  if (detailEl.children.length) {
-    placeCentered(detailEl, sat.x, sat.y, SZ.detail.w, SZ.detail.h);
+  if (content.children.length) {
+    placeCentered(nodeEl, sat.x, sat.y, SZ.detail.w, SZ.detail.h);
     rects.push({ x: sat.x - SZ.detail.w / 2, y: sat.y - SZ.detail.h / 2, w: SZ.detail.w, h: SZ.detail.h });
-    clusterNodes[p.id].satellites.push({ el: detailEl, ox: sat.x - p.x, oy: sat.y - p.y, w: SZ.detail.w, h: SZ.detail.h });
+    clusterNodes[p.id].satellites.push({ el: nodeEl, ox: sat.x - p.x, oy: sat.y - p.y, w: SZ.detail.w, h: SZ.detail.h });
   }
 }
+
 
 PROJECTS.forEach(p => {
   const rects = [];
 
-  // Title
+  // Title — auto-fits content, no resize handle
   const titleEl = el('div', 'node node-title', p.title);
   if (p.id === 'about') titleEl.classList.add('is-about');
   titleEl._clusterId = p.id;
@@ -561,36 +841,46 @@ PROJECTS.forEach(p => {
   rects.push({ x: p.x - SZ.title.w / 2, y: p.y - SZ.title.h / 2, w: SZ.title.w, h: SZ.title.h });
   clusterTitlePos[p.id] = { x: p.x, y: p.y };
   clusterNodes[p.id] = { titleEl, cx: p.x, cy: p.y, satellites: [] };
+  nodePositions[`${p.id}::title`] = { el: titleEl };
 
-  // Text node — from description.md
-  {
-    const sat    = satPos(p, 1);
-    const textEl = el('div', 'node node-text');
-    const body   = el('div', '');
-    const toggle = el('span', 'text-toggle');
-    textEl.appendChild(body);
-    textEl.appendChild(toggle);
-    fetchMdBody(p.id).then(md => {
-      const fullText = md || p.title;
-      const { short, more } = trunc(fullText);
-      body.textContent = short + (more ? '…' : '');
-      if (more) {
-        toggle.textContent = 'read more';
-        textEl.addEventListener('click', e => { e.stopPropagation(); openTxtLb(p.title, fullText); });
-      } else {
-        toggle.remove();
-        textEl.style.cursor = 'default';
-      }
-    });
-    placeCentered(textEl, sat.x, sat.y, SZ.text.w, SZ.text.h);
-    rects.push({ x: sat.x - SZ.text.w / 2, y: sat.y - SZ.text.h / 2, w: SZ.text.w, h: SZ.text.h });
-    clusterNodes[p.id].satellites.push({ el: textEl, ox: sat.x - p.x, oy: sat.y - p.y, w: SZ.text.w, h: SZ.text.h });
-  }
+  // All satellite nodes come from detail.md (async)
+  // The 'about' project lives in media/about/ with its own structure
+  const detailPromise = p.id === 'about'
+    ? Promise.resolve({ texts: [{ file: 'bio.md', label: 'Bio' }], images: ['profile.webp'], _aboutBase: true })
+    : fetchDetail(p.id);
 
-  // Image + detail nodes — from detail.md (async, fills in after load)
-  fetchDetail(p.id).then(detail => {
-    buildImageNode(p, detail.images, rects);
-    buildDetailNode(p, detail, rects);
+  detailPromise.then(async detail => {
+    // texts: list of {file, label} or fall back to description.md
+    const textDefs = Array.isArray(detail.texts) && detail.texts.length
+      ? detail.texts
+      : [{ file: 'description.md', label: p.title }];
+
+    const baseDir = detail._aboutBase ? 'media/about' : `media/projects/${p.id}`;
+
+    // Fetch all text bodies in parallel
+    const textBodies = await Promise.all(textDefs.map(async t => {
+      const file = t.file || 'description.md';
+      try {
+        const txt = await fetch(`${baseDir}/${file}`).then(r => r.ok ? r.text() : null);
+        return { label: t.label || p.title, body: txt ? stripMd(txt) : null };
+      } catch { return { label: t.label || p.title, body: null }; }
+    }));
+
+    // Build slot list: texts first, then image, detail, model
+    const resolvedImages = (detail.images || []).map(i => i.startsWith('media/') ? i : `${baseDir}/${i}`);
+    const hasImage  = resolvedImages.length > 0;
+    const hasDetail = !!(detail.year || detail.role || detail.timeline || detail.tools?.length || detail.links?.length);
+    const hasModel  = !!detail.model;
+    const total = textBodies.length + (hasImage ? 1 : 0) + (hasDetail ? 1 : 0) + (hasModel ? 1 : 0);
+
+    let slot = 0;
+    for (const { label, body } of textBodies) {
+      if (body) buildTextNode(p, label, body, rects, slot++, total);
+    }
+    if (hasImage)  buildImageNode(p, resolvedImages, rects, slot++, total);
+    if (hasDetail) buildDetailNode(p, detail, rects, slot++, total);
+    if (hasModel)  buildModelNode(p, detail.model, rects, slot++, total);
+
     clusterRects[p.id] = rects;
     redrawClusterCurves();
   });
@@ -624,31 +914,30 @@ function rectEdgePoint(rx, ry, rw, rh, tx, ty) {
 
 function redrawLines() {
   lineSvg.innerHTML = '';
-  const ids = Object.keys(lineScores);
-  if (!ids.length) return;
+  const keys = Object.keys(lineScores);
+  if (!keys.length) return;
 
-  // Source: right edge of input wrap, converted from canvas to screen coords
-  // Input is centred at (CANVAS_CX, CANVAS_CY); approximate half-width in canvas px
-  const inputHalfW = (inputWrap.offsetWidth  || 260) / 2;
-  const inputHalfH = (inputWrap.offsetHeight || 34)  / 2;
+  const inputHalfW = (inputWrap.offsetWidth || 260) / 2;
   const srcPt = c2s(CANVAS_CX + inputHalfW, CANVAS_CY);
-  const srcX  = srcPt.x;
-  const srcY  = srcPt.y;
+  const srcX = srcPt.x, srcY = srcPt.y;
 
-  ids.forEach(id => {
-    const score = lineScores[id];
+  keys.forEach(nodeKey => {
+    const score = lineScores[nodeKey];
     if (score < 0.3) return;
-    const tp = clusterTitlePos[id]; if (!tp) return;
+    const np = nodePositions[nodeKey]; if (!np?.el) return;
+    const e = np.el;
 
-    // Title node screen rect
-    const tScreen = c2s(tp.x, tp.y);
-    const tw = SZ.title.w * zoom, th = SZ.title.h * zoom;
-    const trx = tScreen.x - tw / 2, try_ = tScreen.y - th / 2;
+    // Canvas-px position of the node
+    const cx = parseInt(e.style.left) || 0;
+    const cy = parseInt(e.style.top)  || 0;
+    const cw = e.offsetWidth  || 60;
+    const ch = e.offsetHeight || 30;
 
-    // Destination: edge of title node closest to source
-    const dst = rectEdgePoint(trx, try_, tw, th, srcX, srcY);
+    // Convert canvas rect to screen coords
+    const tl = c2s(cx, cy);
+    const sw = cw * zoom, sh = ch * zoom;
+    const dst = rectEdgePoint(tl.x, tl.y, sw, sh, srcX, srcY);
 
-    // Bezier: horizontal tangent out of input, tangent into node from src direction
     const dx   = dst.x - srcX;
     const bend = Math.max(Math.abs(dx) * 0.5, 80);
     const cp1x = srcX + bend, cp1y = srcY;
@@ -719,19 +1008,11 @@ async function init() {
   inputEl.placeholder = 'archive agent loading…';
   const stored = await fetch('embeddings.json').then(r => r.json()).catch(() => null);
   if (stored) {
-    for (const id of Object.keys(stored))
-      nodeEmbeddings[id] = new Float32Array(stored[id]);
+    for (const [key, vec] of Object.entries(stored))
+      nodeEmbeddings[key] = new Float32Array(vec);
   }
   embedder = await pipelineFn('feature-extraction', 'Xenova/all-mpnet-base-v2', { dtype: 'q8' });
-  if (!stored) {
-    for (const p of PROJECTS) {
-      const out = await embedder(p.description, { pooling: 'mean', normalize: true });
-      nodeEmbeddings[p.id] = extractVec(out);
-    }
-  }
-  // Verify embeddings loaded correctly
-  const ids = Object.keys(nodeEmbeddings);
-  console.log(`Embeddings ready: ${ids.length} projects`, ids);
+  console.log(`Embeddings ready: ${Object.keys(nodeEmbeddings).length} nodes`);
   loadDot.style.display = 'none';
   const hints = ['search', 'search', 'search', "you may ask what i'm proud of"];
   inputEl.placeholder = hints[Math.floor(Math.random() * hints.length)];
@@ -749,18 +1030,15 @@ async function runQuery(t) {
   const out = await embedder(t, { pooling: 'mean', normalize: true });
   const q   = extractVec(out);
   const raw = {};
-  for (const p of PROJECTS) {
-    const vec = nodeEmbeddings[p.id];
-    raw[p.id] = vec ? Math.max(0, cosSim(q, vec)) : 0;
+  for (const [nodeKey, vec] of Object.entries(nodeEmbeddings)) {
+    raw[nodeKey] = Math.max(0, cosSim(q, vec));
   }
-  // Normalise relative to best match so the strongest result always draws a line.
-  // Absolute threshold of 0.4× max prevents near-zero scores from showing.
-  const max = Math.max(...Object.values(raw));
+  const max = Math.max(...Object.values(raw), 0);
   lineScores = {};
   if (max > 0) {
-    for (const id of Object.keys(raw)) {
-      const norm = raw[id] / max;
-      if (norm >= 0.4) lineScores[id] = norm;
+    for (const [nodeKey, score] of Object.entries(raw)) {
+      const norm = score / max;
+      if (norm >= 0.4) lineScores[nodeKey] = norm;
     }
   }
   redrawLines(); animateLines();

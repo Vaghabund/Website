@@ -8,9 +8,15 @@ tools:
   - NomadSculpt
   - Whisper
 links: []
+texts:
+  - file: description.md
+    label: "Overview"
+  - file: visions.md
+    label: "The Vision"
 images:
-  - images/poster-vision-text-opt-01.png
-  - images/poster-vision-text-opt-02.png
-  - images/poster-vision-text-opt-03.png
-  - images/poster-vision-text-opt-04.png
+  - images/poster-vision-text-opt-01.webp
+  - images/poster-vision-text-opt-02.webp
+  - images/poster-vision-text-opt-03.webp
+  - images/poster-vision-text-opt-04.webp
+model: "models/visionofthehybrid-model.glb"
 ---
