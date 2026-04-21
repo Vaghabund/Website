@@ -368,6 +368,7 @@ async function fetchMdBody(id) {
 function parseFrontmatter(txt) {
   const m = txt.match(/^---\n([\s\S]*?)\n---/);
   if (!m) return {};
+  const LIST_KEYS = new Set(['images', 'tools', 'links']);
   const out = {};
   const lines = m[1].split('\n');
   let key = null, listKey = null, listObj = null;
@@ -396,9 +397,9 @@ function parseFrontmatter(txt) {
       continue;
     }
     // top-level list key with no inline value
-    const listStart = line.match(/^(\w+):\s*\[\s*\]\s*$|^(\w+):\s*$/);
-    if (listStart) {
-      listKey = listStart[1] || listStart[2];
+    const listStart = line.match(/^(\w+):\s*(?:\[\s*\])?\s*$/);
+    if (listStart && LIST_KEYS.has(listStart[1])) {
+      listKey = listStart[1];
       out[listKey] = [];
       key = null; listObj = null;
       continue;
