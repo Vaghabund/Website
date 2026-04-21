@@ -395,20 +395,20 @@ function parseFrontmatter(txt) {
       listObj = null;
       continue;
     }
-    // top-level key
-    const kv = line.match(/^(\w+):\s*"?([^"]*)"?$/);
-    if (kv) {
-      key = kv[1]; listKey = null; listObj = null;
-      const val = kv[2].trim();
-      out[key] = val === '' ? null : val;
-      continue;
-    }
     // top-level list key with no inline value
     const listStart = line.match(/^(\w+):\s*\[\s*\]\s*$|^(\w+):\s*$/);
     if (listStart) {
       listKey = listStart[1] || listStart[2];
       out[listKey] = [];
       key = null; listObj = null;
+      continue;
+    }
+    // top-level key
+    const kv = line.match(/^(\w+):\s*"?([^"]*)"?$/);
+    if (kv) {
+      key = kv[1]; listKey = null; listObj = null;
+      const val = kv[2].trim();
+      out[key] = val === '' ? null : val;
     }
   }
   return out;
