@@ -409,6 +409,7 @@ function parseFrontmatter(txt) {
       key = kv[1]; listKey = null; listObj = null;
       const val = kv[2].trim();
       out[key] = val === '' ? null : val;
+      continue;
     }
   }
   return out;
