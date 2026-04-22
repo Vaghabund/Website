@@ -124,6 +124,49 @@ async function loadMobileItem(p, content) {
   });
 }
 
+const IMPRESSUM_TEXT = `Angaben gemäß § 5 TMG
+
+Joel Tenenberg
+[Your Address]
+[City, Postcode]
+
+Kontakt
+E-Mail: joel@monomango.com
+
+Haftungsausschluss
+Die Inhalte dieser Seite wurden mit größtmöglicher Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte wird keine Gewähr übernommen.`;
+
+function buildFooter() {
+  const footer = document.createElement('footer');
+  footer.id = 'site-footer';
+  footer.innerHTML = `
+    <span class="footer-socials">
+      <!-- socials go here -->
+    </span>
+    <span class="footer-copy">© Joel Tenenberg 2026</span>
+    <button class="footer-impressum">Impressum</button>
+  `;
+  document.body.appendChild(footer);
+
+  // Impressum lightbox
+  const lb = document.createElement('div');
+  lb.id = 'impressum-lightbox';
+  lb.innerHTML = `
+    <div id="imp-inner">
+      <div id="imp-title">Impressum</div>
+      <div id="imp-body"></div>
+    </div>
+    <button id="imp-close">&#x2715;</button>
+  `;
+  document.body.appendChild(lb);
+  document.getElementById('imp-body').textContent = IMPRESSUM_TEXT;
+
+  footer.querySelector('.footer-impressum').onclick = () => lb.classList.add('open');
+  document.getElementById('imp-close').onclick = () => lb.classList.remove('open');
+  lb.addEventListener('click', e => { if (e.target === lb) lb.classList.remove('open'); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') lb.classList.remove('open'); });
+}
+
 function buildMobileView() {
   const container = document.getElementById('mobile-view');
   if (!container) return;
@@ -173,10 +216,17 @@ function buildMobileView() {
 }
 
 // ─────────────────────────────────────────────
-// Mobile: render accordion and stop here
+// Mobile: render accordion and stop here.
+// Detection runs once at load — stamping a class on <body> so CSS doesn't
+// re-evaluate on orientation change (which would show the canvas mid-session).
 // ─────────────────────────────────────────────
-if (window.matchMedia('(max-width: 600px)').matches) {
+const IS_MOBILE = window.matchMedia('(max-width: 600px)').matches ||
+                  window.matchMedia('(max-height: 600px) and (orientation: landscape) and (pointer: coarse)').matches;
+
+if (IS_MOBILE) {
+  document.body.classList.add('is-mobile');
   buildMobileView();
+  buildFooter();
 } else {
 
 // ─────────────────────────────────────────────
@@ -292,6 +342,10 @@ function applyTransform() {
 }
 applyTransform();
 
+// Cache inputWrap width (only changes on window resize)
+requestAnimationFrame(() => cacheDims(inputWrap));
+window.addEventListener('resize', () => cacheDims(inputWrap));
+
 // ─────────────────────────────────────────────
 // Cluster drag
 // ─────────────────────────────────────────────
@@ -341,6 +395,7 @@ document.addEventListener('mousedown', e => {
   panStart  = { ...pan };
   canvasRoot.classList.add('dragging');
 });
+let rafPending = false;
 document.addEventListener('mousemove', e => {
   if (clusterDragging) {
     const dx = (e.clientX - clusterDragging.mouseStartX) / zoom;
@@ -351,7 +406,10 @@ document.addEventListener('mousemove', e => {
   if (!dragging) return;
   pan.x = panStart.x + (e.clientX - dragStart.x);
   pan.y = panStart.y + (e.clientY - dragStart.y);
-  applyTransform();
+  if (!rafPending) {
+    rafPending = true;
+    requestAnimationFrame(() => { applyTransform(); rafPending = false; });
+  }
 });
 document.addEventListener('mouseup', () => {
   dragging = false;
@@ -366,7 +424,10 @@ function doZoom(delta, cx, cy) {
   pan.x = cx + (pan.x - cx) * r;
   pan.y = cy + (pan.y - cy) * r;
   zoom  = nz;
-  applyTransform();
+  if (!rafPending) {
+    rafPending = true;
+    requestAnimationFrame(() => { applyTransform(); rafPending = false; });
+  }
 }
 document.addEventListener('wheel', e => {
   if (e.target.closest('#tlb-inner')) return;
@@ -435,11 +496,25 @@ function el(tag, cls = '', txt = '') {
   if (txt) e.textContent = txt;
   return e;
 }
+// Batch cacheDims — all nodes placed synchronously get their dims cached in one RAF
+let _dimQueue = [], _dimRaf = false;
+function queueCacheDims(node) {
+  _dimQueue.push(node);
+  if (!_dimRaf) {
+    _dimRaf = true;
+    requestAnimationFrame(() => {
+      _dimQueue.forEach(cacheDims);
+      _dimQueue = []; _dimRaf = false;
+    });
+  }
+}
+
 // Place node top-left corner at canvas (x, y)
 function place(node, x, y) {
   node.style.left = Math.round(x) + 'px';
   node.style.top  = Math.round(y) + 'px';
   canvasRoot.appendChild(node);
+  queueCacheDims(node);
 }
 // Place node so its centre is at canvas (cx, cy)
 function placeCentered(node, cx, cy, w, h) {
@@ -449,7 +524,7 @@ function placeCentered(node, cx, cy, w, h) {
 // Wrap a node element with a top bar (drag handle) + resize dot.
 // Returns { nodeEl, content } where content is where the node's body goes.
 // label: short string shown in the bar  clusterId: for curve redraw
-function makeNode(cls, label, clusterId, w, h, { resizable = true } = {}) {
+function makeNode(cls, label, clusterId, w, h, { resizable = true, aspect = null } = {}) {
   const nodeEl  = el('div', `node ${cls}`);
   nodeEl.style.width  = w + 'px';
   if (h) nodeEl.style.height = h + 'px';
@@ -496,10 +571,12 @@ function makeNode(cls, label, clusterId, w, h, { resizable = true } = {}) {
     let moved = false;
     function onMove(e) {
       if (!moved && Math.hypot(e.clientX - startX, e.clientY - startY) > 4) moved = true;
-      const newW = Math.max(80,  startW + (e.clientX - startX) / zoom);
-      const newH = Math.max(40,  startH + (e.clientY - startY) / zoom);
+      const newW = Math.max(80, startW + (e.clientX - startX) / zoom);
+      const ar = aspect ?? nodeEl._aspect ?? null;
+      const newH = ar ? newW * ar : Math.max(40, startH + (e.clientY - startY) / zoom);
       nodeEl.style.width  = Math.round(newW) + 'px';
       nodeEl.style.height = Math.round(newH) + 'px';
+      nodeEl._cw = Math.round(newW); nodeEl._ch = Math.round(newH);
       redrawClusterCurves();
       if (nodeEl._refreshText) nodeEl._refreshText();
     }
@@ -550,19 +627,38 @@ function catmullPath(hull) {
   return d + ' Z';
 }
 
+// Read and cache an element's pixel dimensions — avoids repeated offsetWidth/Height reads
+function cacheDims(e) {
+  e._cw = e.offsetWidth;
+  e._ch = e.offsetHeight;
+}
+
 function redrawClusterCurves() {
   if (!Object.keys(clusterNodes).length) return;
-  clusterSvg.innerHTML = '';
   const PAD = 18;
-  for (const [, c] of Object.entries(clusterNodes)) {
+  const ids = Object.keys(clusterNodes);
+
+  // Ensure we have one <path> per cluster, creating or reusing
+  while (clusterSvg.children.length < ids.length) {
+    const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    p.setAttribute('fill', 'none');
+    p.setAttribute('stroke', 'rgba(255,255,255,0.06)');
+    p.setAttribute('stroke-width', '1');
+    clusterSvg.appendChild(p);
+  }
+  while (clusterSvg.children.length > ids.length) {
+    clusterSvg.removeChild(clusterSvg.lastChild);
+  }
+
+  ids.forEach((id, i) => {
+    const c = clusterNodes[id];
     const pts = [];
-    // Collect live DOM rects: title + all satellites
     const els = [c.titleEl, ...c.satellites.map(s => s.el)];
     for (const e of els) {
-      const x = parseInt(e.style.left)  || 0;
-      const y = parseInt(e.style.top)   || 0;
-      const w = e.offsetWidth  || 0;
-      const h = e.offsetHeight || 0;
+      const x = parseInt(e.style.left) || 0;
+      const y = parseInt(e.style.top)  || 0;
+      const w = e._cw || e.offsetWidth  || 0;
+      const h = e._ch || e.offsetHeight || 0;
       if (!w || !h) continue;
       pts.push({ x: x - PAD,     y: y - PAD     });
       pts.push({ x: x + w + PAD, y: y - PAD     });
@@ -570,14 +666,8 @@ function redrawClusterCurves() {
       pts.push({ x: x - PAD,     y: y + h + PAD });
     }
     const hull = convexHull(pts);
-    if (hull.length < 3) continue;
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', catmullPath(hull));
-    path.setAttribute('fill', 'none');
-    path.setAttribute('stroke', 'rgba(255,255,255,0.06)');
-    path.setAttribute('stroke-width', '1');
-    clusterSvg.appendChild(path);
-  }
+    clusterSvg.children[i].setAttribute('d', hull.length >= 3 ? catmullPath(hull) : '');
+  });
 }
 
 // ─────────────────────────────────────────────
@@ -594,22 +684,31 @@ async function loadThree() {
   return threeCache;
 }
 
-// Shared model lightbox — one Three.js renderer reused across all models
-const modelLightbox   = document.getElementById('model-lightbox');
-const mlbCanvasWrap   = document.getElementById('mlb-canvas-wrap');
+// Shared model lightbox — one persistent Three.js renderer, recreated only when needed
+const modelLightbox = document.getElementById('model-lightbox');
+const mlbCanvasWrap = document.getElementById('mlb-canvas-wrap');
 document.getElementById('mlb-close').onclick = closeModelLb;
 modelLightbox.addEventListener('click', e => { if (e.target === modelLightbox) closeModelLb(); });
 
-let mlbRenderer = null, mlbControls = null, mlbRaf = null, mlbScene = null, mlbCamera = null;
+let mlbRenderer = null, mlbControls = null, mlbRaf = null;
 
 function closeModelLb() {
   modelLightbox.classList.remove('open');
-  if (mlbControls) mlbControls.autoRotate = true;
+  // Stop the RAF loop — no point rendering a hidden lightbox
+  if (mlbRaf) { cancelAnimationFrame(mlbRaf); mlbRaf = null; }
+}
+
+function disposeMlb() {
+  if (mlbRaf) { cancelAnimationFrame(mlbRaf); mlbRaf = null; }
+  if (mlbRenderer) { mlbRenderer.dispose(); mlbRenderer = null; }
+  mlbControls = null;
+  mlbCanvasWrap.innerHTML = '';
 }
 
 async function openModelLb(src) {
+  // Dispose previous session cleanly before creating a new one
+  disposeMlb();
   modelLightbox.classList.add('open');
-  mlbCanvasWrap.innerHTML = '';
 
   const { THREE, GLTFLoader, OrbitControls } = await loadThree();
   const W = mlbCanvasWrap.offsetWidth  || 600;
@@ -630,7 +729,6 @@ async function openModelLb(src) {
   const scene  = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(45, W / H, 0.01, 1000);
   camera.position.set(0, 0, 3);
-  mlbCamera = camera; mlbScene = scene;
 
   scene.add(new THREE.AmbientLight(0xffffff, 1.5));
   const d1 = new THREE.DirectionalLight(0xffffff, 2.5); d1.position.set(3, 4, 3); scene.add(d1);
@@ -645,14 +743,11 @@ async function openModelLb(src) {
   new GLTFLoader().load(src, gltf => {
     const obj = gltf.scene;
     const box = new THREE.Box3().setFromObject(obj);
-    const ctr = box.getCenter(new THREE.Vector3());
-    const sz  = box.getSize(new THREE.Vector3()).length();
-    obj.position.sub(ctr);
-    obj.scale.multiplyScalar(2.2 / sz);
+    obj.position.sub(box.getCenter(new THREE.Vector3()));
+    obj.scale.multiplyScalar(2.2 / box.getSize(new THREE.Vector3()).length());
     scene.add(obj);
   }, undefined, err => console.warn('GLB load error', src, err));
 
-  if (mlbRaf) cancelAnimationFrame(mlbRaf);
   function render() { mlbRaf = requestAnimationFrame(render); controls.update(); renderer.render(scene, camera); }
   render();
 }
@@ -665,7 +760,7 @@ function buildModelNode(p, modelPath, rects, slotIndex, totalSlots) {
   const BAR_H = 20;
   const CW = W, CH = H - BAR_H;
 
-  const { nodeEl, content } = makeNode('node-model', '3d model', p.id, W, H);
+  const { nodeEl, content } = makeNode('node-model', '3d model', p.id, W, H, { aspect: 3/4 });
 
   const hint = el('div', 'model-hint', 'click to open');
   content.appendChild(hint);
@@ -683,48 +778,60 @@ function buildModelNode(p, modelPath, rects, slotIndex, totalSlots) {
 
   loadThree().then(({ THREE, GLTFLoader, OrbitControls }) => {
     requestAnimationFrame(() => {
-    // Use actual content dimensions after layout
-    const CW2 = content.offsetWidth  || CW;
-    const CH2 = content.offsetHeight || CH;
+      const CW2 = content.offsetWidth  || CW;
+      const CH2 = content.offsetHeight || CH;
 
-    const canvas = document.createElement('canvas');
-    content.insertBefore(canvas, hint);
+      const canvas = document.createElement('canvas');
+      content.insertBefore(canvas, hint);
 
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(CW2, CH2);
-    canvas.style.position = 'absolute';
-    canvas.style.top = '0'; canvas.style.left = '0';
-    renderer.setClearColor(0x0a0a0a, 1);
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.4;
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(CW2, CH2);
+      canvas.style.position = 'absolute';
+      canvas.style.top = '0'; canvas.style.left = '0';
+      renderer.setClearColor(0x0a0a0a, 1);
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.4;
 
-    const scene  = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, CW2 / CH2, 0.01, 1000);
-    camera.position.set(0, 0, 3);
+      const scene  = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(45, CW2 / CH2, 0.01, 1000);
+      camera.position.set(0, 0, 3);
 
-    scene.add(new THREE.AmbientLight(0xffffff, 1.5));
-    const d1 = new THREE.DirectionalLight(0xffffff, 2.5); d1.position.set(3, 4, 3); scene.add(d1);
-    const d2 = new THREE.DirectionalLight(0xffffff, 1.0); d2.position.set(-3, -2, -2); scene.add(d2);
+      scene.add(new THREE.AmbientLight(0xffffff, 1.5));
+      const d1 = new THREE.DirectionalLight(0xffffff, 2.5); d1.position.set(3, 4, 3); scene.add(d1);
+      const d2 = new THREE.DirectionalLight(0xffffff, 1.0); d2.position.set(-3, -2, -2); scene.add(d2);
 
-    const controls = new OrbitControls(camera, canvas);
-    controls.enableZoom = false; controls.enablePan = false;
-    controls.autoRotate = true; controls.autoRotateSpeed = 1.2;
-    controls.enableDamping = true; controls.dampingFactor = 0.08;
+      const controls = new OrbitControls(camera, canvas);
+      controls.enableZoom = false; controls.enablePan = false;
+      controls.autoRotate = true; controls.autoRotateSpeed = 1.2;
+      controls.enableDamping = true; controls.dampingFactor = 0.08;
 
-    new GLTFLoader().load(src, gltf => {
-      const obj = gltf.scene;
-      const box = new THREE.Box3().setFromObject(obj);
-      obj.position.sub(box.getCenter(new THREE.Vector3()));
-      obj.scale.multiplyScalar(2.2 / box.getSize(new THREE.Vector3()).length());
-      scene.add(obj);
-    }, undefined, err => console.warn('GLB load error', src, err));
+      new GLTFLoader().load(src, gltf => {
+        const obj = gltf.scene;
+        const box = new THREE.Box3().setFromObject(obj);
+        obj.position.sub(box.getCenter(new THREE.Vector3()));
+        obj.scale.multiplyScalar(2.2 / box.getSize(new THREE.Vector3()).length());
+        scene.add(obj);
+      }, undefined, err => console.warn('GLB load error', src, err));
 
-    function render() { requestAnimationFrame(render); controls.update(); renderer.render(scene, camera); }
-    render();
-    }); // end requestAnimationFrame
-  }); // end loadThree().then
+      // Pause RAF when node is scrolled out of view, resume when visible
+      let raf = null;
+      function startRender() {
+        if (raf) return;
+        function loop() { raf = requestAnimationFrame(loop); controls.update(); renderer.render(scene, camera); }
+        loop();
+      }
+      function stopRender() {
+        if (raf) { cancelAnimationFrame(raf); raf = null; }
+      }
+
+      const observer = new IntersectionObserver(([entry]) => {
+        if (entry.isIntersecting) startRender(); else stopRender();
+      }, { threshold: 0 });
+      observer.observe(nodeEl);
+    });
+  });
 }
 
 function buildImageNode(p, images, rects, slotIndex, totalSlots) {
@@ -732,14 +839,41 @@ function buildImageNode(p, images, rects, slotIndex, totalSlots) {
   const sat  = satPos(p, slotIndex, 'image', totalSlots);
   const srcs = images; // paths already resolved by caller (full .webp)
   const thumbSrc = src => src.replace(/(\.\w+)$/, '-small.webp');
-  const { nodeEl, content } = makeNode('node-image', 'images', p.id, SZ.image.w, SZ.image.h);
+  const { nodeEl, content } = makeNode('node-image', 'images', p.id, SZ.image.w, SZ.image.h, { aspect: null });
   const stack = el('div', 'image-stack');
   const img   = document.createElement('img');
   img.src = thumbSrc(srcs[0]); img.alt = ''; img.loading = 'lazy';
+  let currentIndex = 0;
+
+  function showImage(idx) {
+    currentIndex = idx;
+    img.src = thumbSrc(srcs[idx]);
+  }
+
+  // Once the first image loads, snap the node to its natural aspect ratio
+  img.addEventListener('load', () => {
+    if (img.naturalWidth && img.naturalHeight) {
+      const ar = img.naturalHeight / img.naturalWidth;
+      nodeEl._aspect = ar;
+      const newH = Math.round(nodeEl.offsetWidth * ar);
+      nodeEl.style.height = newH + 'px';
+      nodeEl._ch = newH;
+      redrawClusterCurves();
+    }
+  }, { once: true });
+
   stack.appendChild(img);
   if (srcs.length > 1) stack.appendChild(el('div', 'image-count', String(srcs.length)));
   content.appendChild(stack);
-  nodeEl.addEventListener('click', e => { e.stopPropagation(); openImgLb(srcs, 0); });
+  nodeEl.addEventListener('click', e => { e.stopPropagation(); openImgLb(srcs, currentIndex); });
+
+  // Register per-image search keys — each maps to this node with its index
+  srcs.forEach((src, idx) => {
+    const fileName = src.split('/').pop().replace(/\.\w+$/, '');
+    const key = `${p.id}::image::${fileName}`;
+    nodePositions[key] = { el: nodeEl, imgIndex: idx, showImage };
+  });
+
   placeCentered(nodeEl, sat.x, sat.y, SZ.image.w, SZ.image.h);
   rects.push({ x: sat.x - SZ.image.w / 2, y: sat.y - SZ.image.h / 2, w: SZ.image.w, h: SZ.image.h });
   clusterNodes[p.id].satellites.push({ el: nodeEl, ox: sat.x - p.x, oy: sat.y - p.y, w: SZ.image.w, h: SZ.image.h });
@@ -747,7 +881,7 @@ function buildImageNode(p, images, rects, slotIndex, totalSlots) {
 
 function buildTextNode(p, label, fullText, rects, slotIndex, totalSlots) {
   const sat = satPos(p, slotIndex, 'text', totalSlots);
-  const { nodeEl, content } = makeNode('node-text', label, p.id, SZ.text.w, SZ.text.h);
+  const { nodeEl, content } = makeNode('node-text', label, p.id, SZ.text.w, SZ.text.h, { aspect: 4/3 });
   const body   = el('div', 'text-body');
   const toggle = el('span', 'text-toggle');
   content.appendChild(body);
@@ -778,9 +912,16 @@ function buildTextNode(p, label, fullText, rects, slotIndex, totalSlots) {
     }
   }
 
+  // Debounce refreshText — only runs after resize drag settles
+  let refreshTimer = null;
+  function scheduleRefresh() {
+    clearTimeout(refreshTimer);
+    refreshTimer = setTimeout(refreshText, 16);
+  }
+
   nodeEl.style.cursor = 'pointer';
   nodeEl.addEventListener('click', e => { e.stopPropagation(); openTxtLb(label, fullText); });
-  nodeEl._refreshText = refreshText;
+  nodeEl._refreshText = scheduleRefresh;
   requestAnimationFrame(refreshText);
 
   // Register for per-node search lines
@@ -917,7 +1058,7 @@ function redrawLines() {
   const keys = Object.keys(lineScores);
   if (!keys.length) return;
 
-  const inputHalfW = (inputWrap.offsetWidth || 260) / 2;
+  const inputHalfW = (inputWrap._cw || inputWrap.offsetWidth || 260) / 2;
   const srcPt = c2s(CANVAS_CX + inputHalfW, CANVAS_CY);
   const srcX = srcPt.x, srcY = srcPt.y;
 
@@ -927,13 +1068,11 @@ function redrawLines() {
     const np = nodePositions[nodeKey]; if (!np?.el) return;
     const e = np.el;
 
-    // Canvas-px position of the node
     const cx = parseInt(e.style.left) || 0;
     const cy = parseInt(e.style.top)  || 0;
-    const cw = e.offsetWidth  || 60;
-    const ch = e.offsetHeight || 30;
+    const cw = e._cw || e.offsetWidth  || 60;
+    const ch = e._ch || e.offsetHeight || 30;
 
-    // Convert canvas rect to screen coords
     const tl = c2s(cx, cy);
     const sw = cw * zoom, sh = ch * zoom;
     const dst = rectEdgePoint(tl.x, tl.y, sw, sh, srcX, srcY);
@@ -943,27 +1082,61 @@ function redrawLines() {
     const cp1x = srcX + bend, cp1y = srcY;
     const cp2x = dst.x - (dst.x - srcX) * 0.25, cp2y = dst.y - (dst.y - srcY) * 0.25;
 
+    // Power curve: exaggerates gap between top match and weaker ones
+    const s = Math.pow(score, 1.8);
+
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.setAttribute('d', `M ${srcX},${srcY} C ${cp1x},${cp1y} ${cp2x},${cp2y} ${dst.x},${dst.y}`);
     path.setAttribute('fill', 'none');
     path.setAttribute('stroke', 'white');
-    path.setAttribute('stroke-width',   (score * 2.5).toFixed(2));
-    path.setAttribute('stroke-opacity', (score * 0.75).toFixed(2));
+    path.setAttribute('stroke-width',   (s * 3.5).toFixed(2));
+    path.setAttribute('stroke-opacity', (s * 0.85).toFixed(2));
+    path.setAttribute('stroke-linecap', 'round');
     lineSvg.appendChild(path);
   });
 }
-function clearLines() { lineScores = {}; lineSvg.innerHTML = ''; }
+
+function clearLines() {
+  // Reset any image nodes that were swapped by search back to their first image
+  for (const [key, np] of Object.entries(nodePositions)) {
+    if (key.includes('::image::') && np.showImage) np.showImage(0);
+  }
+  lineScores = {}; lineSvg.innerHTML = '';
+  const noResults = document.getElementById('no-results');
+  if (noResults) noResults.classList.remove('visible');
+}
+
 function animateLines() {
-  [...lineSvg.querySelectorAll('path')].forEach(p => {
-    const t = parseFloat(p.getAttribute('stroke-opacity'));
-    p.setAttribute('stroke-opacity', '0');
-    let k = 0;
-    const tick = () => {
-      k += 0.07;
-      if (k >= 1) { p.setAttribute('stroke-opacity', t); return; }
-      p.setAttribute('stroke-opacity', (t * k).toFixed(3));
-      requestAnimationFrame(tick);
-    };
+  [...lineSvg.querySelectorAll('path')].forEach((path, i) => {
+    const len = path.getTotalLength();
+    const targetOpacity = path.getAttribute('stroke-opacity');
+    const targetWidth   = path.getAttribute('stroke-width');
+
+    // Start hidden and drawn-in from source
+    path.setAttribute('stroke-opacity', '0');
+    path.style.strokeDasharray  = len;
+    path.style.strokeDashoffset = len;
+
+    // Stagger each line slightly so they don't all appear at once
+    const delay = i * 40;
+    const duration = 420 + len * 0.3;
+
+    let start = null;
+    function tick(ts) {
+      if (!start) start = ts + delay;
+      const elapsed = ts - start;
+      if (elapsed < 0) { requestAnimationFrame(tick); return; }
+      const t = Math.min(elapsed / duration, 1);
+      // Ease out cubic
+      const e = 1 - Math.pow(1 - t, 3);
+      path.style.strokeDashoffset = len * (1 - e);
+      path.setAttribute('stroke-opacity', (parseFloat(targetOpacity) * Math.min(t * 3, 1)).toFixed(3));
+      if (t < 1) requestAnimationFrame(tick);
+      else {
+        path.style.strokeDasharray  = '';
+        path.style.strokeDashoffset = '';
+      }
+    }
     requestAnimationFrame(tick);
   });
 }
@@ -1035,11 +1208,20 @@ async function runQuery(t) {
   }
   const max = Math.max(...Object.values(raw), 0);
   lineScores = {};
-  if (max > 0) {
+  const noResults = document.getElementById('no-results');
+  if (max >= 0.25) {
     for (const [nodeKey, score] of Object.entries(raw)) {
       const norm = score / max;
       if (norm >= 0.4) lineScores[nodeKey] = norm;
     }
+    // For image keys in the results, swap the visible thumbnail to the matching image
+    for (const [nodeKey, norm] of Object.entries(lineScores)) {
+      const np = nodePositions[nodeKey];
+      if (np?.showImage) np.showImage(np.imgIndex);
+    }
+    noResults.classList.remove('visible');
+  } else {
+    noResults.classList.add('visible');
   }
   redrawLines(); animateLines();
 }
@@ -1049,5 +1231,6 @@ inputEl.addEventListener('keydown', e => { if (e.key === 'Enter') runQuery(input
 inputEl.addEventListener('input',   () => { if (!inputEl.value) clearLines(); });
 
 init().catch(console.error);
+buildFooter();
 
 } // end desktop-only block

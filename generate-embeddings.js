@@ -16,8 +16,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { pipeline, env } from '@xenova/transformers';
-import { writeFileSync, readFileSync, existsSync } from 'fs';
-import { resolve, dirname } from 'path';
+import { writeFileSync, readFileSync, existsSync, readdirSync } from 'fs';
+import { resolve, dirname, join, basename, extname } from 'path';
 import { fileURLToPath } from 'url';
 import PROJECTS from './projects.js';
 
@@ -119,6 +119,25 @@ for (const project of PROJECTS) {
     process.stdout.write(`  "${key}" … `);
     output[key] = await embed(text);
     console.log('done');
+  }
+
+  // Per-image caption embeddings — keyed as "projectId::image::filename"
+  const imgDir = resolve(base, 'images');
+  if (existsSync(imgDir)) {
+    const imgFiles = readdirSync(imgDir).filter(f => {
+      const ext = extname(f).toLowerCase();
+      const base = basename(f, ext);
+      return ext === '.webp' && !base.endsWith('-small') && !base.endsWith('-thumb');
+    });
+    for (const imgFile of imgFiles) {
+      const mdPath = join(imgDir, basename(imgFile, extname(imgFile)) + '.md');
+      const caption = readFile(mdPath);
+      if (!caption) continue;
+      const key = `${project.id}::image::${basename(imgFile, extname(imgFile))}`;
+      process.stdout.write(`  "${key}" … `);
+      output[key] = await embed(caption);
+      console.log('done');
+    }
   }
 }
 

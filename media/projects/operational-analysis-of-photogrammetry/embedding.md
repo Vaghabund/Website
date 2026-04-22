@@ -1,3 +1,5 @@
+Tools: TouchDesigner, Python, Metashape, ORB-SLAM3. Not Blender, not Cinema4D
+
 Master thesis, MA, graduation project at Universität der Künste Berlin and TU Berlin, 2025. Tracing the Transductive. Academic research, written thesis, installation.
 
 Photogrammetry is the reconstruction of 3D space from overlapping photographs. It is invisible infrastructure embedded in Google Maps, autonomous navigation, and biometric surveillance. This master thesis opens the black box of algorithmic image processing — not asking what photogrammetry produces, but how it actively constructs spatial knowledge. The research develops a systematic method for mapping photogrammetry's internal mechanisms and exposing the values embedded in its operations.
