@@ -127,11 +127,9 @@ async function loadMobileItem(p, content) {
 const IMPRESSUM_TEXT = `Angaben gemäß § 5 TMG
 
 Joel Tenenberg
-[Your Address]
-[City, Postcode]
 
 Kontakt
-E-Mail: joel@monomango.com
+E-Mail: joel@tenenberg.net
 
 Haftungsausschluss
 Die Inhalte dieser Seite wurden mit größtmöglicher Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte wird keine Gewähr übernommen.`;
@@ -141,7 +139,7 @@ function buildFooter() {
   footer.id = 'site-footer';
   footer.innerHTML = `
     <span class="footer-socials">
-      <!-- socials go here -->
+      <a href="https://www.instagram.com/vaghabund/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">Instagram</a>
     </span>
     <span class="footer-copy">© Joel Tenenberg 2026</span>
     <button class="footer-impressum">Impressum</button>
