@@ -93,7 +93,7 @@ async function embed(text) {
 const output = {};
 
 for (const project of PROJECTS) {
-  const base = resolve(__dirname, `media/projects/${project.id}`);
+  const base = resolve(__dirname, project.id === 'about' ? 'media/about' : `media/projects/${project.id}`);
 
   // Always emit a title key using embedding.md (the curated search text)
   const embText = readFile(resolve(base, 'embedding.md')) ?? project.title;
@@ -106,7 +106,9 @@ for (const project of PROJECTS) {
   const detail    = detailRaw ? parseFrontmatter(detailRaw) : {};
   const textDefs  = Array.isArray(detail.texts) && detail.texts.length
     ? detail.texts
-    : [{ file: 'description.md', label: project.id === 'about' ? 'bio' : 'overview' }];
+    : project.id === 'about'
+      ? [{ file: 'bio.md', label: 'bio' }]
+      : [{ file: 'description.md', label: 'overview' }];
 
   for (const t of textDefs) {
     const file  = t.file  || 'description.md';
@@ -126,8 +128,8 @@ for (const project of PROJECTS) {
   if (existsSync(imgDir)) {
     const imgFiles = readdirSync(imgDir).filter(f => {
       const ext = extname(f).toLowerCase();
-      const base = basename(f, ext);
-      return ext === '.webp' && !base.endsWith('-small') && !base.endsWith('-thumb');
+      const stem = basename(f, ext);
+      return ext === '.webp' && !stem.endsWith('-small') && !stem.endsWith('-thumb');
     });
     for (const imgFile of imgFiles) {
       const mdPath = join(imgDir, basename(imgFile, extname(imgFile)) + '.md');

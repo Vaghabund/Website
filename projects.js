@@ -38,4 +38,7 @@ const PROJECTS = [
   },
 ];
 
+// WIP — not yet published:
+// { id: 'handheld-pixelsorter', title: 'Handheld Pixelsorter', x: 0, y: 0 },
+
 export default PROJECTS;

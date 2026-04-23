@@ -141,7 +141,7 @@ function buildFooter() {
     <span class="footer-socials">
       <a href="https://www.instagram.com/vaghabund/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">Instagram</a>
     </span>
-    <span class="footer-copy">© Joel Tenenberg 2026</span>
+    <span class="footer-copy">© Joel Tenenberg ${new Date().getFullYear()}</span>
     <button class="footer-impressum">Impressum</button>
   `;
   document.body.appendChild(footer);
@@ -162,7 +162,6 @@ function buildFooter() {
   footer.querySelector('.footer-impressum').onclick = () => lb.classList.add('open');
   document.getElementById('imp-close').onclick = () => lb.classList.remove('open');
   lb.addEventListener('click', e => { if (e.target === lb) lb.classList.remove('open'); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') lb.classList.remove('open'); });
 }
 
 function buildMobileView() {
@@ -398,7 +397,12 @@ document.addEventListener('mousemove', e => {
   if (clusterDragging) {
     const dx = (e.clientX - clusterDragging.mouseStartX) / zoom;
     const dy = (e.clientY - clusterDragging.mouseStartY) / zoom;
-    moveCluster(clusterDragging.id, clusterDragging.startCx + dx, clusterDragging.startCy + dy);
+    const newCx = clusterDragging.startCx + dx;
+    const newCy = clusterDragging.startCy + dy;
+    if (!rafPending) {
+      rafPending = true;
+      requestAnimationFrame(() => { moveCluster(clusterDragging.id, newCx, newCy); rafPending = false; });
+    }
     return;
   }
   if (!dragging) return;
@@ -441,7 +445,8 @@ document.addEventListener('touchmove',  e => {
   if (lp) doZoom((lp - d) * 5, cx, cy);
   lp = d;
 }, { passive: true });
-document.addEventListener('touchend', () => { lp = null; });
+document.addEventListener('touchend',    () => { lp = null; });
+document.addEventListener('touchcancel', () => { lp = null; });
 function pd(e) {
   return Math.hypot(e.touches[0].clientX - e.touches[1].clientX,
                     e.touches[0].clientY - e.touches[1].clientY);
@@ -478,7 +483,12 @@ document.getElementById('tlb-close').onclick = () => textLb.classList.remove('op
 textLb.addEventListener('click', e => { if (e.target === textLb) textLb.classList.remove('open'); });
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { lightbox.classList.remove('open'); textLb.classList.remove('open'); }
+  if (e.key === 'Escape') {
+    lightbox.classList.remove('open');
+    textLb.classList.remove('open');
+    closeModelLb();
+    document.getElementById('impressum-lightbox')?.classList.remove('open');
+  }
   if (lightbox.classList.contains('open')) {
     if (e.key === 'ArrowLeft')  lbStep(-1);
     if (e.key === 'ArrowRight') lbStep(1);
@@ -953,7 +963,7 @@ function buildDetailNode(p, detail, rects, slotIndex, totalSlots) {
     row.appendChild(el('div', 'detail-label', 'Links'));
     links.forEach(lnk => {
       const a = document.createElement('a');
-      a.href = lnk.url; a.target = '_blank'; a.rel = 'noopener';
+      a.href = lnk.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
       a.className = 'detail-link'; a.textContent = lnk.label;
       a.addEventListener('click', e => e.stopPropagation());
       row.appendChild(a);
@@ -1062,7 +1072,6 @@ function redrawLines() {
 
   keys.forEach(nodeKey => {
     const score = lineScores[nodeKey];
-    if (score < 0.3) return;
     const np = nodePositions[nodeKey]; if (!np?.el) return;
     const e = np.el;
 
@@ -1108,7 +1117,6 @@ function animateLines() {
   [...lineSvg.querySelectorAll('path')].forEach((path, i) => {
     const len = path.getTotalLength();
     const targetOpacity = path.getAttribute('stroke-opacity');
-    const targetWidth   = path.getAttribute('stroke-width');
 
     // Start hidden and drawn-in from source
     path.setAttribute('stroke-opacity', '0');
@@ -1193,6 +1201,7 @@ async function init() {
 function cosSim(a, b) {
   let d = 0, na = 0, nb = 0;
   for (let i = 0; i < a.length; i++) { d += a[i]*b[i]; na += a[i]*a[i]; nb += b[i]*b[i]; }
+  if (na === 0 || nb === 0) return 0;
   return d / (Math.sqrt(na) * Math.sqrt(nb));
 }
 
