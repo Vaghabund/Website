@@ -82,7 +82,7 @@ function nodeKey(projectId, label) {
 }
 
 console.log('Loading model…');
-const embedder = await pipeline('feature-extraction', 'Xenova/all-mpnet-base-v2', { dtype: 'fp32' });
+const embedder = await pipeline('feature-extraction', 'Xenova/bge-base-en-v1.5', { dtype: 'fp32' });
 
 async function embed(text) {
   const result = await embedder(text, { pooling: 'mean', normalize: true });

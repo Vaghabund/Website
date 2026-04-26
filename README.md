@@ -16,7 +16,7 @@ The canvas holds project **clusters**. Each cluster is a group of nodes orbiting
 | **Detail** | `detail.md` frontmatter | Year, role, tools, links |
 | **Model** | `detail.md` → `model:` | Interactive 3D viewer (GLB) |
 
-Semantic search is powered by a local embedding model (`all-mpnet-base-v2`). Each project has a hand-written `embedding.md` that is the only text fed to the embedder — you control exactly what queries find this project.
+Semantic search is powered by a local embedding model (`bge-base-en-v1.5`). Each project has a hand-written `embedding.md` that is the only text fed to the embedder — you control exactly what queries find this project.
 
 ---
 
@@ -34,7 +34,7 @@ The folder name becomes the project `id`. It must be lowercase, hyphenated, no s
 
 ```
 media/projects/your-project-id/
-  embedding.md       ← search text (200–400 words, plain prose)
+  embedding.md       ← search text (~250-450 tokens, plain prose)
   description.md     ← text node prose (shown in lightbox)
   detail.md          ← frontmatter: year, role, tools, links, images, model, texts
   images/            ← project images
@@ -50,6 +50,11 @@ Plain prose, no markdown formatting. This is the **only** text the search model 
 - How it was **made** (tools, methods, techniques)
 - Where / when (institution, year)
 - Specific words a visitor might search for
+
+Token guidance for `bge-base-en-v1.5`:
+- Max sequence length is 512 tokens.
+- Aim for ~250-450 tokens so most content is retained with a safety buffer.
+- If text exceeds the limit, later tokens are truncated and do not affect the embedding.
 
 ```
 Master thesis at Universität der Künste Berlin, 2025. Investigates the
@@ -92,7 +97,9 @@ model: "models/object.glb"
 
 **`images:`** — paths relative to the project folder (`images/01.jpg`) or from the repo root (`media/projects/.../01.jpg`). First image is the thumbnail.
 
-**`model:`** — path to a `.glb` file relative to the project folder. Renders an interactive 3D viewer node. Click the node to activate orbit controls (drag to rotate, scroll to zoom). Click outside or press Escape to deactivate.
+**`model:`** — path to a `.glb` file relative to the project folder, from repo root (`media/...`), or an absolute `https://...` URL. Renders an interactive 3D viewer node. Click the node to activate orbit controls (drag to rotate, scroll to zoom). Click outside or press Escape to deactivate.
+
+Note for GitHub Pages: large Git LFS assets are often not served as raw binaries in the published site. If a model does not load in production, host the `.glb` on object storage/CDN and set `model:` to that absolute URL.
 
 ### 3. Register the project
 
@@ -115,7 +122,7 @@ The `about` project uses a fixed `x, y` offset. All other projects are placed in
 node generate-embeddings.js
 ```
 
-Run this whenever you add a project or edit an `embedding.md`. Requires Node.js and will download the model (~400 MB) to `.model-cache/` on first run.
+Run this whenever you add a project or edit an `embedding.md`. Requires Node.js and will download the model to `.model-cache/` on first run.
 
 ### 5. Commit
 
@@ -167,7 +174,7 @@ No build step. The site is a single HTML page with vanilla JS modules.
 
 ## Search model
 
-- **Offline (embeddings):** `all-mpnet-base-v2` fp32 via `@xenova/transformers` — runs once in Node when you call `generate-embeddings.js`
-- **Browser (queries):** `all-mpnet-base-v2` int8 quantized (~25 MB) via `@huggingface/transformers` CDN — same vector space, loads in the visitor's browser on first visit and is then cached
+- **Offline (embeddings):** `bge-base-en-v1.5` fp32 via `@xenova/transformers` — runs once in Node when you call `generate-embeddings.js`
+- **Browser (queries):** `bge-base-en-v1.5` int8 quantized via `@huggingface/transformers` CDN — same vector space, loads in the visitor's browser on first visit and is then cached
 
 Both sides must use the same model so query vectors and stored vectors are comparable.

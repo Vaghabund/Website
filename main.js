@@ -762,7 +762,12 @@ async function openModelLb(src) {
 
 function buildModelNode(p, modelPath, rects, slotIndex, totalSlots) {
   if (!modelPath) return;
-  const src = modelPath.startsWith('media/') ? modelPath : `media/projects/${p.id}/${modelPath}`;
+  const isAbsolute = /^https?:\/\//i.test(modelPath);
+  const src = isAbsolute
+    ? modelPath
+    : modelPath.startsWith('media/')
+      ? modelPath
+      : `media/projects/${p.id}/${modelPath}`;
   const sat  = satPos(p, slotIndex, 'model', totalSlots);
   const W = SZ.model.w, H = SZ.model.h;
   const BAR_H = 20;
@@ -1190,7 +1195,7 @@ async function init() {
     for (const [key, vec] of Object.entries(stored))
       nodeEmbeddings[key] = new Float32Array(vec);
   }
-  embedder = await pipelineFn('feature-extraction', 'Xenova/all-mpnet-base-v2', { dtype: 'q8' });
+  embedder = await pipelineFn('feature-extraction', 'Xenova/bge-base-en-v1.5', { dtype: 'q8' });
   console.log(`Embeddings ready: ${Object.keys(nodeEmbeddings).length} nodes`);
   loadDot.style.display = 'none';
   const hints = ['search', 'search', 'search', "you may ask what i'm proud of"];
