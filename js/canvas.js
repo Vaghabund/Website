@@ -2,67 +2,22 @@
 // Canvas pan / zoom / drag event handling.
 // ─────────────────────────────────────────────
 
-import { state, MIN_ZOOM, MAX_ZOOM, canvasRoot, clusterNodes, clusterRects, clusterTitlePos } from './state.js';
-import { SZ }                                                  from './layout.js';
-import { redrawClusterCurves }                                 from './clusters.js';
-import { redrawLines }                                         from './search.js';
+import { state, MIN_ZOOM, MAX_ZOOM, canvasRoot } from './state.js';
+import { redrawLines }                            from './search.js';
 
-// Apply the current pan/zoom transform and synchronise all overlays.
+// Apply the current pan/zoom transform and synchronise search-line overlay.
 export function applyTransform() {
   canvasRoot.style.transform = `translate(${state.pan.x}px,${state.pan.y}px) scale(${state.zoom})`;
-  redrawClusterCurves();
   redrawLines();
 }
 applyTransform();
 
-// ── Cluster drag ──────────────────────────────────────────────────────────
-export function moveCluster(id, newCx, newCy) {
-  const c = clusterNodes[id];
-  if (!c) return;
-  c.cx = newCx; c.cy = newCy;
-  // Move title node.
-  c.titleEl.style.left = Math.round(newCx - SZ.title.w / 2) + 'px';
-  c.titleEl.style.top  = Math.round(newCy - SZ.title.h / 2) + 'px';
-  // Move satellites and rebuild rects.
-  const rects = [{ x: newCx - SZ.title.w/2, y: newCy - SZ.title.h/2, w: SZ.title.w, h: SZ.title.h }];
-  for (const s of c.satellites) {
-    const sx = newCx + s.ox, sy = newCy + s.oy;
-    s.el.style.left = Math.round(sx - s.w / 2) + 'px';
-    s.el.style.top  = Math.round(sy - s.h / 2) + 'px';
-    rects.push({ x: sx - s.w/2, y: sy - s.h/2, w: s.w, h: s.h });
-  }
-  clusterRects[id]    = rects;
-  clusterTitlePos[id] = { x: newCx, y: newCy };
-  redrawClusterCurves();
-  redrawLines();
-}
-
-// ── Canvas-level pan + per-title-node drag ────────────────────────────────
-let clusterDragging = null; // { id, startCx, startCy, mouseStartX, mouseStartY }
+// ── Canvas-level pan ──────────────────────────────────────────────────────
 let dragging = false, dragStart = { x: 0, y: 0 }, panStart = { x: 0, y: 0 };
 let rafPending = false;
 
 document.addEventListener('mousedown', e => {
-  if (e.target.closest('#input-wrap,#lightbox,#text-lightbox,.node-image,.detail-link,.node-text,.node-model,.node-bar,.node-resize')) return;
-
-  const titleEl = e.target.closest('.node-title');
-  if (titleEl && titleEl._clusterId) {
-    e.stopPropagation();
-    const c = clusterNodes[titleEl._clusterId];
-    // Refresh ox/oy from live DOM so individually-dragged satellites keep their offset.
-    for (const s of c.satellites) {
-      s.ox = parseInt(s.el.style.left) + s.w / 2 - c.cx;
-      s.oy = parseInt(s.el.style.top)  + s.h / 2 - c.cy;
-    }
-    clusterDragging = {
-      id: titleEl._clusterId,
-      startCx: c.cx, startCy: c.cy,
-      mouseStartX: e.clientX, mouseStartY: e.clientY,
-    };
-    canvasRoot.classList.add('dragging');
-    return;
-  }
-
+  if (e.target.closest('#input-wrap,#lightbox,.node-image,.node-bar,.node-resize')) return;
   dragging = true;
   dragStart = { x: e.clientX, y: e.clientY };
   panStart  = { x: state.pan.x, y: state.pan.y };
@@ -70,17 +25,6 @@ document.addEventListener('mousedown', e => {
 });
 
 document.addEventListener('mousemove', e => {
-  if (clusterDragging) {
-    const dx    = (e.clientX - clusterDragging.mouseStartX) / state.zoom;
-    const dy    = (e.clientY - clusterDragging.mouseStartY) / state.zoom;
-    const newCx = clusterDragging.startCx + dx;
-    const newCy = clusterDragging.startCy + dy;
-    if (!rafPending) {
-      rafPending = true;
-      requestAnimationFrame(() => { moveCluster(clusterDragging.id, newCx, newCy); rafPending = false; });
-    }
-    return;
-  }
   if (!dragging) return;
   state.pan.x = panStart.x + (e.clientX - dragStart.x);
   state.pan.y = panStart.y + (e.clientY - dragStart.y);
@@ -92,7 +36,6 @@ document.addEventListener('mousemove', e => {
 
 document.addEventListener('mouseup', () => {
   dragging = false;
-  clusterDragging = null;
   canvasRoot.classList.remove('dragging');
 });
 

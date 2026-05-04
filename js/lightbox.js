@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────
-// Image, text, and project lightboxes.
+// Image and project lightboxes.
 // ─────────────────────────────────────────────
 
 import { projectDataById } from './state.js';
@@ -30,20 +30,6 @@ document.getElementById('lb-close').onclick = () => lightbox.classList.remove('o
 document.getElementById('lb-prev').onclick  = () => lbStep(-1);
 document.getElementById('lb-next').onclick  = () => lbStep(1);
 lightbox.addEventListener('click', e => { if (e.target === lightbox) lightbox.classList.remove('open'); });
-
-// ── Text lightbox ─────────────────────────────────────────────────────────
-const textLb   = document.getElementById('text-lightbox');
-const tlbTitle = document.getElementById('tlb-title');
-const tlbBody  = document.getElementById('tlb-body');
-
-export function openTxtLb(title, body) {
-  tlbTitle.textContent = title;
-  tlbBody.textContent  = body;
-  textLb.classList.add('open');
-}
-
-document.getElementById('tlb-close').onclick = () => textLb.classList.remove('open');
-textLb.addEventListener('click', e => { if (e.target === textLb) textLb.classList.remove('open'); });
 
 // ── Project lightbox ──────────────────────────────────────────────────────
 const projectLb = document.getElementById('project-lightbox');
@@ -135,7 +121,6 @@ projectLb.addEventListener('click', e => { if (e.target === projectLb) projectLb
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     lightbox.classList.remove('open');
-    textLb.classList.remove('open');
     projectLb.classList.remove('open');
     closeModelLb();
     document.getElementById('impressum-lightbox')?.classList.remove('open');

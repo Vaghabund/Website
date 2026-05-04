@@ -41,7 +41,6 @@ export const state = {
 
 // ── Stable DOM element refs ───────────────────────────────────────────────
 export const canvasRoot   = document.getElementById('canvas-root');
-export const clusterSvg   = document.getElementById('cluster-svg');
 export const lineSvg      = document.getElementById('line-overlay');
 export const inputWrap    = document.getElementById('input-wrap');
 export const inputEl      = document.getElementById('query-input');
@@ -49,11 +48,8 @@ export const suggestionEl = document.getElementById('query-suggestion');
 export const sendBtn      = document.getElementById('send-btn');
 export const loadDot      = document.getElementById('loading-dot');
 
-// ── Node/cluster tracking maps ────────────────────────────────────────────
-// Mutated by nodes.js; read by clusters.js, canvas.js, search.js.
-export const clusterNodes    = {}; // id → { titleEl, cx, cy, satellites:[{el,ox,oy,w,h}] }
-export const clusterRects    = {}; // id → [{x,y,w,h}]
-export const clusterTitlePos = {}; // id → { x, y }
+// ── Node tracking maps ────────────────────────────────────────────────────
+// Mutated by nodes.js; read by search.js.
 export const nodePositions   = {}; // nodeKey → { el, [imgIndex], [showImage] }
 export const projectDataById = {}; // id → { project, detail, texts, images, hasDetail, modelSrc }
 export const projectNodeById = {}; // id → DOM element
