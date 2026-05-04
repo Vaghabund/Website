@@ -2,22 +2,20 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // generate-embeddings.js
 //
-// Emits per-node embeddings keyed as "projectId::nodeKey".
+// Emits one embedding per project keyed as "projectId::project".
 //
 // For each project:
-//   - Reads detail.md to find text node definitions (texts: list)
-//   - Falls back to description.md if no texts list
-//   - Each text node is embedded from its file content
-//   - A "projectId::title" key is also emitted using embedding.md as the text
-//     (used as fallback for projects with no text nodes)
+//   - Uses embedding.md as curated primary search text when present
+//   - Includes description/text files and structured metadata when available
+//   - Produces exactly one combined embedding vector
 //
 // Usage:  node generate-embeddings.js
 // Run whenever you add a project or edit any md file.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { pipeline, env } from '@xenova/transformers';
-import { writeFileSync, readFileSync, existsSync, readdirSync } from 'fs';
-import { resolve, dirname, join, basename, extname } from 'path';
+import { writeFileSync, readFileSync, existsSync } from 'fs';
+import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import PROJECTS from './projects.js';
 
@@ -77,8 +75,12 @@ function parseFrontmatter(txt) {
   return out;
 }
 
-function nodeKey(projectId, label) {
-  return `${projectId}::${label.toLowerCase().replace(/\s+/g, '-')}`;
+function projectKey(projectId) {
+  return `${projectId}::project`;
+}
+
+function compact(s) {
+  return (s || '').replace(/\s+/g, ' ').trim();
 }
 
 console.log('Loading model…');
@@ -95,15 +97,21 @@ const output = {};
 for (const project of PROJECTS) {
   const base = resolve(__dirname, project.id === 'about' ? 'media/about' : `media/projects/${project.id}`);
 
-  // Always emit a title key using embedding.md (the curated search text)
-  const embText = readFile(resolve(base, 'embedding.md')) ?? project.title;
-  process.stdout.write(`  "${project.id}::title" … `);
-  output[nodeKey(project.id, 'title')] = await embed(embText);
-  console.log('done');
+  const chunks = [];
+  const curated = readFile(resolve(base, 'embedding.md'));
+  if (curated) chunks.push(stripMd(curated));
 
-  // Emit per-text-node keys
   const detailRaw = readFile(resolve(base, 'detail.md'));
   const detail    = detailRaw ? parseFrontmatter(detailRaw) : {};
+  const detailBits = [
+    detail.year,
+    detail.role,
+    detail.timeline,
+    Array.isArray(detail.tools) ? detail.tools.join(', ') : '',
+    Array.isArray(detail.links) ? detail.links.map(l => `${l.label || ''} ${l.url || ''}`).join(' ') : '',
+  ].map(compact).filter(Boolean);
+  if (detailBits.length) chunks.push(detailBits.join(' | '));
+
   const textDefs  = Array.isArray(detail.texts) && detail.texts.length
     ? detail.texts
     : project.id === 'about'
@@ -111,37 +119,20 @@ for (const project of PROJECTS) {
       : [{ file: 'description.md', label: 'overview' }];
 
   for (const t of textDefs) {
-    const file  = t.file  || 'description.md';
-    const label = t.label || file.replace('.md', '');
+    const file  = t.file || 'description.md';
     const raw   = readFile(resolve(base, file));
     if (!raw) continue;
     const text  = stripMd(raw);
     if (!text)  continue;
-    const key   = nodeKey(project.id, label);
-    process.stdout.write(`  "${key}" … `);
-    output[key] = await embed(text);
-    console.log('done');
+    chunks.push(text);
   }
 
-  // Per-image caption embeddings — keyed as "projectId::image::filename"
-  const imgDir = resolve(base, 'images');
-  if (existsSync(imgDir)) {
-    const imgFiles = readdirSync(imgDir).filter(f => {
-      const ext = extname(f).toLowerCase();
-      const stem = basename(f, ext);
-      return ext === '.webp' && !stem.endsWith('-small') && !stem.endsWith('-thumb');
-    });
-    for (const imgFile of imgFiles) {
-      const mdPath = join(imgDir, basename(imgFile, extname(imgFile)) + '.md');
-      const caption = readFile(mdPath);
-      if (!caption) continue;
-      const key = `${project.id}::image::${basename(imgFile, extname(imgFile))}`;
-      process.stdout.write(`  "${key}" … `);
-      output[key] = await embed(caption);
-      console.log('done');
-    }
-  }
+  const combined = compact([project.title, ...chunks].join('\n\n')) || project.title;
+  const key = projectKey(project.id);
+  process.stdout.write(`  "${key}" … `);
+  output[key] = await embed(combined);
+  console.log('done');
 }
 
 writeFileSync(EMBEDDINGS_PATH, JSON.stringify(output, null, 2));
-console.log(`\nWrote ${Object.keys(output).length} node embeddings → embeddings.json`);
+console.log(`\nWrote ${Object.keys(output).length} project embeddings → embeddings.json`);

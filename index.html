@@ -16,6 +16,11 @@
 </head>
 <body>
 
+<header id="site-header" aria-label="Site introduction">
+  <img id="site-header-logo" src="media/logo/Name_bold.svg" alt="Joel Tenenberg">
+  <p id="site-header-intro">between creative technologist and spatial designer</p>
+</header>
+
 <div id="canvas-root">
   <svg id="dot-grid" style="position:absolute;top:0;left:0;width:4000px;height:3000px;pointer-events:none;">
     <defs>
@@ -26,12 +31,16 @@
     <rect width="8000" height="4000" fill="url(#dots)"/>
   </svg>
   <svg id="cluster-svg"></svg>
-  <div id="input-wrap">
-    <div id="no-results">nothing found</div>
+</div>
+
+<div id="input-wrap">
+  <div id="no-results">nothing found</div>
+  <div id="query-field">
+    <div id="query-suggestion" aria-hidden="true"></div>
     <input id="query-input" type="text" placeholder="" autocomplete="off" disabled>
-    <button id="send-btn" disabled>&#x2192;</button>
-    <div id="loading-dot"></div>
   </div>
+  <button id="send-btn" disabled>&#x2192;</button>
+  <div id="loading-dot"></div>
 </div>
 
 <svg id="line-overlay"></svg>
@@ -56,6 +65,18 @@
   <button id="mlb-close">&#x2715;</button>
   <div id="mlb-canvas-wrap"></div>
 </div>
+
+<div id="project-lightbox">
+  <button id="plb-close">&#x2715;</button>
+  <div id="plb-inner">
+    <div id="plb-title"></div>
+    <div id="plb-tabs"></div>
+    <div id="plb-body"></div>
+  </div>
+</div>
+
+<button id="view-toggle" type="button" aria-pressed="false">list view</button>
+<div id="desktop-list-view"></div>
 
 <div id="mobile-view"></div>
 

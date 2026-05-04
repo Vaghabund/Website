@@ -24,6 +24,34 @@ async function fetchMdBody(id) {
   } catch { return null; }
 }
 
+function parseKeywordMd(txt) {
+  const seen = new Set();
+  const keywords = [];
+  txt.split('\n').forEach(raw => {
+    const clean = raw
+      .replace(/<!--.*?-->/g, '')
+      .replace(/^\s*[-*+]\s+/, '')
+      .replace(/^\s*\d+\.\s+/, '')
+      .replace(/^\s*#+\s+/, '')
+      .trim();
+    if (!clean) return;
+    const key = clean.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    keywords.push(clean);
+  });
+  return keywords;
+}
+
+async function fetchKeywords() {
+  try {
+    const txt = await fetch('media/search-keywords.md').then(r => r.ok ? r.text() : '');
+    return txt ? parseKeywordMd(txt) : [];
+  } catch {
+    return [];
+  }
+}
+
 // Parse YAML-ish frontmatter from detail.md into a plain object.
 // Supports string scalars, indented list items, and nested list-of-objects.
 function parseFrontmatter(txt) {
@@ -88,7 +116,7 @@ async function fetchDetail(id) {
 // Mobile accordion view
 // ─────────────────────────────────────────────
 async function loadMobileItem(p, content) {
-  const [mdText, imgSrcs] = await Promise.all([
+  const [mdText, media] = await Promise.all([
     (async () => {
       if (p.id === 'about') {
         const raw = await fetch('media/about/bio.md').then(r => r.ok ? r.text() : null).catch(() => null);
@@ -98,30 +126,93 @@ async function loadMobileItem(p, content) {
     })(),
     (async () => {
       if (p.id === 'about') {
-        return ['media/about/profile-small.webp'];
+        return { imgSrcs: ['media/about/profile-small.webp'], detail: {} };
       }
       const detail = await fetchDetail(p.id);
       const base   = `media/projects/${p.id}/`;
-      return (detail.images || []).map(i => i.startsWith('media/') ? i : base + i);
+      const imgSrcs = (detail.images || []).map(i => i.startsWith('media/') ? i : base + i);
+      return { imgSrcs, detail };
     })(),
   ]);
 
-  if (mdText) {
-    const textEl = document.createElement('div');
-    textEl.className = 'm-text';
-    textEl.textContent = mdText;
-    content.appendChild(textEl);
-  }
+  const imgSrcs = media.imgSrcs || [];
+  const detail = media.detail || {};
+  const split = document.createElement('div');
+  split.className = 'm-split';
+  const leftCol = document.createElement('div');
+  leftCol.className = 'm-col m-col-images';
+  const rightCol = document.createElement('div');
+  rightCol.className = 'm-col m-col-text';
 
   const altBase = p.id === 'about' ? 'Profile photo of Joel Tenenberg' : `${p.title} — project image`;
+  const gallery = document.createElement('div');
+  gallery.className = 'm-gallery';
   imgSrcs.forEach((src, idx) => {
     const img     = document.createElement('img');
     img.src       = src;
     img.alt       = p.id === 'about' ? `${altBase} ${idx + 1}` : altBase;
     img.className = 'm-img';
     img.loading   = 'lazy';
-    content.appendChild(img);
+    gallery.appendChild(img);
   });
+  if (gallery.childElementCount) leftCol.appendChild(gallery);
+
+  if (mdText) {
+    const textEl = document.createElement('div');
+    textEl.className = 'm-text';
+    textEl.textContent = mdText;
+    rightCol.appendChild(textEl);
+  }
+
+  const infoRows = [
+    detail.year && ['Year', detail.year],
+    detail.role && ['Role', detail.role],
+    detail.timeline && ['Timeline', detail.timeline],
+    detail.tools?.length && ['Tools', detail.tools.join(', ')],
+  ].filter(Boolean);
+
+  if (infoRows.length || (Array.isArray(detail.links) && detail.links.length)) {
+    const info = document.createElement('div');
+    info.className = 'm-info';
+    infoRows.forEach(([label, value]) => {
+      const row = document.createElement('div');
+      row.className = 'm-info-row';
+      const lbl = document.createElement('div');
+      lbl.className = 'm-info-label';
+      lbl.textContent = label;
+      const val = document.createElement('div');
+      val.className = 'm-info-value';
+      val.textContent = value;
+      row.appendChild(lbl);
+      row.appendChild(val);
+      info.appendChild(row);
+    });
+
+    if (Array.isArray(detail.links) && detail.links.length) {
+      const row = document.createElement('div');
+      row.className = 'm-info-row';
+      const lbl = document.createElement('div');
+      lbl.className = 'm-info-label';
+      lbl.textContent = 'Links';
+      row.appendChild(lbl);
+      detail.links.forEach(link => {
+        const a = document.createElement('a');
+        a.href = link.url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.className = 'm-link';
+        a.textContent = link.label;
+        row.appendChild(a);
+      });
+      info.appendChild(row);
+    }
+
+    rightCol.appendChild(info);
+  }
+
+  split.appendChild(leftCol);
+  split.appendChild(rightCol);
+  content.appendChild(split);
 }
 
 const IMPRESSUM_TEXT = `Angaben gemäß § 5 TMG
@@ -164,9 +255,10 @@ function buildFooter() {
   lb.addEventListener('click', e => { if (e.target === lb) lb.classList.remove('open'); });
 }
 
-function buildMobileView() {
-  const container = document.getElementById('mobile-view');
+function buildAccordionView(containerId) {
+  const container = document.getElementById(containerId);
   if (!container) return;
+  container.innerHTML = '';
 
   const mobileProjects = [
     ...PROJECTS.filter(p => p.id !== 'about'),
@@ -179,7 +271,7 @@ function buildMobileView() {
 
     const content = document.createElement('div');
     content.className = 'm-content';
-    content.id = `m-content-${p.id}`;
+    content.id = `${containerId}-content-${p.id}`;
 
     const header  = document.createElement('button');
     header.type = 'button';
@@ -199,6 +291,7 @@ function buildMobileView() {
         header.classList.add('open');
         header.setAttribute('aria-expanded', 'true');
         content.classList.add('open');
+        item.scrollIntoView({ block: 'start', behavior: 'smooth' });
         if (!content.dataset.loaded) {
           content.dataset.loaded = 'true';
           loadMobileItem(p, content).catch(console.error);
@@ -210,6 +303,10 @@ function buildMobileView() {
     item.appendChild(content);
     container.appendChild(item);
   }
+}
+
+function buildMobileView() {
+  buildAccordionView('mobile-view');
 }
 
 // ─────────────────────────────────────────────
@@ -229,6 +326,26 @@ if (IS_MOBILE) {
 // ─────────────────────────────────────────────
 // Desktop only — canvas, nodes, AI search
 // ─────────────────────────────────────────────
+
+const viewToggleBtn = document.getElementById('view-toggle');
+buildAccordionView('desktop-list-view');
+
+function setDesktopViewMode(listMode) {
+  document.body.classList.toggle('list-view', listMode);
+  if (viewToggleBtn) {
+    viewToggleBtn.setAttribute('aria-pressed', listMode ? 'true' : 'false');
+    viewToggleBtn.textContent = listMode ? 'visual archive' : 'list view';
+  }
+  if (listMode) clearLines();
+}
+
+if (viewToggleBtn) {
+  viewToggleBtn.addEventListener('click', () => {
+    const listMode = !document.body.classList.contains('list-view');
+    setDesktopViewMode(listMode);
+  });
+  setDesktopViewMode(false);
+}
 
 // Seeded PRNG (mulberry32)
 function seededRand(seed) {
@@ -261,6 +378,7 @@ const CANVAS_CX = 2000, CANVAS_CY = 1500;
 const SZ = {
   title:  { w: 220, h: 38  },
   image:  { w: 190, h: 154 }, // 190 × (190 * 3/4) + border
+  project:{ w: 230, h: 190 },
   text:   { w: 210, h: 373 },
   detail: { w: 148, h: 100 },
   model:  { w: 220, h: 220 },
@@ -325,12 +443,46 @@ const clusterNodes    = {}; // id → { titleEl, cx, cy, satellites:[{el,ox,oy,w
 const nodePositions   = {}; // nodeKey → { el }  — for per-node search lines
 let   lineScores      = {}; // nodeKey → normalised score
 const inputWrap  = document.getElementById('input-wrap');
-// Place input at canvas centre — it now lives inside #canvas-root and scales with zoom
-inputWrap.style.left = CANVAS_CX + 'px';
-inputWrap.style.top  = CANVAS_CY + 'px';
 const inputEl    = document.getElementById('query-input');
+const suggestionEl = document.getElementById('query-suggestion');
 const sendBtn    = document.getElementById('send-btn');
 const loadDot    = document.getElementById('loading-dot');
+
+let keywordList = [];
+let activeSuggestion = '';
+let searchActive = false;
+
+function syncSendButtonState() {
+  sendBtn.textContent = searchActive ? 'x' : '→';
+}
+
+function getBestSuggestion(value) {
+  const q = value.trim().toLowerCase();
+  if (!q) return '';
+  const startsWith = keywordList.find(k => k.toLowerCase().startsWith(q));
+  if (startsWith) return startsWith;
+  return keywordList.find(k => k.toLowerCase().includes(q)) || '';
+}
+
+function refreshSuggestion() {
+  activeSuggestion = getBestSuggestion(inputEl.value);
+  if (!activeSuggestion || activeSuggestion.toLowerCase() === inputEl.value.trim().toLowerCase()) {
+    suggestionEl.textContent = '';
+    return;
+  }
+  suggestionEl.textContent = activeSuggestion;
+}
+
+function hasAcceptableSuggestion() {
+  return !!activeSuggestion && activeSuggestion.toLowerCase() !== inputEl.value.trim().toLowerCase();
+}
+
+function acceptSuggestion() {
+  if (!hasAcceptableSuggestion()) return false;
+  inputEl.value = activeSuggestion;
+  refreshSuggestion();
+  return true;
+}
 
 function applyTransform() {
   canvasRoot.style.transform = `translate(${pan.x}px,${pan.y}px) scale(${zoom})`;
@@ -432,12 +584,14 @@ function doZoom(delta, cx, cy) {
   }
 }
 document.addEventListener('wheel', e => {
+  if (document.body.classList.contains('list-view')) return;
   if (e.target.closest('#tlb-inner')) return;
   e.preventDefault(); doZoom(e.deltaY, e.clientX, e.clientY);
 }, { passive: false });
 let lp = null;
 document.addEventListener('touchstart', e => { if (e.touches.length === 2) lp = pd(e); }, { passive: true });
 document.addEventListener('touchmove',  e => {
+  if (document.body.classList.contains('list-view')) return;
   if (e.touches.length !== 2) return;
   const d = pd(e);
   const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
@@ -458,6 +612,12 @@ function pd(e) {
 const lightbox = document.getElementById('lightbox');
 const lbImg    = document.getElementById('lb-img');
 const lbCtr    = document.getElementById('lb-counter');
+const projectLb = document.getElementById('project-lightbox');
+const plbTitle  = document.getElementById('plb-title');
+const plbTabs   = document.getElementById('plb-tabs');
+const plbBody   = document.getElementById('plb-body');
+const projectDataById = {};
+const projectNodeById = {};
 let lbImgs = [], lbI = 0;
 function openImgLb(imgs, i) {
   lbImgs = imgs; lbI = i;
@@ -482,10 +642,161 @@ function openTxtLb(title, body) { tlbTitle.textContent = title; tlbBody.textCont
 document.getElementById('tlb-close').onclick = () => textLb.classList.remove('open');
 textLb.addEventListener('click', e => { if (e.target === textLb) textLb.classList.remove('open'); });
 
+function openProjectLb(projectId) {
+  const data = projectDataById[projectId];
+  if (!data) return;
+  plbTitle.textContent = data.project.title;
+  plbTabs.innerHTML = '';
+  plbBody.innerHTML = '';
+
+  function appendDetails(target) {
+    if (!data.hasDetail) return;
+    const d = data.detail;
+    [
+      d.year && ['Year', d.year],
+      d.role && ['Role', d.role],
+      d.timeline && ['Timeline', d.timeline],
+      d.tools?.length && ['Tools', d.tools.join(', ')],
+    ].filter(Boolean).forEach(([label, value]) => {
+      const row = el('div', 'plb-detail-row');
+      row.appendChild(el('div', 'plb-detail-label', label));
+      row.appendChild(el('div', 'plb-detail-value', value));
+      target.appendChild(row);
+    });
+    if (Array.isArray(d.links) && d.links.length) {
+      const row = el('div', 'plb-detail-row');
+      row.appendChild(el('div', 'plb-detail-label', 'Links'));
+      d.links.forEach(link => {
+        const a = document.createElement('a');
+        a.href = link.url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.className = 'plb-link';
+        a.textContent = link.label;
+        row.appendChild(a);
+        row.appendChild(document.createElement('br'));
+      });
+      target.appendChild(row);
+    }
+  }
+
+  if (!IS_MOBILE) {
+    plbTabs.style.display = 'none';
+    const split = el('div', 'plb-split');
+    const left = el('div', 'plb-col plb-col-images');
+    const right = el('div', 'plb-col plb-col-text');
+
+    if (data.images.length) {
+      const g = el('div', 'plb-gallery');
+      data.images.forEach((src, i) => {
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = `${data.project.title} image ${i + 1}`;
+        img.loading = 'lazy';
+        img.addEventListener('click', e => { e.stopPropagation(); openImgLb(data.images, i); });
+        g.appendChild(img);
+      });
+      left.appendChild(g);
+    }
+
+    if (data.texts.length) {
+      data.texts.forEach(t => {
+        const block = el('div', 'plb-text-block');
+        block.appendChild(el('div', 'plb-text-title', t.label));
+        block.appendChild(el('div', 'plb-text-body', t.body));
+        right.appendChild(block);
+      });
+    }
+
+    appendDetails(right);
+
+    if (data.modelSrc) {
+      const btn = document.createElement('button');
+      btn.className = 'plb-tab active';
+      btn.textContent = 'Open 3D Model';
+      btn.addEventListener('click', () => openModelLb(data.modelSrc));
+      right.appendChild(btn);
+    }
+
+    split.appendChild(left);
+    split.appendChild(right);
+    plbBody.appendChild(split);
+    projectLb.classList.add('open');
+    return;
+  }
+
+  plbTabs.style.display = '';
+
+  const tabs = [];
+  if (data.images.length) tabs.push('Images');
+  if (data.texts.length) tabs.push('Texts');
+  if (data.hasDetail) tabs.push('Details');
+  if (data.modelSrc) tabs.push('Model');
+  if (!tabs.length) tabs.push('Overview');
+
+  function renderTab(tab) {
+    plbBody.innerHTML = '';
+    if (tab === 'Images') {
+      const g = el('div', 'plb-gallery');
+      data.images.forEach((src, i) => {
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = `${data.project.title} image ${i + 1}`;
+        img.loading = 'lazy';
+        img.addEventListener('click', e => { e.stopPropagation(); openImgLb(data.images, i); });
+        g.appendChild(img);
+      });
+      plbBody.appendChild(g);
+      return;
+    }
+    if (tab === 'Texts') {
+      data.texts.forEach(t => {
+        const block = el('div', 'plb-text-block');
+        block.appendChild(el('div', 'plb-text-title', t.label));
+        block.appendChild(el('div', 'plb-text-body', t.body));
+        plbBody.appendChild(block);
+      });
+      return;
+    }
+    if (tab === 'Details') {
+      appendDetails(plbBody);
+      return;
+    }
+    if (tab === 'Model') {
+      const btn = document.createElement('button');
+      btn.className = 'plb-tab active';
+      btn.textContent = 'Open 3D Model';
+      btn.addEventListener('click', () => openModelLb(data.modelSrc));
+      plbBody.appendChild(btn);
+      return;
+    }
+    plbBody.textContent = 'No additional content.';
+  }
+
+  tabs.forEach((tab, i) => {
+    const b = el('button', 'plb-tab', tab);
+    b.type = 'button';
+    if (i === 0) b.classList.add('active');
+    b.addEventListener('click', () => {
+      [...plbTabs.querySelectorAll('.plb-tab')].forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      renderTab(tab);
+    });
+    plbTabs.appendChild(b);
+  });
+
+  renderTab(tabs[0]);
+  projectLb.classList.add('open');
+}
+
+document.getElementById('plb-close').onclick = () => projectLb.classList.remove('open');
+projectLb.addEventListener('click', e => { if (e.target === projectLb) projectLb.classList.remove('open'); });
+
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     lightbox.classList.remove('open');
     textLb.classList.remove('open');
+    projectLb.classList.remove('open');
     closeModelLb();
     document.getElementById('impressum-lightbox')?.classList.remove('open');
   }
@@ -982,36 +1293,66 @@ function buildDetailNode(p, detail, rects, slotIndex, totalSlots) {
   }
 }
 
+function buildProjectNode(p, detail, texts, images) {
+  const W = SZ.project.w;
+  const H = SZ.project.h;
+  const { nodeEl, content } = makeNode('node-image node-project', p.title, p.id, W, H, { resizable: false });
+  const stack = el('div', 'image-stack');
+  const img = document.createElement('img');
+  const imageSrcs = images.length ? images : ['media/logo/joel-logo.webp'];
+  img.src = imageSrcs[0];
+  img.alt = `${p.title} preview`;
+  img.loading = 'lazy';
+  stack.appendChild(img);
+  if (imageSrcs.length > 1) stack.appendChild(el('div', 'image-count', String(imageSrcs.length)));
+  content.appendChild(stack);
+
+  function showImage(idx) {
+    const i = Math.max(0, Math.min(idx, imageSrcs.length - 1));
+    img.src = imageSrcs[i];
+  }
+
+  nodeEl.addEventListener('click', e => {
+    if (e.target.closest('.node-bar')) return;
+    e.stopPropagation();
+    openProjectLb(p.id);
+  });
+
+  placeCentered(nodeEl, p.x, p.y, W, H);
+  nodePositions[`${p.id}::project`] = { el: nodeEl, showImage, imgIndex: 0 };
+  projectNodeById[p.id] = nodeEl;
+
+  const modelSrc = detail.model
+    ? (/^https?:\/\//i.test(detail.model)
+      ? detail.model
+      : detail.model.startsWith('media/')
+        ? detail.model
+        : `${detail._aboutBase ? 'media/about' : `media/projects/${p.id}`}/${detail.model}`)
+    : null;
+
+  const hasDetail = !!(detail.year || detail.role || detail.timeline || detail.tools?.length || detail.links?.length);
+  projectDataById[p.id] = {
+    project: p,
+    detail,
+    texts,
+    images: imageSrcs,
+    hasDetail,
+    modelSrc,
+  };
+}
 
 PROJECTS.forEach(p => {
-  const rects = [];
-
-  // Title — auto-fits content, no resize handle
-  const titleEl = el('div', 'node node-title', p.title);
-  if (p.id === 'about') titleEl.classList.add('is-about');
-  titleEl._clusterId = p.id;
-  titleEl.style.cursor = 'grab';
-  placeCentered(titleEl, p.x, p.y, SZ.title.w, SZ.title.h);
-  rects.push({ x: p.x - SZ.title.w / 2, y: p.y - SZ.title.h / 2, w: SZ.title.w, h: SZ.title.h });
-  clusterTitlePos[p.id] = { x: p.x, y: p.y };
-  clusterNodes[p.id] = { titleEl, cx: p.x, cy: p.y, satellites: [] };
-  nodePositions[`${p.id}::title`] = { el: titleEl };
-
-  // All satellite nodes come from detail.md (async)
-  // The 'about' project lives in media/about/ with its own structure
   const detailPromise = p.id === 'about'
     ? Promise.resolve({ texts: [{ file: 'bio.md', label: 'Bio' }], images: ['profile.webp'], _aboutBase: true })
     : fetchDetail(p.id);
 
   detailPromise.then(async detail => {
-    // texts: list of {file, label} or fall back to description.md
     const textDefs = Array.isArray(detail.texts) && detail.texts.length
       ? detail.texts
       : [{ file: 'description.md', label: p.title }];
 
     const baseDir = detail._aboutBase ? 'media/about' : `media/projects/${p.id}`;
 
-    // Fetch all text bodies in parallel
     const textBodies = await Promise.all(textDefs.map(async t => {
       const file = t.file || 'description.md';
       try {
@@ -1019,31 +1360,13 @@ PROJECTS.forEach(p => {
         return { label: t.label || p.title, body: txt ? stripMd(txt) : null };
       } catch { return { label: t.label || p.title, body: null }; }
     }));
-
-    // Build slot list: texts first, then image, detail, model
+    const cleanTexts = textBodies.filter(t => t.body);
     const resolvedImages = (detail.images || []).map(i => i.startsWith('media/') ? i : `${baseDir}/${i}`);
-    const hasImage  = resolvedImages.length > 0;
-    const hasDetail = !!(detail.year || detail.role || detail.timeline || detail.tools?.length || detail.links?.length);
-    const hasModel  = !!detail.model;
-    const total = textBodies.length + (hasImage ? 1 : 0) + (hasDetail ? 1 : 0) + (hasModel ? 1 : 0);
-
-    let slot = 0;
-    for (const { label, body } of textBodies) {
-      if (body) buildTextNode(p, label, body, rects, slot++, total);
-    }
-    if (hasImage)  buildImageNode(p, resolvedImages, rects, slot++, total);
-    if (hasDetail) buildDetailNode(p, detail, rects, slot++, total);
-    if (hasModel)  buildModelNode(p, detail.model, rects, slot++, total);
-
-    clusterRects[p.id] = rects;
-    redrawClusterCurves();
-  });
-
-  clusterRects[p.id] = rects;
+    buildProjectNode(p, detail, cleanTexts, resolvedImages);
+  }).catch(console.error);
 });
 
-// Draw curves once after initial layout
-redrawClusterCurves();
+// Single-node layout does not draw cluster hulls.
 
 // ─────────────────────────────────────────────
 // Search lines — viewport-space, from canvas-centre screen pos
@@ -1069,10 +1392,15 @@ function rectEdgePoint(rx, ry, rw, rh, tx, ty) {
 function redrawLines() {
   lineSvg.innerHTML = '';
   const keys = Object.keys(lineScores);
+  syncSendButtonState();
   if (!keys.length) return;
 
-  const inputHalfW = (inputWrap._cw || inputWrap.offsetWidth || 260) / 2;
-  const srcPt = c2s(CANVAS_CX + inputHalfW, CANVAS_CY);
+  const inputRect = inputWrap.getBoundingClientRect();
+  const LINE_SOURCE_GAP = 12;
+  const srcPt = {
+    x: inputRect.left + inputRect.width / 2,
+    y: inputRect.top - LINE_SOURCE_GAP,
+  };
   const srcX = srcPt.x, srcY = srcPt.y;
 
   keys.forEach(nodeKey => {
@@ -1089,10 +1417,14 @@ function redrawLines() {
     const sw = cw * zoom, sh = ch * zoom;
     const dst = rectEdgePoint(tl.x, tl.y, sw, sh, srcX, srcY);
 
-    const dx   = dst.x - srcX;
-    const bend = Math.max(Math.abs(dx) * 0.5, 80);
-    const cp1x = srcX + bend, cp1y = srcY;
-    const cp2x = dst.x - (dst.x - srcX) * 0.25, cp2y = dst.y - (dst.y - srcY) * 0.25;
+    const dx = dst.x - srcX;
+    const dy = srcY - dst.y;
+    const upwardBend = Math.max(Math.abs(dy) * 0.35, 90);
+    const lateral = dx * 0.35;
+    const cp1x = srcX + lateral * 0.2;
+    const cp1y = srcY - upwardBend;
+    const cp2x = dst.x - lateral * 0.25;
+    const cp2y = dst.y - upwardBend * 0.35;
 
     // Power curve: exaggerates gap between top match and weaker ones
     const s = Math.pow(score, 1.8);
@@ -1114,6 +1446,8 @@ function clearLines() {
     if (key.includes('::image::') && np.showImage) np.showImage(0);
   }
   lineScores = {}; lineSvg.innerHTML = '';
+  searchActive = false;
+  syncSendButtonState();
   const noResults = document.getElementById('no-results');
   if (noResults) noResults.classList.remove('visible');
 }
@@ -1183,6 +1517,7 @@ function extractVec(out) {
 
 async function init() {
   const runtimeReady = await ensureTransformers();
+  keywordList = await fetchKeywords();
   if (!runtimeReady) {
     loadDot.style.display = 'none';
     inputEl.placeholder = 'search unavailable';
@@ -1201,6 +1536,7 @@ async function init() {
   const hints = ['search', 'search', 'search', "you may ask what i'm proud of"];
   inputEl.placeholder = hints[Math.floor(Math.random() * hints.length)];
   inputEl.disabled = false; sendBtn.disabled = false; inputEl.focus();
+  refreshSuggestion();
 }
 
 function cosSim(a, b) {
@@ -1212,24 +1548,31 @@ function cosSim(a, b) {
 
 async function runQuery(t) {
   if (!t.trim()) { clearLines(); return; }
+  searchActive = true;
+  syncSendButtonState();
   const out = await embedder(t, { pooling: 'mean', normalize: true });
   const q   = extractVec(out);
   const raw = {};
   for (const [nodeKey, vec] of Object.entries(nodeEmbeddings)) {
     raw[nodeKey] = Math.max(0, cosSim(q, vec));
   }
-  const max = Math.max(...Object.values(raw), 0);
+
+  const byProject = {};
+  for (const [nodeKey, score] of Object.entries(raw)) {
+    const projectId = nodeKey.split('::')[0];
+    if (!projectNodeById[projectId]) continue;
+    byProject[projectId] = Math.max(byProject[projectId] || 0, score);
+  }
+
+  const max = Math.max(...Object.values(byProject), 0);
   lineScores = {};
   const noResults = document.getElementById('no-results');
   if (max >= 0.25) {
-    for (const [nodeKey, score] of Object.entries(raw)) {
+    for (const [projectId, score] of Object.entries(byProject)) {
       const norm = score / max;
-      if (norm >= 0.4) lineScores[nodeKey] = norm;
-    }
-    // For image keys in the results, swap the visible thumbnail to the matching image
-    for (const [nodeKey, norm] of Object.entries(lineScores)) {
-      const np = nodePositions[nodeKey];
-      if (np?.showImage) np.showImage(np.imgIndex);
+      if (norm >= 0.4) {
+        lineScores[`${projectId}::project`] = norm;
+      }
     }
     noResults.classList.remove('visible');
   } else {
@@ -1238,11 +1581,35 @@ async function runQuery(t) {
   redrawLines(); animateLines();
 }
 
-sendBtn.addEventListener('click', () => runQuery(inputEl.value));
-inputEl.addEventListener('keydown', e => { if (e.key === 'Enter') runQuery(inputEl.value); });
-inputEl.addEventListener('input',   () => { if (!inputEl.value) clearLines(); });
+sendBtn.addEventListener('click', () => {
+  if (searchActive) {
+    inputEl.value = '';
+    refreshSuggestion();
+    clearLines();
+    return;
+  }
+  runQuery(inputEl.value);
+});
+inputEl.addEventListener('keydown', e => {
+  if (e.key === 'Shift') {
+    if (acceptSuggestion()) e.preventDefault();
+    return;
+  }
+  if (e.key === 'Enter') {
+    if (acceptSuggestion()) {
+      e.preventDefault();
+      return;
+    }
+    runQuery(inputEl.value);
+  }
+});
+inputEl.addEventListener('input', () => {
+  refreshSuggestion();
+  if (!inputEl.value) clearLines();
+});
 
 init().catch(console.error);
+syncSendButtonState();
 buildFooter();
 
 } // end desktop-only block
