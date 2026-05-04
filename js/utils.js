@@ -26,9 +26,10 @@ export async function fetchMdBody(id) {
 export function parseKeywordMd(txt) {
   const seen = new Set();
   const keywords = [];
-  txt.split('\n').forEach(raw => {
+  // Strip HTML comments before splitting into lines so multi-line comments are
+  // removed cleanly, then process each remaining line individually.
+  txt.replace(/<!--[\s\S]*?-->/g, '').split('\n').forEach(raw => {
     const clean = raw
-      .replace(/<!--.*?-->/g, '')
       .replace(/^\s*[-*+]\s+/, '')
       .replace(/^\s*\d+\.\s+/, '')
       .replace(/^\s*#+\s+/, '')

@@ -11,7 +11,7 @@ export async function loadThree() {
   if (threeCache) return threeCache;
   const THREE            = await import('three');
   const { GLTFLoader }   = await import('three/addons/loaders/GLTFLoader.js');
-  const { OrbitControls} = await import('three/addons/controls/OrbitControls.js');
+  const { OrbitControls } = await import('three/addons/controls/OrbitControls.js');
   threeCache = { THREE, GLTFLoader, OrbitControls };
   return threeCache;
 }
