@@ -5,7 +5,7 @@
 // specific node type and place it on the canvas.
 // ─────────────────────────────────────────────
 
-import { state, clusterNodes, nodePositions, projectDataById, projectNodeById } from './state.js';
+import { state, clusterNodes, clusterRects, clusterTitlePos, nodePositions, projectDataById, projectNodeById } from './state.js';
 import { SZ, satPos }                                from './layout.js';
 import { el, place, placeCentered }                  from './dom.js';
 import { redrawClusterCurves }                       from './clusters.js';
@@ -301,31 +301,20 @@ export function buildModelNode(p, modelPath, rects, slotIndex, totalSlots) {
   });
 }
 
-// ── Project node (title + image preview) ─────────────────────────────────
+// ── Project cluster: title anchor + all satellite nodes ───────────────────
 export function buildProjectNode(p, detail, texts, images) {
-  const W = SZ.project.w, H = SZ.project.h;
-  const { nodeEl, content } = makeNode('node-image node-project', p.title, p.id, W, H, { resizable: false });
+  // ── 1. Cluster title label (the drag anchor, never resizable) ─────────────
+  // The CSS class `node-title` tells canvas.js to treat clicks as cluster drag.
+  const titleEl = el('div', 'node node-title' + (p.id === 'about' ? ' is-about' : ''), p.title);
+  titleEl._clusterId = p.id;
+  placeCentered(titleEl, p.x, p.y, SZ.title.w, SZ.title.h);
 
-  const stack     = el('div', 'image-stack');
-  const img       = document.createElement('img');
-  const imageSrcs = images.length ? images : ['media/logo/joel-logo.webp'];
-  img.src = imageSrcs[0]; img.alt = `${p.title} preview`; img.loading = 'lazy';
-  stack.appendChild(img);
-  if (imageSrcs.length > 1) stack.appendChild(el('div', 'image-count', String(imageSrcs.length)));
-  content.appendChild(stack);
+  // ── 2. Initialise cluster tracking ────────────────────────────────────────
+  clusterNodes[p.id]    = { titleEl, cx: p.x, cy: p.y, satellites: [] };
+  clusterTitlePos[p.id] = { x: p.x, y: p.y };
+  const rects = [{ x: p.x - SZ.title.w / 2, y: p.y - SZ.title.h / 2, w: SZ.title.w, h: SZ.title.h }];
 
-  function showImage(idx) { img.src = imageSrcs[Math.max(0, Math.min(idx, imageSrcs.length - 1))]; }
-
-  nodeEl.addEventListener('click', e => {
-    if (e.target.closest('.node-bar')) return;
-    e.stopPropagation();
-    openProjectLb(p.id);
-  });
-
-  placeCentered(nodeEl, p.x, p.y, W, H);
-  nodePositions[`${p.id}::project`] = { el: nodeEl, showImage, imgIndex: 0 };
-  projectNodeById[p.id] = nodeEl;
-
+  // ── 3. Resolve media paths ────────────────────────────────────────────────
   const modelSrc = detail.model
     ? (/^https?:\/\//i.test(detail.model)
         ? detail.model
@@ -335,6 +324,52 @@ export function buildProjectNode(p, detail, texts, images) {
     : null;
 
   const hasDetail = !!(detail.year || detail.role || detail.timeline || detail.tools?.length || detail.links?.length);
+  const imageSrcs = images.length ? images : [];
 
+  // Store data used by the project lightbox.
   projectDataById[p.id] = { project: p, detail, texts, images: imageSrcs, hasDetail, modelSrc };
+
+  // ── 4. Calculate total satellite slots ────────────────────────────────────
+  const hasImages  = imageSrcs.length > 0;
+  const totalSlots = 1 + (hasImages ? 1 : 0) + texts.length + (hasDetail ? 1 : 0) + (modelSrc ? 1 : 0);
+  let slot = 0;
+
+  // ── 5. Project preview card (always the first satellite) ─────────────────
+  {
+    const sat = satPos(p, slot++, 'project', totalSlots);
+    const W = SZ.project.w, H = SZ.project.h;
+    const { nodeEl, content } = makeNode('node-image node-project', p.title, p.id, W, H, { resizable: false });
+
+    const stack = el('div', 'image-stack');
+    const img   = document.createElement('img');
+    img.src = imageSrcs[0] || 'media/logo/joel-logo.webp';
+    img.alt = `${p.title} preview`; img.loading = 'lazy';
+    stack.appendChild(img);
+    if (imageSrcs.length > 1) stack.appendChild(el('div', 'image-count', String(imageSrcs.length)));
+    content.appendChild(stack);
+
+    function showImage(idx) { img.src = imageSrcs[Math.max(0, Math.min(idx, imageSrcs.length - 1))]; }
+
+    nodeEl.addEventListener('click', e => {
+      if (e.target.closest('.node-bar')) return;
+      e.stopPropagation();
+      openProjectLb(p.id);
+    });
+
+    placeCentered(nodeEl, sat.x, sat.y, W, H);
+    nodePositions[`${p.id}::project`] = { el: nodeEl, showImage, imgIndex: 0 };
+    projectNodeById[p.id] = nodeEl;
+    rects.push({ x: sat.x - W / 2, y: sat.y - H / 2, w: W, h: H });
+    clusterNodes[p.id].satellites.push({ el: nodeEl, ox: sat.x - p.x, oy: sat.y - p.y, w: W, h: H });
+  }
+
+  // ── 6. Other satellite nodes ──────────────────────────────────────────────
+  if (hasImages)       buildImageNode(p, imageSrcs, rects, slot++, totalSlots);
+  texts.forEach(t   => buildTextNode(p, t.label, t.body, rects, slot++, totalSlots));
+  if (hasDetail)       buildDetailNode(p, detail, rects, slot++, totalSlots);
+  if (modelSrc)        buildModelNode(p, modelSrc, rects, slot++, totalSlots);
+
+  // ── 7. Finalize cluster ───────────────────────────────────────────────────
+  clusterRects[p.id] = rects;
+  redrawClusterCurves();
 }
