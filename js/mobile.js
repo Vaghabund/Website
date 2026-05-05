@@ -9,17 +9,8 @@ import { stripMd, fetchMdBody, fetchDetail } from './utils.js';
 
 async function loadMobileItem(p, content) {
   const [mdText, media] = await Promise.all([
+    fetchMdBody(p.id),
     (async () => {
-      if (p.id === 'about') {
-        const raw = await fetch('media/about/bio.md').then(r => r.ok ? r.text() : null).catch(() => null);
-        return raw ? stripMd(raw) : null;
-      }
-      return fetchMdBody(p.id);
-    })(),
-    (async () => {
-      if (p.id === 'about') {
-        return { imgSrcs: ['media/about/profile-small.webp'], detail: {} };
-      }
       const detail  = await fetchDetail(p.id);
       const base    = `media/projects/${p.id}/`;
       const imgSrcs = (detail.images || []).map(i => i.startsWith('media/') ? i : base + i);
@@ -34,12 +25,12 @@ async function loadMobileItem(p, content) {
   const leftCol  = document.createElement('div'); leftCol.className  = 'm-col m-col-images';
   const rightCol = document.createElement('div'); rightCol.className = 'm-col m-col-text';
 
-  const altBase = p.id === 'about' ? 'Profile photo of Joel Tenenberg' : `${p.title} — project image`;
+  const altBase = `${p.title} — image`;
   const gallery = document.createElement('div'); gallery.className = 'm-gallery';
   imgSrcs.forEach((src, idx) => {
     const img     = document.createElement('img');
     img.src       = src;
-    img.alt       = p.id === 'about' ? `${altBase} ${idx + 1}` : altBase;
+    img.alt       = imgSrcs.length > 1 ? `${altBase} ${idx + 1}` : altBase;
     img.className = 'm-img';
     img.loading   = 'lazy';
     gallery.appendChild(img);

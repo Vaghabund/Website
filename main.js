@@ -29,10 +29,9 @@ if (IS_MOBILE) {
 }
 
 async function initDesktop() {
-  // Assign phyllotaxis positions to all non-about projects before any
-  // node builder reads p.x / p.y.
+  // Assign phyllotaxis positions to all projects that don't have a fixed position.
   let si = 0;
-  PROJECTS.forEach(p => { if (p.id !== 'about') Object.assign(p, fibPos(si++)); });
+  PROJECTS.forEach(p => { if (!p.x && !p.y) Object.assign(p, fibPos(si++)); });
 
   // Load desktop modules in parallel.
   //   canvas.js   — executes applyTransform() and registers mouse/wheel/touch
@@ -74,16 +73,12 @@ async function initDesktop() {
 
   // ── Build all project nodes ────────────────────────────────────────────
   PROJECTS.forEach(p => {
-    const detailPromise = p.id === 'about'
-      ? Promise.resolve({ texts: [{ file: 'bio.md', label: 'Bio' }], images: ['profile.webp'], _aboutBase: true })
-      : fetchDetail(p.id);
-
-    detailPromise.then(async detail => {
+    fetchDetail(p.id).then(async detail => {
       const textDefs = Array.isArray(detail.texts) && detail.texts.length
         ? detail.texts
         : [{ file: 'description.md', label: p.title }];
 
-      const baseDir = detail._aboutBase ? 'media/about' : `media/projects/${p.id}`;
+      const baseDir = `media/projects/${p.id}`;
 
       const textBodies = await Promise.all(textDefs.map(async t => {
         const file = t.file || 'description.md';

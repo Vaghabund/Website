@@ -17,7 +17,7 @@ let dragging = false, dragStart = { x: 0, y: 0 }, panStart = { x: 0, y: 0 };
 let rafPending = false;
 
 document.addEventListener('mousedown', e => {
-  if (e.target.closest('#input-wrap,#lightbox,.node-image,.node-bar,.node-resize')) return;
+  if (e.target.closest('#input-wrap,#lightbox,#project-lightbox,#model-lightbox,#impressum-lightbox,.node-image,.node-bar,.node-resize')) return;
   dragging = true;
   dragStart = { x: e.clientX, y: e.clientY };
   panStart  = { x: state.pan.x, y: state.pan.y };
@@ -54,7 +54,7 @@ function doZoom(delta, cx, cy) {
 
 document.addEventListener('wheel', e => {
   if (document.body.classList.contains('list-view')) return;
-  if (e.target.closest('#tlb-inner')) return;
+  if (e.target.closest('#plb-inner,#project-lightbox,#model-lightbox,#impressum-lightbox')) return;
   e.preventDefault();
   doZoom(e.deltaY, e.clientX, e.clientY);
 }, { passive: false });
@@ -68,9 +68,13 @@ function pinchDist(e) {
 }
 let lastPinch = null;
 
-document.addEventListener('touchstart', e => { if (e.touches.length === 2) lastPinch = pinchDist(e); }, { passive: true });
+document.addEventListener('touchstart', e => {
+  if (e.target.closest('#project-lightbox,#model-lightbox,#impressum-lightbox')) return;
+  if (e.touches.length === 2) lastPinch = pinchDist(e);
+}, { passive: true });
 document.addEventListener('touchmove',  e => {
   if (document.body.classList.contains('list-view')) return;
+  if (e.target.closest('#project-lightbox,#model-lightbox,#impressum-lightbox')) return;
   if (e.touches.length !== 2) return;
   const d  = pinchDist(e);
   const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;

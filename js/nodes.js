@@ -86,11 +86,9 @@ export function buildProjectNode(p, detail, texts, images) {
 
   // Resolve model path.
   const modelSrc = detail.model
-    ? (/^https?:\/\//i.test(detail.model)
+    ? (/^https?:\/\//i.test(detail.model) || detail.model.startsWith('media/')
         ? detail.model
-        : detail.model.startsWith('media/')
-          ? detail.model
-          : `${detail._aboutBase ? 'media/about' : `media/projects/${p.id}`}/${detail.model}`)
+        : `media/projects/${p.id}/${detail.model}`)
     : null;
 
   const hasDetail = !!(detail.year || detail.role || detail.timeline || detail.tools?.length || detail.links?.length);

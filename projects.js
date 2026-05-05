@@ -14,7 +14,7 @@
 // FIELDS:
 //   id    — matches the media/projects/<id>/ folder name exactly
 //   title — displayed in the title node
-//   x, y  — canvas anchor (0,0 = spiral layout; about uses a fixed offset)
+//   x, y  — canvas anchor (0,0 = auto spiral layout; non-zero = fixed position)
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PROJECTS = [

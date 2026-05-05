@@ -95,7 +95,7 @@ async function embed(text) {
 const output = {};
 
 for (const project of PROJECTS) {
-  const base = resolve(__dirname, project.id === 'about' ? 'media/about' : `media/projects/${project.id}`);
+  const base = resolve(__dirname, `media/projects/${project.id}`);
 
   const chunks = [];
   const curated = readFile(resolve(base, 'embedding.md'));
@@ -114,9 +114,7 @@ for (const project of PROJECTS) {
 
   const textDefs  = Array.isArray(detail.texts) && detail.texts.length
     ? detail.texts
-    : project.id === 'about'
-      ? [{ file: 'bio.md', label: 'bio' }]
-      : [{ file: 'description.md', label: 'overview' }];
+    : [{ file: 'description.md', label: 'overview' }];
 
   for (const t of textDefs) {
     const file  = t.file || 'description.md';

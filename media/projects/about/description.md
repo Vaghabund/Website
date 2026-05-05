@@ -1,19 +1,3 @@
----
-name: Joel Tenenberg
-title: Art Director
-location: Berlin
-email: joel@tenenberg.net
-website: joel.tenenberg.net
-linkedin: ""
-github: https://github.com/Vaghabund
-twitter: ""
-profileImage: profile.jpg
-profileImageAlt: profile2.jpg
-resumePDF: ../cv/resume.pdf
----
-
-# About Me
-
 I'm Joel an art director and spatial thinker working at the intersection of brand experience, computational design, and physical space.
 
 My background is rooted in architecture, which gave me a precise understanding of how environments shape behavior and perception. Over time, that interest evolved from drawing spaces to designing the systems and experiences that give them meaning. Today I work in brand experience, leading creative direction across the early phases where ideas are still fluid and the most important decisions get made.

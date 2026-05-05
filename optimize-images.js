@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // optimize-images.js
 //
-// For every project (and media/about):
+// For every project:
 //   1. Finds source images (png/jpg, not already -small or -thumb)
 //   2. Produces name.webp (full, max 1600px) and name-small.webp (max 400px)
 //   3. Updates detail.md image list to reference .webp extensions
@@ -94,13 +94,6 @@ async function processDir(imgDir, detailPath) {
 
   if (detailPath) updateDetailMd(detailPath);
 }
-
-// --- about ---
-console.log('\n=== media/about ===');
-await processDir(
-  resolve(__dirname, 'media/about'),
-  null // no detail.md for about
-);
 
 // --- projects ---
 const projectsDir = resolve(__dirname, 'media/projects');
