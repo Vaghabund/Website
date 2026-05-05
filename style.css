@@ -52,7 +52,8 @@ html, body {
   z-index: 40;
   pointer-events: none;
   padding: 6px 12px 6px 8px;
-  background: linear-gradient(90deg, rgba(170,170,170,0.14) 0%, rgba(170,170,170,0) 100%);
+  background: rgba(10,10,10,0.92);
+  border: 1px solid rgba(255,255,255,0.09);
 }
 
 #site-header-logo {
@@ -60,7 +61,8 @@ html, body {
   width: 210px;
   max-width: 42vw;
   height: auto;
-  opacity: 0.9;
+  opacity: 0.52;
+  filter: invert(1);
 }
 
 #site-header-intro {
@@ -152,7 +154,7 @@ body.list-view #view-toggle {
   font-size: 8px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.52);
   pointer-events: none;
 }
 
@@ -549,9 +551,11 @@ body.is-mobile #project-lightbox { display: none !important; }
 
 body.is-mobile #site-header {
   display: flex;
-  top: 10px;
-  left: 12px;
-  right: 12px;
+  position: relative;
+  top: auto;
+  left: auto;
+  right: auto;
+  margin: 16px 12px 0;
   gap: 8px;
   flex-direction: column;
   align-items: flex-start;
@@ -570,6 +574,31 @@ body.is-mobile #site-header-intro {
   font-size: 11px;
 }
 
+#mobile-sticky-header {
+  display: none;
+}
+
+body.is-mobile #mobile-sticky-header {
+  display: block;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 50;
+  padding: 12px 16px;
+  background: rgba(10,10,10,0.96);
+  border-bottom: 1px solid rgba(255,255,255,0.09);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.52);
+  transform: translateY(-100%);
+  transition: transform 0.22s ease;
+  pointer-events: none;
+}
+
+body.is-mobile #mobile-sticky-header.header-scrolled.visible {
+  transform: translateY(0);
+}
+
 body.is-mobile #mobile-view {
   display: block;
   position: fixed;
@@ -577,8 +606,8 @@ body.is-mobile #mobile-view {
   overflow-y: auto;
   background: #0a0a0a;
   -webkit-overflow-scrolling: touch;
-  padding-top: 98px; /* room for mobile header */
-  padding-bottom: 56px; /* room for footer */
+  padding-top: 0;
+  padding-bottom: 56px;
 }
 
 .m-item { border-bottom: 1px solid rgba(255,255,255,0.09); }

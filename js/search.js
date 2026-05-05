@@ -321,7 +321,7 @@ export function bindSearchEvents() {
   });
 
   inputEl.addEventListener('keydown', e => {
-    if (e.key === 'Shift') {
+    if (e.key === 'Tab') {
       if (acceptSuggestion()) e.preventDefault();
       return;
     }

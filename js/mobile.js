@@ -133,4 +133,40 @@ export function buildAccordionView(containerId) {
 
 export function buildMobileView() {
   buildAccordionView('mobile-view');
+  initMobileHeader();
+}
+
+function initMobileHeader() {
+  const siteHeader   = document.getElementById('site-header');
+  const stickyHeader = document.getElementById('mobile-sticky-header');
+  if (!siteHeader || !stickyHeader) return;
+
+  // Make the main header scroll with the page on mobile.
+  siteHeader.style.position = 'relative';
+  siteHeader.style.top      = '';
+  siteHeader.style.left     = '';
+
+  let currentTitle = '';
+
+  // Update sticky bar title whenever an accordion opens or closes.
+  const mobileView = document.getElementById('mobile-view');
+  if (mobileView) {
+    mobileView.addEventListener('click', e => {
+      const header = e.target.closest('.m-header');
+      if (!header) return;
+      // Wait a tick for the open class to be applied.
+      requestAnimationFrame(() => {
+        const openHeader = mobileView.querySelector('.m-header.open');
+        currentTitle = openHeader ? openHeader.textContent : '';
+        stickyHeader.textContent = currentTitle;
+        stickyHeader.classList.toggle('visible', !!currentTitle);
+      });
+    });
+  }
+
+  // Show/hide sticky header based on whether main header has scrolled out of view.
+  const observer = new IntersectionObserver(([entry]) => {
+    stickyHeader.classList.toggle('header-scrolled', !entry.isIntersecting);
+  }, { threshold: 0 });
+  observer.observe(siteHeader);
 }

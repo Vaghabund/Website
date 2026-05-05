@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Joel\\\\Documents\\\\GitHub\\\\Website\\\\media\\\\projects\\\\\" -Directory | Select-Object -ExpandProperty Name)",
-      "Bash(node generate-embeddings.js)"
+      "Bash(node generate-embeddings.js)",
+      "Bash(node test-search.js)"
     ]
   }
 }

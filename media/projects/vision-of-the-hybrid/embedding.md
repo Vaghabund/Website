@@ -1,9 +1,13 @@
-Vision of the Hybrid. Artistic project, 2024, Politics of Design, UdK Berlin. Speculative design, sculpture, 3D printing, AI co-authorship, posthumanism, worldbuilding, narrative, feminist theory.
+Vision of the Hybrid. Artistic project, 2024, UdK Berlin. Speculative design, sculpture, object, 3D printing, posthumanism, feminist theory, narrative, worldbuilding.
 
-A speculative design project centered on a 3D-printed sculptural object and a non-linear narrative co-written with artificial intelligence. The work explores identity, gender, class, race, otherness, and hybridity. Drawing on Rosi Braidotti's relational thinking and feminist posthumanism, the human condition is not fixed but contested and reversible. This is a project about body, material, story, and imagining futures beyond current power structures.
+A sculptural object and a written narrative. Not a thesis. Not academic research. An art project. A personal artistic work. Speculative design as artistic practice.
 
-The physical object is an organic sculptural form, biomorphic and spiked, alien and creature-like — somewhere between a sea urchin, a virus, and an abstract body. Printed in matte white PLA and silk PLA with embedded aluminium rods. The sculpture sits on a tripod-like printed base with diagonal struts. Visitors engage with it tactilely. A second rendered version shows the form in high-gloss black with iridescent dark surface, deep shadow, neutral grey background — stark, mysterious, object-like.
+The central piece is a 3D-printed object — organic, biomorphic, spiked, creature-like, somewhere between a sea urchin and an abstract body. Printed in matte white PLA and silk PLA with embedded aluminium rods. The form sits on a tripod base with diagonal struts. Visitors touch it, hold it, interact with it physically. Tactile, embodied, haptic.
 
-The narrative is non-linear and fragmented: seven diary-like entries narrating an ambiguous human-object relationship, written with Whisper voice transcription. Storytelling, diary, voice, text.
+A second rendered version of the object is deep black, high-gloss, iridescent dark surface with reflective highlights on a neutral grey background. Stark, mysterious, object-like.
 
-Materials: PLA, silk PLA, aluminium. Colors: matte white, gloss black, iridescent, grey. Tools: Blender, Cinema4D, NomadSculpt, After Effects, Whisper. Keywords: sculpture, object, 3D print, 3D printing, biomorphic, organic form, body, material, tactile, matte white, gloss black, grey, PLA, aluminium, speculative design, posthuman, feminist, Braidotti, identity, gender, otherness, hybrid, worldbuilding, non-linear, diary, voice, story, future, politics of design, UdK Berlin, relational thinking.
+The narrative is non-linear: seven diary-like text fragments written with AI voice transcription using Whisper. Fragmented writing, diary entries, voice, personal narrative, co-authorship, storytelling.
+
+Theoretical basis: Rosi Braidotti, feminist posthumanism, relational thinking, identity, gender, otherness, hybridity, body, power. Imagining futures beyond current structures.
+
+Materials: PLA, silk PLA, aluminium rods. Colors: matte white, gloss black, iridescent, grey. Tools: Blender, Cinema4D, NomadSculpt, After Effects, Whisper. Keywords: sculpture, object, 3D print, 3D printing, PLA, biomorphic, organic, spiked, body, tactile, matte white, gloss black, iridescent, grey, speculative design, posthuman, feminist, Braidotti, identity, gender, otherness, hybrid, worldbuilding, diary, narrative, voice, AI writing, Whisper, story, future, politics of design.
