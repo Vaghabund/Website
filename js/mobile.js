@@ -20,30 +20,29 @@ async function loadMobileItem(p, content) {
 
   const imgSrcs = media.imgSrcs || [];
   const detail  = media.detail  || {};
-
-  const split    = document.createElement('div'); split.className = 'm-split';
-  const leftCol  = document.createElement('div'); leftCol.className  = 'm-col m-col-images';
-  const rightCol = document.createElement('div'); rightCol.className = 'm-col m-col-text';
-
   const altBase = `${p.title} — image`;
-  const gallery = document.createElement('div'); gallery.className = 'm-gallery';
-  imgSrcs.forEach((src, idx) => {
-    const img     = document.createElement('img');
-    img.src       = src;
-    img.alt       = imgSrcs.length > 1 ? `${altBase} ${idx + 1}` : altBase;
-    img.className = 'm-img';
-    img.loading   = 'lazy';
-    gallery.appendChild(img);
-  });
-  if (gallery.childElementCount) leftCol.appendChild(gallery);
 
-  if (mdText) {
-    const textEl = document.createElement('div');
-    textEl.className   = 'm-text';
-    textEl.textContent = mdText;
-    rightCol.appendChild(textEl);
+  function makeImg(src, idx) {
+    const img = document.createElement('img');
+    img.src = src; img.alt = imgSrcs.length > 1 ? `${altBase} ${idx + 1}` : altBase;
+    img.className = 'm-img'; img.loading = 'lazy';
+    return img;
   }
 
+  // First image
+  if (imgSrcs[0]) content.appendChild(makeImg(imgSrcs[0], 0));
+
+  // Text
+  if (mdText) {
+    const textEl = document.createElement('div');
+    textEl.className = 'm-text'; textEl.textContent = mdText;
+    content.appendChild(textEl);
+  }
+
+  // Rest of images
+  imgSrcs.slice(1).forEach((src, i) => content.appendChild(makeImg(src, i + 1)));
+
+  // Info rows
   const infoRows = [
     detail.year     && ['Year',     detail.year],
     detail.role     && ['Role',     detail.role],
@@ -51,17 +50,14 @@ async function loadMobileItem(p, content) {
     detail.tools?.length && ['Tools', detail.tools.join(', ')],
   ].filter(Boolean);
 
-  if (infoRows.length || (Array.isArray(detail.links) && detail.links.length)) {
+  if (infoRows.length || Array.isArray(detail.links) && detail.links.length) {
     const info = document.createElement('div'); info.className = 'm-info';
-
     infoRows.forEach(([label, value]) => {
       const row = document.createElement('div'); row.className = 'm-info-row';
       const lbl = document.createElement('div'); lbl.className = 'm-info-label'; lbl.textContent = label;
       const val = document.createElement('div'); val.className = 'm-info-value'; val.textContent = value;
-      row.appendChild(lbl); row.appendChild(val);
-      info.appendChild(row);
+      row.appendChild(lbl); row.appendChild(val); info.appendChild(row);
     });
-
     if (Array.isArray(detail.links) && detail.links.length) {
       const row = document.createElement('div'); row.className = 'm-info-row';
       const lbl = document.createElement('div'); lbl.className = 'm-info-label'; lbl.textContent = 'Links';
@@ -74,13 +70,8 @@ async function loadMobileItem(p, content) {
       });
       info.appendChild(row);
     }
-
-    rightCol.appendChild(info);
+    content.appendChild(info);
   }
-
-  split.appendChild(leftCol);
-  split.appendChild(rightCol);
-  content.appendChild(split);
 }
 
 export function buildAccordionView(containerId) {
@@ -117,7 +108,11 @@ export function buildAccordionView(containerId) {
         header.classList.add('open');
         header.setAttribute('aria-expanded', 'true');
         content.classList.add('open');
-        item.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        const mv = document.getElementById('mobile-view');
+        if (mv) {
+          const itemTop = item.offsetTop;
+          mv.scrollTo({ top: itemTop, behavior: 'smooth' });
+        }
         if (!content.dataset.loaded) {
           content.dataset.loaded = 'true';
           loadMobileItem(p, content).catch(console.error);
@@ -139,34 +134,11 @@ export function buildMobileView() {
 function initMobileHeader() {
   const siteHeader   = document.getElementById('site-header');
   const stickyHeader = document.getElementById('mobile-sticky-header');
-  if (!siteHeader || !stickyHeader) return;
+  const mobileView   = document.getElementById('mobile-view');
+  if (!siteHeader || !stickyHeader || !mobileView) return;
 
-  // Make the main header scroll with the page on mobile.
-  siteHeader.style.position = 'relative';
-  siteHeader.style.top      = '';
-  siteHeader.style.left     = '';
+  // Move the header into the scroll container so it scrolls with the content.
+  mobileView.insertBefore(siteHeader, mobileView.firstChild);
 
-  let currentTitle = '';
-
-  // Update sticky bar title whenever an accordion opens or closes.
-  const mobileView = document.getElementById('mobile-view');
-  if (mobileView) {
-    mobileView.addEventListener('click', e => {
-      const header = e.target.closest('.m-header');
-      if (!header) return;
-      // Wait a tick for the open class to be applied.
-      requestAnimationFrame(() => {
-        const openHeader = mobileView.querySelector('.m-header.open');
-        currentTitle = openHeader ? openHeader.textContent : '';
-        stickyHeader.textContent = currentTitle;
-        stickyHeader.classList.toggle('visible', !!currentTitle);
-      });
-    });
-  }
-
-  // Show/hide sticky header based on whether main header has scrolled out of view.
-  const observer = new IntersectionObserver(([entry]) => {
-    stickyHeader.classList.toggle('header-scrolled', !entry.isIntersecting);
-  }, { threshold: 0 });
-  observer.observe(siteHeader);
+  // No separate sticky bar needed — the open .m-header is itself sticky.
 }
