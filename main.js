@@ -7,8 +7,8 @@ import PROJECTS from './projects.js';
 
 // These modules are side-effect-free at evaluation time and are needed by
 // both the mobile and desktop paths, so they are imported statically.
-import { IS_MOBILE }                           from './js/state.js';
-import { fibPos }                              from './js/layout.js';
+import { IS_MOBILE, INITIAL_ZOOM }             from './js/state.js';
+import { CANVAS_CX, CANVAS_CY }               from './js/layout.js';
 import { buildMobileView, buildAccordionView } from './js/mobile.js';
 import { buildFooter }                         from './js/footer.js';
 
@@ -29,9 +29,48 @@ if (IS_MOBILE) {
 }
 
 async function initDesktop() {
-  // Assign phyllotaxis positions to all projects that don't have a fixed position.
-  let si = 0;
-  PROJECTS.forEach(p => { if (!p.x && !p.y) Object.assign(p, fibPos(si++)); });
+  // MAX_R is in screen pixels — divide by zoom to convert to canvas coords,
+  // so the visual cluster size stays the same regardless of initial zoom level.
+  const MAX_R_SCREEN = 300;
+  const MAX_R = MAX_R_SCREEN / INITIAL_ZOOM;
+  PROJECTS.forEach(p => {
+    if (p.x || p.y) return;
+    const angle = Math.random() * 2 * Math.PI;
+    const r     = MAX_R * Math.sqrt(Math.random());
+    p.x = CANVAS_CX + r * Math.cos(angle);
+    p.y = CANVAS_CY + r * Math.sin(angle);
+  });
+
+  // Resolve overlaps: repeatedly nudge colliding nodes apart until clear.
+  // NODE_W/H are canvas-px footprints with a small gutter.
+  const { SZ } = await import('./js/layout.js');
+  const NODE_W = SZ.project.w + 20;
+  const NODE_H = SZ.project.h + 20;
+  const movable = PROJECTS.filter(p => p.x && p.y);
+  for (let iter = 0; iter < 200; iter++) {
+    let anyOverlap = false;
+    for (let i = 0; i < movable.length; i++) {
+      for (let j = i + 1; j < movable.length; j++) {
+        const a = movable[i], b = movable[j];
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const overlapX = NODE_W - Math.abs(dx);
+        const overlapY = NODE_H - Math.abs(dy);
+        if (overlapX <= 0 || overlapY <= 0) continue;
+        anyOverlap = true;
+        // Push along the axis of least overlap.
+        if (overlapX < overlapY) {
+          const push = overlapX / 2 + 1;
+          a.x -= dx > 0 ? push : -push;
+          b.x += dx > 0 ? push : -push;
+        } else {
+          const push = overlapY / 2 + 1;
+          a.y -= dy > 0 ? push : -push;
+          b.y += dy > 0 ? push : -push;
+        }
+      }
+    }
+    if (!anyOverlap) break;
+  }
 
   // Load desktop modules in parallel.
   //   canvas.js   — executes applyTransform() and registers mouse/wheel/touch

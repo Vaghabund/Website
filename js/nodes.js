@@ -99,6 +99,19 @@ export function buildProjectNode(p, detail, texts, images) {
 
   const { nodeEl, content } = makeNode('node-image node-project', p.title, W, H, { resizable: false });
 
+  // Stack layers — positioned behind and offset down-right from the node wrapper.
+  const STACK_DEPTH = 2;
+  const stackCount = Math.min(STACK_DEPTH, imageSrcs.length - 1);
+  for (let s = stackCount; s >= 1; s--) {
+    const layer = el('div', `node-stack-layer node-stack-layer-${s}`);
+    const layerImg = document.createElement('img');
+    layerImg.src     = imageSrcs[s];
+    layerImg.alt     = '';
+    layerImg.loading = 'lazy';
+    layer.appendChild(layerImg);
+    nodeEl.appendChild(layer);
+  }
+
   const stack = el('div', 'image-stack');
   const img   = document.createElement('img');
   img.src = imageSrcs[0] || 'media/logo/joel-logo.webp';

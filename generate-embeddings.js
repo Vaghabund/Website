@@ -99,30 +99,33 @@ for (const project of PROJECTS) {
 
   const chunks = [];
   const curated = readFile(resolve(base, 'embedding.md'));
-  if (curated) chunks.push(stripMd(curated));
+  if (curated) {
+    // embedding.md is the sole source of truth — skip description and detail text.
+    chunks.push(stripMd(curated));
+  } else {
+    const detailRaw = readFile(resolve(base, 'detail.md'));
+    const detail    = detailRaw ? parseFrontmatter(detailRaw) : {};
+    const detailBits = [
+      detail.year,
+      detail.role,
+      detail.timeline,
+      Array.isArray(detail.tools) ? detail.tools.join(', ') : '',
+      Array.isArray(detail.links) ? detail.links.map(l => `${l.label || ''} ${l.url || ''}`).join(' ') : '',
+    ].map(compact).filter(Boolean);
+    if (detailBits.length) chunks.push(detailBits.join(' | '));
 
-  const detailRaw = readFile(resolve(base, 'detail.md'));
-  const detail    = detailRaw ? parseFrontmatter(detailRaw) : {};
-  const detailBits = [
-    detail.year,
-    detail.role,
-    detail.timeline,
-    Array.isArray(detail.tools) ? detail.tools.join(', ') : '',
-    Array.isArray(detail.links) ? detail.links.map(l => `${l.label || ''} ${l.url || ''}`).join(' ') : '',
-  ].map(compact).filter(Boolean);
-  if (detailBits.length) chunks.push(detailBits.join(' | '));
+    const textDefs = Array.isArray(detail.texts) && detail.texts.length
+      ? detail.texts
+      : [{ file: 'description.md', label: 'overview' }];
 
-  const textDefs  = Array.isArray(detail.texts) && detail.texts.length
-    ? detail.texts
-    : [{ file: 'description.md', label: 'overview' }];
-
-  for (const t of textDefs) {
-    const file  = t.file || 'description.md';
-    const raw   = readFile(resolve(base, file));
-    if (!raw) continue;
-    const text  = stripMd(raw);
-    if (!text)  continue;
-    chunks.push(text);
+    for (const t of textDefs) {
+      const file = t.file || 'description.md';
+      const raw  = readFile(resolve(base, file));
+      if (!raw) continue;
+      const text = stripMd(raw);
+      if (!text)  continue;
+      chunks.push(text);
+    }
   }
 
   const combined = compact([project.title, ...chunks].join('\n\n')) || project.title;

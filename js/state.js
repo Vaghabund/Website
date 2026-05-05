@@ -17,7 +17,7 @@ import { CANVAS_CX, CANVAS_CY } from './layout.js';
 // Canvas zoom/pan constants
 export const MIN_ZOOM     = 0.2;
 export const MAX_ZOOM     = 3.0;
-export const INITIAL_ZOOM = 0.6;
+export const INITIAL_ZOOM = 1.2;
 
 // IS_MOBILE is computed once at load so CSS and JS stay in sync
 // even if the viewport is later resized.

@@ -21,8 +21,8 @@ const PROJECTS = [
   {
     id: 'about',
     title: 'Joel Tenenberg',
-    x: 1400,
-    y: 900,
+    x: 2600,
+    y: 2000,
   },
   {
     id: 'operational-analysis-of-photogrammetry',

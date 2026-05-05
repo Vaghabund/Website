@@ -70,7 +70,6 @@ Pure functions, no imports.
 | `CANVAS_CX` | number | Canvas centre X (2000px) |
 | `CANVAS_CY` | number | Canvas centre Y (1500px) |
 | `SZ` | object | Node sizes: `SZ.project = { w: 230, h: 190 }` |
-| `fibPos(i)` | fn → `{x,y}` | Canvas position for project i via golden-angle phyllotaxis spiral (radius scale 620px) |
 
 ---
 
@@ -227,7 +226,7 @@ Node classes on canvas: `.node`, `.node-bar`, `.node-bar-label`, `.node-resize`,
 ## Data files
 
 ### `projects.js`
-Array of `{ id, title, x, y }`. `x` and `y` are set to 0 for spiral-placed projects; `main.js` overwrites them with `fibPos(i)` before building nodes. The `about` project uses a fixed offset.
+Array of `{ id, title, x, y }`. `x` and `y` are set to 0 for randomly-placed projects; `main.js` assigns a random position within a 300px radius of canvas centre at load time. Fixed positions (non-zero `x`/`y`) are used as-is.
 
 ### `embeddings.json`
 ```json
@@ -267,7 +266,7 @@ One keyword per line (markdown list format). Autocomplete source. No embedding r
 
 ## Initialisation sequence (desktop)
 
-1. `main.js` assigns spiral positions (`fibPos`) to all projects.
+1. `main.js` assigns random positions (uniform disk, max radius 300px from canvas centre) to all projects without a fixed position.
 2. Dynamically imports `canvas.js`, `search.js`, `nodes.js`, `lightbox.js`, `utils.js` in parallel.
 3. Each module's side effects run (pan/zoom handlers, lightbox close buttons, etc.).
 4. Fetches `detail.md` and images for all projects; calls `buildProjectNode()` for each.

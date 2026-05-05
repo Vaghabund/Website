@@ -74,8 +74,8 @@ export function redrawLines() {
   const srcX = inputRect.left + inputRect.width / 2;
   const srcY = inputRect.top  - LINE_SOURCE_GAP;
 
-  keys.forEach(nodeKey => {
-    const score = state.lineScores[nodeKey];
+  keys.forEach((nodeKey, i) => {
+    const { norm: score, raw: rawScore } = state.lineScores[nodeKey];
     const np    = nodePositions[nodeKey]; if (!np?.el) return;
     const e     = np.el;
 
@@ -88,26 +88,67 @@ export function redrawLines() {
     const sw  = cw * state.zoom, sh = ch * state.zoom;
     const dst = rectEdgePoint(tl.x, tl.y, sw, sh, srcX, srcY);
 
-    const dx         = dst.x - srcX;
-    const dy         = srcY - dst.y;
-    const upwardBend = Math.max(Math.abs(dy) * 0.35, 90);
-    const lateral    = dx * 0.35;
-    const cp1x = srcX + lateral * 0.2;
-    const cp1y = srcY - upwardBend;
-    const cp2x = dst.x - lateral * 0.25;
-    const cp2y = dst.y - upwardBend * 0.35;
+    const dx   = dst.x - srcX;
+    const dy   = dst.y - srcY;
+    const dist = Math.hypot(dx, dy);
+
+    // cp1 leaves the source straight upward (lines emanate from top of input bar).
+    const cp1x = srcX;
+    const cp1y = srcY - Math.max(dist * 0.4, 80);
+
+    // cp2 arrives at the destination along the approach direction (src→dst),
+    // so the curve is tangent to the node edge rather than hitting it sideways.
+    const pull = Math.max(dist * 0.4, 80);
+    const nx   = dx / dist, ny = dy / dist;  // unit vector src→dst
+    const cp2x = dst.x - nx * pull;
+    const cp2y = dst.y - ny * pull;
 
     // Power curve: exaggerates the gap between top match and weaker ones.
     const s = Math.pow(score, 1.8);
 
+    const label  = rawScore.toFixed(3);
+    const GAP    = label.length * 6 + 6;  // px gap to cut out of the stroke
+    const d      = `M ${srcX},${srcY} C ${cp1x},${cp1y} ${cp2x},${cp2y} ${dst.x},${dst.y}`;
+
+    // Measure the full path length via a temporary detached element.
+    const probe = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    probe.setAttribute('d', d);
+    lineSvg.appendChild(probe);
+    const totalLen = probe.getTotalLength();
+    const mid      = probe.getPointAtLength(totalLen * 0.5);
+    // Also sample a point just after midpoint to get the tangent angle.
+    const midFwd   = probe.getPointAtLength(totalLen * 0.5 + 1);
+    lineSvg.removeChild(probe);
+
+    let angle      = Math.atan2(midFwd.y - mid.y, midFwd.x - mid.x) * 180 / Math.PI;
+    if (angle > 90 || angle < -90) angle += 180;  // keep text right-side up
+    const half     = totalLen / 2;
+    const dashA    = half - GAP / 2;        // draw up to gap start
+    const dashB    = GAP;                   // transparent gap
+    const dashC    = totalLen - half - GAP / 2; // draw rest
+
+    const pathId = `srch-line-${i}`;
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d',              `M ${srcX},${srcY} C ${cp1x},${cp1y} ${cp2x},${cp2y} ${dst.x},${dst.y}`);
+    path.setAttribute('id',             pathId);
+    path.setAttribute('d',              d);
     path.setAttribute('fill',           'none');
     path.setAttribute('stroke',         'white');
     path.setAttribute('stroke-width',   (s * 3.5).toFixed(2));
     path.setAttribute('stroke-opacity', (s * 0.85).toFixed(2));
     path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('stroke-dasharray', `${dashA} ${dashB} ${dashC}`);
     lineSvg.appendChild(path);
+
+    const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    textEl.setAttribute('fill',         'white');
+    textEl.setAttribute('fill-opacity', (s * 0.75).toFixed(2));
+    textEl.setAttribute('font-size',    '10');
+    textEl.setAttribute('font-family',  'monospace');
+    textEl.setAttribute('text-anchor',  'middle');
+    textEl.setAttribute('dominant-baseline', 'middle');
+    textEl.setAttribute('transform',    `translate(${mid.x},${mid.y}) rotate(${angle})`);
+    textEl.textContent = label;
+    lineSvg.appendChild(textEl);
   });
 }
 
@@ -125,13 +166,20 @@ export function clearLines() {
 }
 
 function animateLines() {
-  [...lineSvg.querySelectorAll('path')].forEach((path, i) => {
+  const paths  = [...lineSvg.querySelectorAll('path')];
+  const labels = [...lineSvg.querySelectorAll('text')];
+  paths.forEach((path, i) => {
     const len           = path.getTotalLength();
     const targetOpacity = path.getAttribute('stroke-opacity');
+    const finalDash     = path.getAttribute('stroke-dasharray'); // gap pattern set by redrawLines
+    const label         = labels[i];
+    const targetLabelOp = label ? parseFloat(label.getAttribute('fill-opacity')) : 0;
 
     path.setAttribute('stroke-opacity', '0');
+    // Override gap dasharray with a full-length draw animation.
     path.style.strokeDasharray  = len;
     path.style.strokeDashoffset = len;
+    if (label) label.setAttribute('fill-opacity', '0');
 
     const delay    = i * 40;
     const duration = 420 + len * 0.3;
@@ -145,8 +193,16 @@ function animateLines() {
       const e = 1 - Math.pow(1 - t, 3); // ease-out cubic
       path.style.strokeDashoffset = len * (1 - e);
       path.setAttribute('stroke-opacity', (parseFloat(targetOpacity) * Math.min(t * 3, 1)).toFixed(3));
-      if (t < 1) requestAnimationFrame(tick);
-      else { path.style.strokeDasharray = ''; path.style.strokeDashoffset = ''; }
+      // Label fades in during the second half of the draw.
+      if (label) label.setAttribute('fill-opacity', (targetLabelOp * Math.max(0, t * 2 - 1)).toFixed(3));
+      if (t < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        // Restore the gap dasharray now that the draw animation is done.
+        path.style.strokeDasharray  = '';
+        path.style.strokeDashoffset = '';
+        if (finalDash) path.setAttribute('stroke-dasharray', finalDash);
+      }
     }
     requestAnimationFrame(tick);
   });
@@ -228,13 +284,21 @@ async function runQuery(t) {
     byProject[projectId] = Math.max(byProject[projectId] || 0, score);
   }
 
-  const max       = Math.max(...Object.values(byProject), 0);
+  const scores    = Object.values(byProject);
+  const max       = Math.max(...scores, 0);
+  // Only include projects that score at least 60% of the best match AND above an
+  // absolute floor — prevents weak semantic neighbours from always showing up.
+  const ABS_FLOOR  = 0.32;
+  const REL_THRESH = 0.60;
+  const eligible   = Object.entries(byProject).filter(([, s]) => s >= ABS_FLOOR && s >= max * REL_THRESH);
+  const eligMin    = eligible.length ? Math.min(...eligible.map(([, s]) => s)) : 0;
+  const spread     = (max - eligMin) || 1;
   state.lineScores = {};
   const noResults  = document.getElementById('no-results');
-  if (max >= 0.25) {
-    for (const [projectId, score] of Object.entries(byProject)) {
-      const norm = score / max;
-      if (norm >= 0.4) state.lineScores[`${projectId}::project`] = norm;
+  if (max >= 0.25 && eligible.length) {
+    for (const [projectId, score] of eligible) {
+      const norm = (score - eligMin) / spread;  // 0 = weakest eligible, 1 = best match
+      state.lineScores[`${projectId}::project`] = { norm, raw: score };
     }
     noResults.classList.remove('visible');
   } else {

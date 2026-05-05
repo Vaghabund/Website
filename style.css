@@ -134,6 +134,7 @@ body.list-view #view-toggle {
   background: rgba(10,10,10,0.92);
   display: flex;
   flex-direction: column;
+  overflow: visible;
 }
 
 /* Top bar — drag handle for individual node */
@@ -172,25 +173,31 @@ body.list-view #view-toggle {
   cursor: pointer;
   transition: border-color 0.2s;
 }
-.node-image .node-content { overflow: hidden; flex: 1; }
+.node-image .node-content { overflow: visible; flex: 1; position: relative; }
 .node-image:hover { border-color: rgba(255,255,255,0.22); }
 .node-project { width: 230px; height: 190px; }
-.image-stack { position: relative; width: 100%; }
-.image-stack::before,
-.image-stack::after {
-  content: '';
-  position: absolute; inset: 0;
-  border: 1px solid rgba(255,255,255,0.07);
-  background: rgba(255,255,255,0.01);
-  pointer-events: none;
-}
-.image-stack::before { transform: translate(4px,4px);  z-index: 0;  }
-.image-stack::after  { transform: translate(8px,8px);  z-index: -1; }
+.image-stack { position: absolute; inset: 0; }
 .image-stack img {
-  position: relative; z-index: 1;
-  display: block; width: 100%;
-  object-fit: cover; object-position: top; opacity: 0.82;
+  display: block; width: 100%; height: 100%;
+  object-fit: cover; object-position: top; opacity: 0.88;
 }
+
+/* Stack layers — ghost nodes behind the main card, offset down-right */
+.node-stack-layer {
+  position: absolute;
+  border: 1px solid rgba(255,255,255,0.09);
+  background: rgba(10,10,10,0.92);
+  overflow: hidden;
+  pointer-events: none;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+}
+.node-stack-layer img {
+  display: block; width: 100%; height: 100%;
+  object-fit: cover; object-position: top;
+}
+.node-stack-layer-1 { transform: translate(8px,  8px);  opacity: 0.55; z-index: -1; }
+.node-stack-layer-2 { transform: translate(16px, 16px); opacity: 0.30; z-index: -2; }
 .image-count {
   position: absolute; bottom: 6px; right: 8px; z-index: 2;
   font-size: 9px; color: rgba(255,255,255,0.35); letter-spacing: 0.05em;
@@ -220,17 +227,39 @@ body.list-view #view-toggle {
 #mlb-close:hover { color: rgba(255,255,255,0.9); }
 
 /* Project lightbox (tabbed project unfold) */
+@keyframes plb-backdrop-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes plb-inner-in {
+  from { opacity: 0; transform: scale(0.96) translateY(10px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+@keyframes plb-img-in {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 #project-lightbox {
   display: none; position: fixed; inset: 0;
   background: rgba(0,0,0,0.94); z-index: 110;
   align-items: center; justify-content: center;
 }
-#project-lightbox.open { display: flex; }
+#project-lightbox.open {
+  display: flex;
+  animation: plb-backdrop-in 0.22s ease both;
+}
+#project-lightbox.open #plb-inner {
+  animation: plb-inner-in 0.28s cubic-bezier(0.22,1,0.36,1) both;
+}
+#project-lightbox.open .plb-gallery img {
+  animation: plb-img-in 0.4s cubic-bezier(0.22,1,0.36,1) both;
+}
 #plb-inner {
-  max-width: 940px; width: 92vw; max-height: 84vh; overflow-y: auto;
+  max-width: 1300px; width: 96vw; max-height: 94vh; overflow-y: auto;
   padding: 28px 30px;
   border: 1px solid rgba(255,255,255,0.1);
   background: rgba(12,12,12,0.99);
+  position: relative;
 }
 #plb-title {
   font-size: 13px;
@@ -269,28 +298,81 @@ body.list-view #view-toggle {
   gap: 20px;
 }
 .plb-col-images {
-  max-height: 66vh;
+  max-height: 82vh;
+  display: flex;
+  flex-direction: column;
+}
+.plb-col-images .plb-left-tabs {
+  flex-shrink: 0;
+}
+.plb-col-images .plb-left-panel,
+.plb-col-images .plb-model-panel {
   overflow-y: auto;
+  flex: 1;
   padding-right: 8px;
 }
+.plb-left-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.plb-left-tab {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.3);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.plb-left-tab.active {
+  color: rgba(255,255,255,0.8);
+  border-color: rgba(255,255,255,0.35);
+}
+.plb-left-tab:hover { color: rgba(255,255,255,0.6); }
+.plb-left-panel { width: 100%; }
+.plb-model-panel {
+  width: 100%;
+  aspect-ratio: 1;
+  background: #080808;
+}
+.plb-model-panel canvas { width: 100% !important; height: 100% !important; display: block; }
 .plb-col-text {
-  max-height: 66vh;
+  max-height: 82vh;
+  display: flex;
+  flex-direction: column;
+}
+.plb-col-text .plb-left-tabs {
+  flex-shrink: 0;
+}
+.plb-col-text .plb-right-panels {
   overflow-y: auto;
+  flex: 1;
   padding-right: 8px;
+  margin-bottom: 0;
+}
+.plb-col-text .plb-text-block,
+.plb-col-text > .plb-detail-row,
+.plb-col-text .plb-detail-row {
+  flex-shrink: 0;
 }
 .plb-gallery {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
+.plb-gallery-single {
+  grid-template-columns: 1fr;
+}
 .plb-gallery img {
   width: 100%;
-  aspect-ratio: 4 / 3;
   display: block;
-  object-fit: contain;
-  background: rgba(255,255,255,0.02);
   cursor: pointer;
 }
+.plb-right-panels { margin-bottom: 20px; }
+.plb-right-pane { }
 .plb-text-block + .plb-text-block { margin-top: 18px; }
 .plb-text-title {
   font-size: 10px;
@@ -300,6 +382,12 @@ body.list-view #view-toggle {
   margin-bottom: 7px;
 }
 .plb-text-body { white-space: pre-wrap; }
+.plb-pdf-frame {
+  width: 100%;
+  height: 70vh;
+  border: none;
+  display: block;
+}
 .plb-detail-row + .plb-detail-row { margin-top: 8px; }
 .plb-detail-label {
   font-size: 9px;
@@ -322,12 +410,20 @@ body.list-view #view-toggle {
   .plb-col-images,
   .plb-col-text {
     max-height: none;
+    display: block;
     overflow: visible;
+    padding-right: 0;
+  }
+  .plb-col-images .plb-left-panel,
+  .plb-col-images .plb-model-panel,
+  .plb-col-text .plb-right-panels {
+    overflow-y: visible;
     padding-right: 0;
   }
 }
 #plb-close {
-  position: fixed; top: 16px; right: 20px;
+  position: sticky; top: 0; float: right;
+  margin: -4px -6px 0 0;
   background: none; border: none; color: rgba(255,255,255,0.4);
   font-size: 20px; cursor: pointer; transition: color 0.15s; z-index: 111;
 }
