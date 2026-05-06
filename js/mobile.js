@@ -6,6 +6,7 @@
 
 import PROJECTS           from '../projects.js';
 import { stripMd, fetchMdBody, fetchDetail } from './utils.js';
+import { buildDesktopProjectLayout, openImgLb } from './lightbox.js';
 
 async function loadMobileItem(p, content) {
   const [mdText, media] = await Promise.all([
@@ -26,6 +27,7 @@ async function loadMobileItem(p, content) {
     const img = document.createElement('img');
     img.src = src; img.alt = imgSrcs.length > 1 ? `${altBase} ${idx + 1}` : altBase;
     img.className = 'm-img'; img.loading = 'lazy';
+    img.addEventListener('click', () => openImgLb(imgSrcs, idx));
     return img;
   }
 
@@ -39,10 +41,7 @@ async function loadMobileItem(p, content) {
     content.appendChild(textEl);
   }
 
-  // Rest of images
-  imgSrcs.slice(1).forEach((src, i) => content.appendChild(makeImg(src, i + 1)));
-
-  // Info rows
+  // Info rows — after text, before remaining images
   const infoRows = [
     detail.year     && ['Year',     detail.year],
     detail.role     && ['Role',     detail.role],
@@ -72,14 +71,16 @@ async function loadMobileItem(p, content) {
     }
     content.appendChild(info);
   }
+
+  // Rest of images
+  imgSrcs.slice(1).forEach((src, i) => content.appendChild(makeImg(src, i + 1)));
 }
 
-export function buildAccordionView(containerId) {
+export function buildAccordionView(containerId, { desktop = false } = {}) {
   const container = document.getElementById(containerId);
   if (!container) return;
   container.innerHTML = '';
 
-  // Show all projects first, then 'about' at the end.
   const items = [
     ...PROJECTS.filter(p => p.id !== 'about'),
     PROJECTS.find(p => p.id === 'about'),
@@ -92,8 +93,8 @@ export function buildAccordionView(containerId) {
     content.id        = `${containerId}-content-${p.id}`;
 
     const header = document.createElement('button');
-    header.type      = 'button';
-    header.className = 'm-header';
+    header.type        = 'button';
+    header.className   = 'm-header';
     header.textContent = p.title;
     header.setAttribute('aria-controls', content.id);
     header.setAttribute('aria-expanded', 'false');
@@ -109,13 +110,14 @@ export function buildAccordionView(containerId) {
         header.setAttribute('aria-expanded', 'true');
         content.classList.add('open');
         const mv = document.getElementById('mobile-view');
-        if (mv) {
-          const itemTop = item.offsetTop;
-          mv.scrollTo({ top: itemTop, behavior: 'smooth' });
-        }
+        if (mv) mv.scrollTo({ top: item.offsetTop, behavior: 'smooth' });
         if (!content.dataset.loaded) {
           content.dataset.loaded = 'true';
-          loadMobileItem(p, content).catch(console.error);
+          if (desktop) {
+            loadDesktopItem(p, content).catch(console.error);
+          } else {
+            loadMobileItem(p, content).catch(console.error);
+          }
         }
       }
     });
@@ -124,6 +126,29 @@ export function buildAccordionView(containerId) {
     item.appendChild(content);
     container.appendChild(item);
   }
+}
+
+async function loadDesktopItem(p, content) {
+  const detail  = await fetchDetail(p.id);
+  const base    = `media/projects/${p.id}/`;
+  const images  = (detail.images || []).map(i => i.startsWith('media/') ? i : base + i);
+  const modelSrc = detail.model
+    ? (/^https?:\/\//i.test(detail.model) || detail.model.startsWith('media/')
+        ? detail.model : `${base}${detail.model}`)
+    : null;
+
+  const textDefs = Array.isArray(detail.texts) && detail.texts.length
+    ? detail.texts : [{ file: 'description.md', label: p.title }];
+
+  const texts = (await Promise.all(textDefs.map(async t => {
+    try {
+      const file = t.file || 'description.md';
+      const raw  = await fetch(`${base}${file}`).then(r => r.ok ? r.text() : null);
+      return raw ? { label: t.label || 'Overview', body: stripMd(raw) } : null;
+    } catch { return null; }
+  }))).filter(Boolean);
+
+  buildDesktopProjectLayout(content, { project: p, detail, texts, images, modelSrc });
 }
 
 export function buildMobileView() {

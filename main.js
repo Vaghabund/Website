@@ -91,8 +91,10 @@ async function initDesktop() {
   ]);
 
   // ── View toggle (canvas ↔ list view) ──────────────────────────────────
-  const viewToggleBtn = document.getElementById('view-toggle');
-  buildAccordionView('desktop-list-view');
+  const viewToggleBtn  = document.getElementById('view-toggle');
+  const siteHeader     = document.getElementById('site-header');
+  const desktopListView = document.getElementById('desktop-list-view');
+  buildAccordionView('desktop-list-view', { desktop: true });
 
   function setDesktopViewMode(listMode) {
     document.body.classList.toggle('list-view', listMode);
@@ -100,7 +102,18 @@ async function initDesktop() {
       viewToggleBtn.setAttribute('aria-pressed', listMode ? 'true' : 'false');
       viewToggleBtn.textContent = listMode ? 'visual archive' : 'list view';
     }
-    if (listMode) clearLines();
+    if (listMode) {
+      clearLines();
+      // Move site header into the scroll container so it scrolls away.
+      if (siteHeader && desktopListView && !desktopListView.contains(siteHeader)) {
+        desktopListView.insertBefore(siteHeader, desktopListView.firstChild);
+      }
+    } else {
+      // Return site header to body (before the list view element).
+      if (siteHeader && desktopListView && desktopListView.contains(siteHeader)) {
+        document.body.insertBefore(siteHeader, desktopListView);
+      }
+    }
   }
 
   if (viewToggleBtn) {
@@ -115,7 +128,7 @@ async function initDesktop() {
     fetchDetail(p.id).then(async detail => {
       const textDefs = Array.isArray(detail.texts) && detail.texts.length
         ? detail.texts
-        : [{ file: 'description.md', label: p.title }];
+        : [{ file: 'description.md', label: 'Overview' }];
 
       const baseDir = `media/projects/${p.id}`;
 
@@ -123,8 +136,8 @@ async function initDesktop() {
         const file = t.file || 'description.md';
         try {
           const txt = await fetch(`${baseDir}/${file}`).then(r => r.ok ? r.text() : null);
-          return { label: t.label || p.title, body: txt ? stripMd(txt) : null };
-        } catch { return { label: t.label || p.title, body: null }; }
+          return { label: t.label || 'Overview', body: txt ? stripMd(txt) : null };
+        } catch { return { label: t.label || 'Overview', body: null }; }
       }));
 
       const cleanTexts     = textBodies.filter(t => t.body);

@@ -37,29 +37,25 @@ const plbTitle  = document.getElementById('plb-title');
 const plbTabs   = document.getElementById('plb-tabs');
 const plbBody   = document.getElementById('plb-body');
 
-export function openProjectLb(projectId) {
-  const data = projectDataById[projectId];
-  if (!data) return;
-  plbTitle.textContent = data.project.title;
-  plbTabs.innerHTML = '';
-  plbBody.innerHTML = '';
+// ── Shared desktop two-column layout builder ──────────────────────────────
+// Used by both the project lightbox and the desktop list-view accordion.
+export function buildDesktopProjectLayout(container, { project, detail, texts, images, modelSrc }) {
+  const hasDetail = !!(detail.year || detail.role || detail.timeline || detail.tools?.length || detail.links?.length);
 
   function appendDetails(target) {
-    if (!data.hasDetail) return;
-    const d = data.detail;
+    if (!hasDetail) return;
     [
-      d.year      && ['Year',      d.year],
-      d.role      && ['Role',      d.role],
-      d.timeline  && ['Timeline',  d.timeline],
-      d.tools?.length && ['Tools', d.tools.join(', ')],
+      detail.year      && ['Year',      detail.year],
+      detail.role      && ['Role',      detail.role],
+      detail.timeline  && ['Timeline',  detail.timeline],
+      detail.tools?.length && ['Tools', detail.tools.join(', ')],
     ].filter(Boolean).forEach(([label, value]) => {
       const row = el('div', 'plb-detail-row');
       row.appendChild(el('div', 'plb-detail-label', label));
       row.appendChild(el('div', 'plb-detail-value', value));
       target.appendChild(row);
     });
-    // Only show non-PDF links here; PDFs are surfaced as tabs.
-    const nonPdfLinks = (d.links || []).filter(l => !l.url?.endsWith('.pdf'));
+    const nonPdfLinks = (detail.links || []).filter(l => !l.url?.endsWith('.pdf'));
     if (nonPdfLinks.length) {
       const row = el('div', 'plb-detail-row');
       row.appendChild(el('div', 'plb-detail-label', 'Links'));
@@ -74,125 +70,117 @@ export function openProjectLb(projectId) {
     }
   }
 
-  // Desktop: two-column split layout.
-  plbTabs.style.display = 'none';
   const split = el('div', 'plb-split');
   const left  = el('div', 'plb-col plb-col-images');
   const right = el('div', 'plb-col plb-col-text');
 
-  // Gallery panel
+  // Left: gallery + optional model tab
   const gallery = el('div', 'plb-left-panel');
-  if (data.images.length) {
-    const g = el('div', `plb-gallery${data.images.length < 3 ? ' plb-gallery-single' : ''}`);
-    data.images.forEach((src, i) => {
+  if (images.length) {
+    const g = el('div', `plb-gallery${images.length < 3 ? ' plb-gallery-single' : ''}`);
+    images.forEach((src, i) => {
       const img = document.createElement('img');
-      img.src = src; img.alt = `${data.project.title} image ${i + 1}`; img.loading = 'lazy';
+      img.src = src; img.alt = `${project.title} image ${i + 1}`; img.loading = 'lazy';
       img.style.animationDelay = `${0.08 + i * 0.06}s`;
-      img.addEventListener('click', e => { e.stopPropagation(); openImgLb(data.images, i); });
+      img.addEventListener('click', e => { e.stopPropagation(); openImgLb(images, i); });
       g.appendChild(img);
     });
     gallery.appendChild(g);
   }
 
-  // Model panel (only built if model exists)
-  const modelPanel = data.modelSrc ? el('div', 'plb-left-panel plb-model-panel') : null;
-
-  // Tab bar (only shown when both panels exist)
-  if (data.modelSrc && data.images.length) {
-    const tabBar = el('div', 'plb-left-tabs');
+  const modelPanel = modelSrc ? el('div', 'plb-left-panel plb-model-panel') : null;
+  if (modelSrc && images.length) {
+    const tabBar   = el('div', 'plb-left-tabs');
     const imgTab   = el('button', 'plb-left-tab active', 'Images');
     const modelTab = el('button', 'plb-left-tab', '3D Model');
-
-    function showGallery() {
-      gallery.style.display = '';
-      modelPanel.style.display = 'none';
+    imgTab.addEventListener('click', () => {
+      gallery.style.display = ''; modelPanel.style.display = 'none';
       disposeInlineModel();
-      imgTab.classList.add('active');
-      modelTab.classList.remove('active');
-    }
-    function showModel() {
-      gallery.style.display = 'none';
-      modelPanel.style.display = '';
-      modelPanel.innerHTML = '';
-      mountInlineModel(data.modelSrc, modelPanel);
-      modelTab.classList.add('active');
-      imgTab.classList.remove('active');
-    }
-
-    imgTab.addEventListener('click', showGallery);
-    modelTab.addEventListener('click', showModel);
-    tabBar.appendChild(imgTab);
-    tabBar.appendChild(modelTab);
+      imgTab.classList.add('active'); modelTab.classList.remove('active');
+    });
+    modelTab.addEventListener('click', () => {
+      gallery.style.display = 'none'; modelPanel.style.display = '';
+      modelPanel.innerHTML = ''; mountInlineModel(modelSrc, modelPanel);
+      modelTab.classList.add('active'); imgTab.classList.remove('active');
+    });
+    tabBar.appendChild(imgTab); tabBar.appendChild(modelTab);
     left.appendChild(tabBar);
     modelPanel.style.display = 'none';
   }
-
   left.appendChild(gallery);
   if (modelPanel) left.appendChild(modelPanel);
 
-  // Right column: tabbed text panels + PDF panels, details always visible below.
-  const pdfLinks = (data.detail.links || []).filter(l => l.url && l.url.endsWith('.pdf'));
-
+  // Right: tabbed text + PDF panels, details pinned below
+  const pdfLinks    = (detail.links || []).filter(l => l.url?.endsWith('.pdf'));
   const rightPanels = [
-    ...data.texts.map(t => ({ label: t.label || 'Text', kind: 'text', data: t })),
+    ...texts.map(t => ({ label: t.label || 'Text', kind: 'text', data: t })),
     ...pdfLinks.map(l => ({ label: l.label || 'PDF', kind: 'pdf', url: l.url })),
   ];
 
   if (rightPanels.length > 1) {
     const tabBar    = el('div', 'plb-left-tabs');
     const panelWrap = el('div', 'plb-right-panels');
-
+    const textPanels = rightPanels.filter(p => p.kind === 'text');
     rightPanels.forEach((panel, i) => {
-      const tab = el('button', `plb-left-tab${i === 0 ? ' active' : ''}`, panel.label);
-      const pane = el('div', 'plb-right-pane');
-      if (i !== 0) pane.style.display = 'none';
-
-      if (panel.kind === 'text') {
-        pane.appendChild(el('div', 'plb-text-body', panel.data.body));
-      } else {
-        const iframe = document.createElement('iframe');
-        iframe.src = panel.url;
-        iframe.className = 'plb-pdf-frame';
-        iframe.setAttribute('loading', 'lazy');
-        pane.appendChild(iframe);
+      if (panel.kind === 'pdf') {
+        const tab = el('button', 'plb-left-tab plb-left-tab-pdf', panel.label);
+        tab.innerHTML = `${panel.label}<svg class="plb-tab-ext" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 8L8 2M8 2H4M8 2V6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+        tab.addEventListener('click', () => window.open(panel.url, '_blank', 'noopener,noreferrer'));
+        tabBar.appendChild(tab);
+        return;
       }
-
+      const textIdx = textPanels.indexOf(panel);
+      const tab  = el('button', `plb-left-tab${textIdx === 0 ? ' active' : ''}`, panel.label);
+      const pane = el('div', 'plb-right-pane');
+      if (textIdx !== 0) pane.style.display = 'none';
+      const body = el('div', 'plb-text-body', panel.data.body);
+      pane.appendChild(body);
+      if (textIdx === 0) appendDetails(pane);
       tab.addEventListener('click', () => {
-        tabBar.querySelectorAll('.plb-left-tab').forEach(t => t.classList.remove('active'));
+        tabBar.querySelectorAll('.plb-left-tab:not(.plb-left-tab-pdf)').forEach(t => t.classList.remove('active'));
         panelWrap.querySelectorAll('.plb-right-pane').forEach(p => p.style.display = 'none');
-        tab.classList.add('active');
-        pane.style.display = '';
+        tab.classList.add('active'); pane.style.display = '';
       });
-
-      tabBar.appendChild(tab);
-      panelWrap.appendChild(pane);
+      tabBar.appendChild(tab); panelWrap.appendChild(pane);
     });
-
-    right.appendChild(tabBar);
-    right.appendChild(panelWrap);
+    right.appendChild(tabBar); right.appendChild(panelWrap);
   } else if (rightPanels.length === 1) {
     const panel = rightPanels[0];
+    const singleWrap = el('div', 'plb-right-panels');
+    const pane = el('div', 'plb-right-pane');
     if (panel.kind === 'text') {
-      const block = el('div', 'plb-text-block');
-      block.appendChild(el('div', 'plb-text-body', panel.data.body));
-      right.appendChild(block);
+      pane.appendChild(el('div', 'plb-text-body', panel.data.body));
+      appendDetails(pane);
     } else {
-      const iframe = document.createElement('iframe');
-      iframe.src = panel.url;
-      iframe.className = 'plb-pdf-frame';
-      right.appendChild(iframe);
+      appendDetails(pane);
     }
+    singleWrap.appendChild(pane);
+    right.appendChild(singleWrap);
+  } else {
+    const detailWrap = el('div', 'plb-right-panels');
+    const pane = el('div', 'plb-right-pane');
+    appendDetails(pane);
+    detailWrap.appendChild(pane);
+    right.appendChild(detailWrap);
   }
 
-  appendDetails(right);
+  split.appendChild(left); split.appendChild(right);
+  container.appendChild(split);
+}
 
-  split.appendChild(left);
-  split.appendChild(right);
-  plbBody.appendChild(split);
+export function openProjectLb(projectId) {
+  const data = projectDataById[projectId];
+  if (!data) return;
+  plbTitle.textContent = data.project.title;
+  plbTabs.innerHTML = '';
+  plbBody.innerHTML = '';
+  plbTabs.style.display = 'none';
+  projectLb.dataset.project = projectId;
+  buildDesktopProjectLayout(plbBody, data);
   projectLb.classList.add('open');
 }
 
-function closePlb() { projectLb.classList.remove('open'); disposeInlineModel(); }
+function closePlb() { projectLb.classList.remove('open'); delete projectLb.dataset.project; disposeInlineModel(); }
 document.getElementById('plb-close').onclick = closePlb;
 projectLb.addEventListener('click', e => { if (e.target === projectLb) closePlb(); });
 

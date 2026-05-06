@@ -9,7 +9,7 @@ import { state, nodePositions, projectDataById, projectNodeById } from './state.
 import { SZ }                                from './layout.js';
 import { el, placeCentered }                 from './dom.js';
 import { redrawLines }                       from './search.js';
-import { openProjectLb }                     from './lightbox.js';
+import { openProjectLb, openImgLb }          from './lightbox.js';
 
 // ── Shared node shell ─────────────────────────────────────────────────────
 // Returns { nodeEl, content } where content is where the node's body goes.

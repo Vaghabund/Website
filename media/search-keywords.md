@@ -1,7 +1,3 @@
-# Search Keywords
-
-Use one keyword or phrase per line. You can keep markdown bullets or plain lines.
-
 - about
 - bio
 - contact
