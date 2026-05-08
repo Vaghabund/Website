@@ -74,8 +74,20 @@ export function buildDesktopProjectLayout(container, { project, detail, texts, i
   const left  = el('div', 'plb-col plb-col-images');
   const right = el('div', 'plb-col plb-col-text');
 
-  // Left: gallery + optional model tab
+  // Left: videos (above gallery) + gallery + optional model tab
+  const videos  = detail._resolvedVideos || [];
   const gallery = el('div', 'plb-left-panel');
+  if (videos.length) {
+    const videoWrap = el('div', 'plb-video-wrap');
+    videos.forEach(src => {
+      const video = document.createElement('video');
+      video.src = src; video.className = 'plb-video';
+      video.autoplay = true; video.loop = true; video.muted = true;
+      video.setAttribute('playsinline', '');
+      videoWrap.appendChild(video);
+    });
+    gallery.appendChild(videoWrap);
+  }
   if (images.length) {
     const g = el('div', `plb-gallery${images.length < 3 ? ' plb-gallery-single' : ''}`);
     images.forEach((src, i) => {

@@ -36,6 +36,12 @@ const PROJECTS = [
     x: 0,
     y: 0,
   },
+  {
+    id: 'greyhound',
+    title: 'Greyhound',
+    x: 0,
+    y: 0,
+  },
 ];
 
 // WIP — not yet published:

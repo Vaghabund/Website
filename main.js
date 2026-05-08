@@ -142,6 +142,8 @@ async function initDesktop() {
 
       const cleanTexts     = textBodies.filter(t => t.body);
       const resolvedImages = (detail.images || []).map(i => i.startsWith('media/') ? i : `${baseDir}/${i}`);
+      const resolvedVideos = (detail.videos || []).map(v => v.startsWith('media/') ? v : `${baseDir}/${v}`);
+      detail._resolvedVideos = resolvedVideos;
       buildProjectNode(p, detail, cleanTexts, resolvedImages);
     }).catch(console.error);
   });

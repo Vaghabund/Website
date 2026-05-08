@@ -51,3 +51,16 @@
 - art direction
 - Berlin
 - UdK Berlin
+
+- greyhound
+- AI video
+- generative video
+- motion research
+- ComfyUI
+- Wan2.2
+- latent diffusion
+- image to video
+- looping animation
+- animal motion
+- cinematic AI
+- movement study

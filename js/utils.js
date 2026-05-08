@@ -59,7 +59,7 @@ export async function fetchKeywords() {
 export function parseFrontmatter(txt) {
   const m = txt.match(/^---\n([\s\S]*?)\n---/);
   if (!m) return {};
-  const LIST_KEYS = new Set(['images', 'tools', 'links', 'texts']);
+  const LIST_KEYS = new Set(['images', 'tools', 'links', 'texts', 'videos']);
   const out = {};
   const lines = m[1].split('\n');
   let key = null, listKey = null, listObj = null;

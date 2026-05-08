@@ -132,6 +132,8 @@ async function loadDesktopItem(p, content) {
   const detail  = await fetchDetail(p.id);
   const base    = `media/projects/${p.id}/`;
   const images  = (detail.images || []).map(i => i.startsWith('media/') ? i : base + i);
+  const videos  = (detail.videos || []).map(v => v.startsWith('media/') ? v : base + v);
+  detail._resolvedVideos = videos;
   const modelSrc = detail.model
     ? (/^https?:\/\//i.test(detail.model) || detail.model.startsWith('media/')
         ? detail.model : `${base}${detail.model}`)

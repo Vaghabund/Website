@@ -326,7 +326,6 @@ export function bindSearchEvents() {
       return;
     }
     if (e.key === 'Enter') {
-      if (acceptSuggestion()) { e.preventDefault(); return; }
       runQuery(inputEl.value);
     }
   });
