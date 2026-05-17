@@ -37,10 +37,59 @@ const plbTitle  = document.getElementById('plb-title');
 const plbTabs   = document.getElementById('plb-tabs');
 const plbBody   = document.getElementById('plb-body');
 
+// ── Reusable video player with sound + play/pause overlays ───────────────
+const VIDEO_ICONS = {
+  muted:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>',
+  unmuted: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>',
+  play:    '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+};
+
+export function createVideoWrap(src, { silent = false, poster = null } = {}) {
+  const wrap = el('div', 'plb-video-wrap');
+  const video = document.createElement('video');
+  video.src = src; video.className = 'plb-video';
+  video.autoplay = true; video.loop = true; video.muted = true;
+  video.setAttribute('playsinline', '');
+  if (poster) video.poster = poster;
+
+  let soundBtn = null;
+  if (!silent) {
+    soundBtn = el('button', 'plb-video-sound');
+    soundBtn.type = 'button';
+    soundBtn.setAttribute('aria-label', 'Toggle sound');
+    soundBtn.innerHTML = VIDEO_ICONS.muted;
+    soundBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      video.muted = !video.muted;
+      soundBtn.innerHTML = video.muted ? VIDEO_ICONS.muted : VIDEO_ICONS.unmuted;
+      if (!video.muted) video.play().catch(() => {});
+    });
+  }
+
+  const playOverlay = el('button', 'plb-video-play');
+  playOverlay.type = 'button';
+  playOverlay.setAttribute('aria-label', 'Play');
+  playOverlay.innerHTML = VIDEO_ICONS.play;
+  playOverlay.style.display = 'none';
+
+  video.addEventListener('click', () => {
+    if (video.paused) video.play().catch(() => {});
+    else video.pause();
+  });
+  video.addEventListener('play',  () => { playOverlay.style.display = 'none'; wrap.classList.remove('paused'); });
+  video.addEventListener('pause', () => { playOverlay.style.display = '';     wrap.classList.add('paused');    });
+  playOverlay.addEventListener('click', e => { e.stopPropagation(); video.play().catch(() => {}); });
+
+  wrap.appendChild(video);
+  if (soundBtn) wrap.appendChild(soundBtn);
+  wrap.appendChild(playOverlay);
+  return wrap;
+}
+
 // ── Shared desktop two-column layout builder ──────────────────────────────
 // Used by both the project lightbox and the desktop list-view accordion.
 export function buildDesktopProjectLayout(container, { project, detail, texts, images, modelSrc }) {
-  const hasDetail = !!(detail.year || detail.role || detail.timeline || detail.tools?.length || detail.links?.length);
+  const hasDetail = !!(detail.year || detail.role || detail.timeline || detail.tools?.length || detail.links?.length || detail.exhibitions?.length);
 
   function appendDetails(target) {
     if (!hasDetail) return;
@@ -55,6 +104,17 @@ export function buildDesktopProjectLayout(container, { project, detail, texts, i
       row.appendChild(el('div', 'plb-detail-value', value));
       target.appendChild(row);
     });
+    if (detail.exhibitions?.length) {
+      const row = el('div', 'plb-detail-row');
+      row.appendChild(el('div', 'plb-detail-label', 'Exhibited at'));
+      const value = el('div', 'plb-detail-value');
+      detail.exhibitions.forEach((ex, i) => {
+        value.appendChild(document.createTextNode(ex));
+        if (i < detail.exhibitions.length - 1) value.appendChild(document.createElement('br'));
+      });
+      row.appendChild(value);
+      target.appendChild(row);
+    }
     const nonPdfLinks = (detail.links || []).filter(l => !l.url?.endsWith('.pdf'));
     if (nonPdfLinks.length) {
       const row = el('div', 'plb-detail-row');
@@ -77,17 +137,7 @@ export function buildDesktopProjectLayout(container, { project, detail, texts, i
   // Left: videos (above gallery) + gallery + optional model tab
   const videos  = detail._resolvedVideos || [];
   const gallery = el('div', 'plb-left-panel');
-  if (videos.length) {
-    const videoWrap = el('div', 'plb-video-wrap');
-    videos.forEach(src => {
-      const video = document.createElement('video');
-      video.src = src; video.className = 'plb-video';
-      video.autoplay = true; video.loop = true; video.muted = true;
-      video.setAttribute('playsinline', '');
-      videoWrap.appendChild(video);
-    });
-    gallery.appendChild(videoWrap);
-  }
+  videos.forEach(src => gallery.appendChild(createVideoWrap(src, { silent: detail.silentVideos, poster: detail._resolvedPoster })));
   if (images.length) {
     const g = el('div', `plb-gallery${images.length < 3 ? ' plb-gallery-single' : ''}`);
     images.forEach((src, i) => {

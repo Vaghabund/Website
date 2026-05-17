@@ -142,9 +142,11 @@ async function initDesktop() {
 
       const cleanTexts     = textBodies.filter(t => t.body);
       const isAbsolute = u => /^https?:\/\//i.test(u) || u.startsWith('media/');
-      const resolvedImages = (detail.images || []).map(i => isAbsolute(i) ? i : `${baseDir}/${i}`);
-      const resolvedVideos = (detail.videos || []).map(v => isAbsolute(v) ? v : `${baseDir}/${v}`);
+      const resolve = u => isAbsolute(u) ? u : `${baseDir}/${u}`;
+      const resolvedImages = (detail.images || []).map(resolve);
+      const resolvedVideos = (detail.videos || []).map(resolve);
       detail._resolvedVideos = resolvedVideos;
+      detail._resolvedPoster = detail.poster ? resolve(detail.poster) : null;
       buildProjectNode(p, detail, cleanTexts, resolvedImages);
     }).catch(console.error);
   });

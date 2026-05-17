@@ -6,22 +6,28 @@
 
 import PROJECTS           from '../projects.js';
 import { stripMd, fetchMdBody, fetchDetail } from './utils.js';
-import { buildDesktopProjectLayout, openImgLb } from './lightbox.js';
+import { buildDesktopProjectLayout, openImgLb, createVideoWrap } from './lightbox.js';
 
 async function loadMobileItem(p, content) {
   const [mdText, media] = await Promise.all([
     fetchMdBody(p.id),
     (async () => {
-      const detail  = await fetchDetail(p.id);
-      const base    = `media/projects/${p.id}/`;
-      const imgSrcs = (detail.images || []).map(i => i.startsWith('media/') ? i : base + i);
-      return { imgSrcs, detail };
+      const detail   = await fetchDetail(p.id);
+      const base     = `media/projects/${p.id}/`;
+      const isAbs    = u => /^https?:\/\//i.test(u) || u.startsWith('media/');
+      const resolve  = u => isAbs(u) ? u : base + u;
+      const imgSrcs  = (detail.images || []).map(resolve);
+      const videoSrcs = (detail.videos || []).map(resolve);
+      const posterSrc = detail.poster ? resolve(detail.poster) : null;
+      return { imgSrcs, videoSrcs, posterSrc, detail };
     })(),
   ]);
 
-  const imgSrcs = media.imgSrcs || [];
-  const detail  = media.detail  || {};
-  const altBase = `${p.title} — image`;
+  const imgSrcs   = media.imgSrcs   || [];
+  const videoSrcs = media.videoSrcs || [];
+  const posterSrc = media.posterSrc || null;
+  const detail    = media.detail    || {};
+  const altBase   = `${p.title} — image`;
 
   function makeImg(src, idx) {
     const img = document.createElement('img');
@@ -31,8 +37,17 @@ async function loadMobileItem(p, content) {
     return img;
   }
 
-  // First image
-  if (imgSrcs[0]) content.appendChild(makeImg(imgSrcs[0], 0));
+  // Videos (above first image)
+  videoSrcs.forEach(src => {
+    const wrap = createVideoWrap(src, { silent: detail.silentVideos, poster: posterSrc });
+    wrap.classList.add('m-video');
+    content.appendChild(wrap);
+  });
+
+  const deferFirstImage = !!detail.firstImageAfterText;
+
+  // First image (unless deferred to after info)
+  if (imgSrcs[0] && !deferFirstImage) content.appendChild(makeImg(imgSrcs[0], 0));
 
   // Text
   if (mdText) {
@@ -71,6 +86,9 @@ async function loadMobileItem(p, content) {
     }
     content.appendChild(info);
   }
+
+  // First image (placed after info when deferred)
+  if (imgSrcs[0] && deferFirstImage) content.appendChild(makeImg(imgSrcs[0], 0));
 
   // Rest of images
   imgSrcs.slice(1).forEach((src, i) => content.appendChild(makeImg(src, i + 1)));
@@ -131,9 +149,12 @@ export function buildAccordionView(containerId, { desktop = false } = {}) {
 async function loadDesktopItem(p, content) {
   const detail  = await fetchDetail(p.id);
   const base    = `media/projects/${p.id}/`;
-  const images  = (detail.images || []).map(i => i.startsWith('media/') ? i : base + i);
-  const videos  = (detail.videos || []).map(v => v.startsWith('media/') ? v : base + v);
+  const isAbsolute = u => /^https?:\/\//i.test(u) || u.startsWith('media/');
+  const resolve = u => isAbsolute(u) ? u : base + u;
+  const images  = (detail.images || []).map(resolve);
+  const videos  = (detail.videos || []).map(resolve);
   detail._resolvedVideos = videos;
+  detail._resolvedPoster = detail.poster ? resolve(detail.poster) : null;
   const modelSrc = detail.model
     ? (/^https?:\/\//i.test(detail.model) || detail.model.startsWith('media/')
         ? detail.model : `${base}${detail.model}`)

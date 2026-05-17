@@ -12,7 +12,15 @@
       "PowerShell(& \"C:\\\\Users\\\\Joel\\\\AppData\\\\Local\\\\Microsoft\\\\WinGet\\\\Packages\\\\Rclone.Rclone_Microsoft.Winget.Source_8wekyb3d8bbwe\\\\rclone-v1.74.1-windows-amd64\\\\rclone.exe\" lsl r2:media-website)",
       "PowerShell($rclone = \"C:\\\\Users\\\\Joel\\\\AppData\\\\Local\\\\Microsoft\\\\WinGet\\\\Packages\\\\Rclone.Rclone_Microsoft.Winget.Source_8wekyb3d8bbwe\\\\rclone-v1.74.1-windows-amd64\\\\rclone.exe\"; & $rclone copy --progress --stats=10s \"media/projects/vision-of-the-hybrid/models/visionofthehybrid-model.glb\" \"r2:media-website/projects/vision-of-the-hybrid/models/\"; if \\($?\\) { & $rclone copy --progress --stats=10s \"media/projects/handheld-pixelsorter/models/harpy-model.gltf\" \"r2:media-website/projects/handheld-pixelsorter/models/\" }; if \\($?\\) { & $rclone copy --progress --stats=10s \"media/projects/vision-of-the-hybrid/videos/final-subbed-2.mp4\" \"r2:media-website/projects/vision-of-the-hybrid/videos/\" }; Write-Output \"ALL DONE\")",
       "PowerShell($bytes = [System.IO.File]::ReadAllBytes\\(\"media\\\\projects\\\\vision-of-the-hybrid\\\\detail.md\"\\); \"First 10 bytes: \" + \\(\\($bytes[0..9] | ForEach-Object { '{0:X2}' -f $_ }\\) -join ' '\\); \"Total bytes: $\\($bytes.Length\\)\"; \"CRLF count: $\\(\\([regex]::Matches\\([System.Text.Encoding]::UTF8.GetString\\($bytes\\), '\\\\r\\\\n'\\)\\).Count\\)\"; \"LF only count: $\\(\\([regex]::Matches\\([System.Text.Encoding]::UTF8.GetString\\($bytes\\), '\\(?<!\\\\r\\)\\\\n'\\)\\).Count\\)\")",
-      "Bash(git rm *)"
+      "Bash(git rm *)",
+      "Bash(node optimize-images.js)",
+      "Bash(node -e ' *)",
+      "Bash(ls media/projects/operational-analysis-of-photogrammetry/images/*.tmp 2>&1; rm -f media/projects/operational-analysis-of-photogrammetry/images/*.tmp; echo \"cleanup done\")",
+      "Bash(rm -f media/projects/operational-analysis-of-photogrammetry/images/*.tmp)",
+      "Bash(powershell -Command 'Get-Process | Where-Object { try { $_.Modules | Where-Object { $_.FileName -like '\\\\''*IMG_8603*'\\\\'' } } catch {} } | Select-Object Name,Id')"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\Joel\\Website\\media\\projects\\operational-analysis-of-photogrammetry\\images"
     ]
   }
 }

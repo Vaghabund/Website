@@ -23,4 +23,7 @@ images:
   - images/ransacfilter.webp
   - images/tower-jpeg.webp
   - images/rundgang-01.webp
+exhibitions:
+  - "Lange Nacht der Wissenschaften, 2025"
+  - "UdK Rundgang, 2025"
 ---

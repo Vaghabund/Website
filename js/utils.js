@@ -60,7 +60,7 @@ export function parseFrontmatter(txt) {
   txt = txt.replace(/\r\n/g, '\n');
   const m = txt.match(/^---\n([\s\S]*?)\n---/);
   if (!m) return {};
-  const LIST_KEYS = new Set(['images', 'tools', 'links', 'texts', 'videos']);
+  const LIST_KEYS = new Set(['images', 'tools', 'links', 'texts', 'videos', 'exhibitions']);
   const out = {};
   const lines = m[1].split('\n');
   let key = null, listKey = null, listObj = null;

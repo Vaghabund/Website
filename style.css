@@ -106,6 +106,16 @@ html, body {
   padding-top: 0;
   padding-bottom: 56px;
 }
+#desktop-list-view .m-item {
+  max-width: 1300px;
+  margin: 0 auto;
+}
+#desktop-list-view .m-content {
+  padding: 0 30px 24px;
+  color: rgba(255,255,255,0.56);
+  font-size: 12px;
+  line-height: 1.75;
+}
 
 body.list-view #desktop-list-view { display: block; }
 
@@ -385,12 +395,67 @@ body.list-view #view-toggle {
   flex-shrink: 0;
 }
 .plb-video-wrap {
+  position: relative;
   margin-bottom: 10px;
 }
 .plb-video {
   width: 100%;
   display: block;
   border-radius: 2px;
+  cursor: pointer;
+}
+.plb-video-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 10, 10, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  color: #fff;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+.plb-video-play:hover {
+  background: rgba(10, 10, 10, 0.82);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+.plb-video-play svg {
+  width: 26px;
+  height: 26px;
+  margin-left: 3px;
+}
+.plb-video-sound {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 10, 10, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  color: #ccc;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.plb-video-sound:hover {
+  background: rgba(10, 10, 10, 0.9);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+.plb-video-sound svg {
+  width: 16px;
+  height: 16px;
 }
 .plb-gallery {
   display: grid;
@@ -677,7 +742,9 @@ body.is-mobile #mobile-view {
   top: 0;
   z-index: 10;
   background: rgba(10,10,10,0.97);
-  border-bottom: 1px solid rgba(255,255,255,0.09);
+}
+.m-item:has(.m-header.open) {
+  border-bottom-color: transparent;
 }
 
 /* Desktop list view: sticky accordion header sits at top of scroll container */
@@ -767,9 +834,13 @@ body.is-mobile #mobile-view {
 .m-img {
   display: block;
   width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: contain;
-  background: rgba(255,255,255,0.02);
+  height: auto;
+}
+.m-video {
+  margin: 0;
+}
+.m-video .plb-video {
+  border-radius: 0;
 }
 
 /* About project: profile image at half size */
