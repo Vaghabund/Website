@@ -57,6 +57,7 @@ export async function fetchKeywords() {
 // Parse YAML-ish frontmatter from detail.md into a plain object.
 // Supports string scalars, indented list items, and nested list-of-objects.
 export function parseFrontmatter(txt) {
+  txt = txt.replace(/\r\n/g, '\n');
   const m = txt.match(/^---\n([\s\S]*?)\n---/);
   if (!m) return {};
   const LIST_KEYS = new Set(['images', 'tools', 'links', 'texts', 'videos']);

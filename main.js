@@ -141,8 +141,9 @@ async function initDesktop() {
       }));
 
       const cleanTexts     = textBodies.filter(t => t.body);
-      const resolvedImages = (detail.images || []).map(i => i.startsWith('media/') ? i : `${baseDir}/${i}`);
-      const resolvedVideos = (detail.videos || []).map(v => v.startsWith('media/') ? v : `${baseDir}/${v}`);
+      const isAbsolute = u => /^https?:\/\//i.test(u) || u.startsWith('media/');
+      const resolvedImages = (detail.images || []).map(i => isAbsolute(i) ? i : `${baseDir}/${i}`);
+      const resolvedVideos = (detail.videos || []).map(v => isAbsolute(v) ? v : `${baseDir}/${v}`);
       detail._resolvedVideos = resolvedVideos;
       buildProjectNode(p, detail, cleanTexts, resolvedImages);
     }).catch(console.error);

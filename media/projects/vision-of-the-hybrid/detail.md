@@ -18,5 +18,7 @@ images:
   - images/poster-vision-text-opt-02.webp
   - images/poster-vision-text-opt-03.webp
   - images/poster-vision-text-opt-04.webp
-model: "models/visionofthehybrid-model.glb"
+videos:
+  - "https://pub-b7e89c5a97934958a56ec645d4696d9d.r2.dev/projects/vision-of-the-hybrid/videos/final-subbed-2.mp4"
+model: "https://pub-b7e89c5a97934958a56ec645d4696d9d.r2.dev/projects/vision-of-the-hybrid/models/visionofthehybrid-model.glb"
 ---
