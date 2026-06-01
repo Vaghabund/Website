@@ -17,7 +17,11 @@
       "Bash(node -e ' *)",
       "Bash(ls media/projects/operational-analysis-of-photogrammetry/images/*.tmp 2>&1; rm -f media/projects/operational-analysis-of-photogrammetry/images/*.tmp; echo \"cleanup done\")",
       "Bash(rm -f media/projects/operational-analysis-of-photogrammetry/images/*.tmp)",
-      "Bash(powershell -Command 'Get-Process | Where-Object { try { $_.Modules | Where-Object { $_.FileName -like '\\\\''*IMG_8603*'\\\\'' } } catch {} } | Select-Object Name,Id')"
+      "Bash(powershell -Command 'Get-Process | Where-Object { try { $_.Modules | Where-Object { $_.FileName -like '\\\\''*IMG_8603*'\\\\'' } } catch {} } | Select-Object Name,Id')",
+      "Bash(gh repo *)",
+      "WebFetch(domain:github.com)",
+      "Bash(dir /b c:\\\\Users\\\\Joel\\\\Documents\\\\GitHub\\\\Website\\\\projects)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('scripts',{}\\), indent=2\\)\\)\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\Joel\\Website\\media\\projects\\operational-analysis-of-photogrammetry\\images"
