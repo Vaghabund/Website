@@ -44,8 +44,8 @@ async function initDesktop() {
   // Resolve overlaps: repeatedly nudge colliding nodes apart until clear.
   // NODE_W/H are canvas-px footprints with a small gutter.
   const { SZ } = await import('./js/layout.js');
-  const NODE_W = SZ.project.w + 20;
-  const NODE_H = SZ.project.h + 20;
+  const NODE_W = SZ.project.w + 60;
+  const NODE_H = SZ.project.h + 60;
   const movable = PROJECTS.filter(p => p.x && p.y);
   for (let iter = 0; iter < 200; iter++) {
     let anyOverlap = false;

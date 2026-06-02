@@ -52,6 +52,23 @@
 - Berlin
 - UdK Berlin
 
+- handheld pixelsorter
+- pixel sorting
+- glitch art
+- glitch photography
+- Raspberry Pi
+- embedded systems
+- touchscreen kiosk
+- Rust
+- egui
+- open hardware
+- portable device
+- algorithmic photography
+- image processing
+- databending
+- generative glitch
+- harpy
+
 - greyhound
 - AI video
 - generative video

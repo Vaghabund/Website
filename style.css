@@ -467,9 +467,25 @@ body.list-view #view-toggle {
 #desktop-list-view-content-greyhound .plb-gallery {
   grid-template-columns: 1fr;
 }
+.plb-gallery-item {
+  overflow: hidden;
+}
+.plb-gallery-item.img-landscape {
+  aspect-ratio: 4 / 3;
+}
+.plb-gallery-item.img-portrait {
+  aspect-ratio: 2 / 3;
+}
+.plb-gallery-item.img-full-row {
+  grid-column: 1 / -1;
+  aspect-ratio: 4 / 3;
+}
 .plb-gallery img {
   width: 100%;
+  height: 100%;
   display: block;
+  object-fit: cover;
+  object-position: center;
   cursor: pointer;
 }
 .plb-right-panels { margin-bottom: 20px; }

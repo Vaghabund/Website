@@ -140,14 +140,64 @@ export function buildDesktopProjectLayout(container, { project, detail, texts, i
   videos.forEach(src => gallery.appendChild(createVideoWrap(src, { silent: detail.silentVideos, poster: detail._resolvedPoster })));
   if (images.length) {
     const g = el('div', `plb-gallery${images.length < 3 ? ' plb-gallery-single' : ''}`);
-    images.forEach((src, i) => {
-      const img = document.createElement('img');
-      img.src = src; img.alt = `${project.title} image ${i + 1}`; img.loading = 'lazy';
-      img.style.animationDelay = `${0.08 + i * 0.06}s`;
-      img.addEventListener('click', e => { e.stopPropagation(); openImgLb(images, i); });
-      g.appendChild(img);
-    });
     gallery.appendChild(g);
+
+    const applyOrientation = project.id !== 'greyhound';
+
+    if (!applyOrientation) {
+      // Greyhound: render in order, no cropping
+      images.forEach((src, i) => {
+        const wrap = el('div', 'plb-gallery-item');
+        const img  = document.createElement('img');
+        img.src = src; img.alt = `${project.title} image ${i + 1}`; img.loading = 'lazy';
+        img.style.animationDelay = `${0.08 + i * 0.06}s`;
+        img.addEventListener('click', e => { e.stopPropagation(); openImgLb(images, i); });
+        wrap.appendChild(img);
+        g.appendChild(wrap);
+      });
+    } else {
+      // Preload all images to get natural dimensions, then sort and render
+      Promise.all(images.map(src => new Promise(resolve => {
+        const probe = new Image();
+        probe.onload  = () => resolve({ src, landscape: probe.naturalWidth >= probe.naturalHeight });
+        probe.onerror = () => resolve({ src, landscape: true });
+        probe.src = src;
+      }))).then(items => {
+        // Pair similar orientations: stable-sort portraits together, landscapes together
+        const portraits  = items.filter(x => !x.landscape);
+        const landscapes = items.filter(x =>  x.landscape);
+        const sorted = [];
+        let pi = 0, li = 0;
+        while (pi < portraits.length || li < landscapes.length) {
+          // Prefer pairing: take two of the same kind if available
+          if (pi + 1 <= portraits.length  && portraits.length - pi >= landscapes.length - li) {
+            sorted.push(portraits[pi++]);
+            if (pi < portraits.length) sorted.push(portraits[pi++]);
+          } else {
+            sorted.push(landscapes[li++]);
+            if (li < landscapes.length) sorted.push(landscapes[li++]);
+          }
+        }
+
+        sorted.forEach(({ src, landscape }, i) => {
+          const originalIdx = images.indexOf(src);
+          const wrap = el('div', 'plb-gallery-item');
+          wrap.classList.add(landscape ? 'img-landscape' : 'img-portrait');
+          // Span full width if last and alone on its row
+          if (i === sorted.length - 1 && sorted.length % 2 !== 0) {
+            wrap.classList.add('img-full-row');
+          }
+          const img = document.createElement('img');
+          img.src = src;
+          img.alt = `${project.title} image ${i + 1}`;
+          img.loading = 'lazy';
+          img.style.animationDelay = `${0.08 + i * 0.06}s`;
+          img.addEventListener('click', e => { e.stopPropagation(); openImgLb(images, originalIdx); });
+          wrap.appendChild(img);
+          g.appendChild(wrap);
+        });
+      });
+    }
   }
 
   const modelPanel = modelSrc ? el('div', 'plb-left-panel plb-model-panel') : null;
