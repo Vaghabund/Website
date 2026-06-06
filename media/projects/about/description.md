@@ -1,9 +1,8 @@
-I'm Joel an art director and spatial thinker working at the intersection of brand experience, computational design, and physical space.
+Joel Tenenberg is an art director and spatial thinker breathing and working in Berlin. His work is a chimera out of computational design, brand experience and physical space, with a core of experimental technology and a lot of RnD.
 
-My background is rooted in architecture, which gave me a precise understanding of how environments shape behavior and perception. Over time, that interest evolved from drawing spaces to designing the systems and experiences that give them meaning. Today I work in brand experience, leading creative direction across the early phases where ideas are still fluid and the most important decisions get made.
+To his background in architecture he owes a deep fluency in system thinking, spatial logic, and the knowledge that environments shape behaviour. But architecture moves slowly, and Joel's curiosity does not. He took what the discipline gave him and moved it into the digital and maker world, where the currents of production flow rapidly betwen prototyping and execution.
 
-I'm drawn to problems that sit between disciplines. The kind where spatial logic, visual language, and interactive systems need to speak the same language. I think parametrically, prototype quickly, and always keep one eye on what actually has to hold up in the real world.
+There are two sides to his work. One is personal and obsessive with small experimental projects that follow curiosity wherever she leads. The other is professional and sharp with close to four years of agency experience as a spatial designer, the last year as art director, building brand experiences that have to hold up under real pressure and real timelines. That combination makes him both inventive and fast.
 
-When I'm not in a brief, I'm usually tinkering computer vision experiments, maker projects, generative tools. Curiosity is my most consistent working method.
-
-If you're working on something that lives at the edge of space, technology, or brand I'd love to hear about it. Let's talk.
+He is drawn to problems that live between disciplines, where spatial logic and visual language need to agree. He thinks parametrically, prototypes quickly, and never loses sight of what actually has to survive contact with the world.
+If you are working on something at the edge of space, technology, or brand, he would love to hear about it.
