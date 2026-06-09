@@ -224,9 +224,11 @@ export function buildDesktopProjectLayout(container, { project, detail, texts, i
 
   // Right: tabbed text + PDF panels, details pinned below
   const pdfLinks    = (detail.links || []).filter(l => l.url?.endsWith('.pdf'));
+  const zipLinks    = (detail.links || []).filter(l => l.url?.endsWith('.zip'));
   const rightPanels = [
     ...texts.map(t => ({ label: t.label || 'Text', kind: 'text', data: t })),
     ...pdfLinks.map(l => ({ label: l.label || 'PDF', kind: 'pdf', url: l.url })),
+    ...zipLinks.map(l => ({ label: l.label || 'Download', kind: 'zip', url: l.url })),
   ];
 
   if (rightPanels.length > 1) {
@@ -237,6 +239,13 @@ export function buildDesktopProjectLayout(container, { project, detail, texts, i
       if (panel.kind === 'pdf') {
         const tab = el('button', 'plb-left-tab plb-left-tab-pdf', panel.label);
         tab.innerHTML = `${panel.label}<svg class="plb-tab-ext" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 8L8 2M8 2H4M8 2V6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+        tab.addEventListener('click', () => window.open(panel.url, '_blank', 'noopener,noreferrer'));
+        tabBar.appendChild(tab);
+        return;
+      }
+      if (panel.kind === 'zip') {
+        const tab = el('button', 'plb-left-tab plb-left-tab-pdf', panel.label);
+        tab.innerHTML = `${panel.label}<svg class="plb-tab-ext" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 2v5M2.5 5.5L5 7.5l2.5-2M2 8.5h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
         tab.addEventListener('click', () => window.open(panel.url, '_blank', 'noopener,noreferrer'));
         tabBar.appendChild(tab);
         return;

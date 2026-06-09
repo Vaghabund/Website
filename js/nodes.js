@@ -114,7 +114,7 @@ export function buildProjectNode(p, detail, texts, images) {
 
   const stack = el('div', 'image-stack');
   const img   = document.createElement('img');
-  img.src = imageSrcs[0] || 'media/logo/joel-logo.webp';
+  img.src = imageSrcs[0] || 'media/icons/LOGO.svg';
   img.alt = `${p.title} preview`; img.loading = 'lazy';
   stack.appendChild(img);
   if (imageSrcs.length > 1) stack.appendChild(el('div', 'image-count', String(imageSrcs.length)));
@@ -127,6 +127,16 @@ export function buildProjectNode(p, detail, texts, images) {
     e.stopPropagation();
     openProjectLb(p.id);
   });
+
+  const hasZip = (detail.links || []).some(l => l.url?.endsWith('.zip'));
+  if (hasZip) {
+    const badge = el('div', 'node-download-badge');
+    const badgeImg = document.createElement('img');
+    badgeImg.src = 'media/icons/Goodie.svg';
+    badgeImg.alt = 'Download available';
+    badge.appendChild(badgeImg);
+    nodeEl.appendChild(badge);
+  }
 
   placeCentered(nodeEl, p.x, p.y, W, H);
   nodePositions[`${p.id}::project`] = { el: nodeEl, showImage, imgIndex: 0 };

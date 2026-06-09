@@ -69,6 +69,19 @@
 - generative glitch
 - harpy
 
+- C4D2GS
+- Cinema 4D plugin
+- Gaussian Splatting
+- COLMAP
+- free download
+- free plugin
+- download
+- Gumroad
+- NeRF
+- nerfstudio
+- synthetic data
+- 3D pipeline
+
 - greyhound
 - AI video
 - generative video

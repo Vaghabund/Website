@@ -94,26 +94,36 @@ async function loadMobileItem(p, content) {
   imgSrcs.slice(1).forEach((src, i) => content.appendChild(makeImg(src, i + 1)));
 }
 
-export function buildAccordionView(containerId, { desktop = false } = {}) {
+export async function buildAccordionView(containerId, { desktop = false } = {}) {
   const container = document.getElementById(containerId);
   if (!container) return;
   container.innerHTML = '';
 
-  const items = [
-    ...PROJECTS.filter(p => p.id !== 'about'),
-    PROJECTS.find(p => p.id === 'about'),
-  ].filter(Boolean);
+  const nonAbout = PROJECTS.filter(p => p.id !== 'about');
+  const about    = PROJECTS.find(p => p.id === 'about');
 
-  for (const p of items) {
+  const withYears = await Promise.all(nonAbout.map(async p => ({ p, year: (await fetchDetail(p.id)).year || '' })));
+  withYears.sort((a, b) => b.year.localeCompare(a.year));
+
+  const items = [...withYears, about ? { p: about, year: '' } : null].filter(Boolean);
+
+  for (const { p, year } of items) {
     const item    = document.createElement('div'); item.className = 'm-item';
     const content = document.createElement('div');
     content.className = 'm-content';
     content.id        = `${containerId}-content-${p.id}`;
 
     const header = document.createElement('button');
-    header.type        = 'button';
-    header.className   = 'm-header';
-    header.textContent = p.title;
+    header.type      = 'button';
+    header.className = 'm-header';
+    const titleSpan  = document.createElement('span');
+    titleSpan.className   = 'm-header-title';
+    titleSpan.textContent = p.title;
+    const yearSpan = document.createElement('span');
+    yearSpan.className   = 'm-header-year';
+    yearSpan.textContent = year;
+    header.appendChild(titleSpan);
+    header.appendChild(yearSpan);
     header.setAttribute('aria-controls', content.id);
     header.setAttribute('aria-expanded', 'false');
 

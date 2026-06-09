@@ -48,6 +48,12 @@ const PROJECTS = [
     x: 0,
     y: 0,
   },
+  {
+    id: 'c4d2gs',
+    title: 'C4D2GS',
+    x: 0,
+    y: 0,
+  },
 ];
 
 export default PROJECTS;
