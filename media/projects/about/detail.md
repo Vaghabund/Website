@@ -1,7 +1,7 @@
 ---
 role: "Art Director"
 images:
-  - images/profile-small.webp
+  - images/profile.webp
 links:
   - label: "GitHub"
     url: "https://github.com/Vaghabund"
