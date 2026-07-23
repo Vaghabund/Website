@@ -113,7 +113,7 @@ function deleteStale(dir, slug) {
 // covering both the renamed sources and plain extension mismatches left over
 // from hand-written frontmatter.
 function updateDetailRenames(detailPath, renameMap) {
-  if (!existsSync(detailPath) || !renameMap.size) return;
+  if (!existsSync(detailPath)) return;
   let txt = readFileSync(detailPath, 'utf8');
   const before = txt;
   for (const [oldName, newPath] of renameMap) {
