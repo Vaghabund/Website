@@ -10,6 +10,7 @@ import { SZ }                                from './layout.js';
 import { el, placeCentered }                 from './dom.js';
 import { redrawLines }                       from './search.js';
 import { openProjectLb, openImgLb }          from './lightbox.js';
+import { toThumb }                           from './utils.js';
 
 // ── Shared node shell ─────────────────────────────────────────────────────
 // Returns { nodeEl, content } where content is where the node's body goes.
@@ -105,7 +106,7 @@ export function buildProjectNode(p, detail, texts, images) {
   for (let s = stackCount; s >= 1; s--) {
     const layer = el('div', `node-stack-layer node-stack-layer-${s}`);
     const layerImg = document.createElement('img');
-    layerImg.src     = imageSrcs[s];
+    layerImg.src     = toThumb(imageSrcs[s]);
     layerImg.alt     = '';
     layerImg.loading = 'lazy';
     layer.appendChild(layerImg);
@@ -114,13 +115,16 @@ export function buildProjectNode(p, detail, texts, images) {
 
   const stack = el('div', 'image-stack');
   const img   = document.createElement('img');
-  img.src = imageSrcs[0] || 'media/icons/LOGO.svg';
+  img.src = imageSrcs[0] ? toThumb(imageSrcs[0]) : 'media/icons/LOGO.svg';
   img.alt = `${p.title} preview`; img.loading = 'lazy';
   stack.appendChild(img);
   if (imageSrcs.length > 1) stack.appendChild(el('div', 'image-count', String(imageSrcs.length)));
   content.appendChild(stack);
 
-  function showImage(idx) { img.src = imageSrcs[Math.max(0, Math.min(idx, imageSrcs.length - 1))]; }
+  function showImage(idx) {
+    const src = imageSrcs[Math.max(0, Math.min(idx, imageSrcs.length - 1))];
+    img.src = toThumb(src);
+  }
 
   nodeEl.addEventListener('click', e => {
     if (e.target.closest('.node-bar')) return;

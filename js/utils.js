@@ -108,6 +108,12 @@ export function parseFrontmatter(txt) {
   return out;
 }
 
+// Canvas node cards render at ~230px — swap in the pre-generated -small.webp
+// variant so tiny thumbnails don't pull the full 1600px asset.
+export function toThumb(src) {
+  return src.replace(/\.webp$/i, '-small.webp');
+}
+
 export async function fetchDetail(id) {
   try {
     const txt = await fetch(`media/projects/${id}/detail.md`).then(r => r.ok ? r.text() : null);

@@ -4,9 +4,11 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "embeddings": "node generate-embeddings.js"
+    "embeddings": "node generate-embeddings.js",
+    "optimize-images": "node optimize-images.js"
   },
   "devDependencies": {
-    "@xenova/transformers": "^2.17.2"
+    "@xenova/transformers": "^2.17.2",
+    "sharp": "^0.33.5"
   }
 }

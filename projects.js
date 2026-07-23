@@ -1,14 +1,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Project registry
 //
-// HOW TO ADD A PROJECT:
-//   1. Create media/projects/<id>/
-//   2. Add these files:
-//        embedding.md    — curated search text (200–400 words, plain prose)
-//        description.md  — text node prose (displayed in lightbox)
-//        detail.md       — frontmatter: year, role, timeline, tools, links, images
-//   3. Run: node generate-embeddings.js
-//   4. Add an entry below (just id, title, x, y)
+// HOW TO ADD A PROJECT: see CLAUDE.md ("Adding a new project") for the full
+// recipe — folder layout, detail.md fields, image pipeline. Short version:
+//   1. Create media/projects/<id>/ with description.md, embedding.md, detail.md
+//   2. Drop raw images in images/, run: npm run optimize-images -- <id>
+//   3. Add an entry below (just id, title, x, y)
+//   4. Run: npm run embeddings
 //   5. Commit
 //
 // FIELDS:

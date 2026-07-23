@@ -16,13 +16,13 @@ texts:
   - file: description.md
     label: "Overview"
 images:
-  - images/Banner.webp
-  - images/Comparisson.webp
-  - images/Screenshot 2026-03-24 110813 1.webp
-  - images/Screenshot 2026-03-24 110836 1.webp
-  - images/Screenshot 2026-03-24 111035 1.webp
-  - images/Screenshot 2026-03-24 111055 1.webp
-  - images/Screenshot 2026-03-24 111205 1.webp
-  - images/Screenshot 2026-03-24 141340 1.webp
-  - images/Screenshot 2026-03-24 141352 1.webp
+  - images/banner.webp
+  - images/comparison.webp
+  - images/scene-setup.webp
+  - images/extensions-menu.webp
+  - images/plugin-panel.webp
+  - images/export-complete.webp
+  - images/render-preview.webp
+  - images/output-folder.webp
+  - images/output-images.webp
 ---

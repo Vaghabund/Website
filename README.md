@@ -32,7 +32,7 @@ js/
 media/
   projects/{id}/    One folder per project, including about/
   search-keywords.md  Autocomplete keyword list
-  logo/             Site header SVG
+  icons/            Site header SVG and other UI icons
 ```
 
 ---
