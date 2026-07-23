@@ -1,7 +1,7 @@
 ---
 year: "2026"
-role: "Solo Developer"
-timeline: "~5 weeks, across two engines"
+role: "Research & Development"
+timeline: "1 week"
 tools:
   - Python
   - Cinema 4D SDK
