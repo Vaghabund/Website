@@ -250,7 +250,7 @@ export async function init() {
       nodeEmbeddings[key] = new Float32Array(vec);
   }
 
-  embedder = await pipelineFn('feature-extraction', 'Xenova/bge-base-en-v1.5', { dtype: 'q8' });
+  embedder = await pipelineFn('feature-extraction', 'Xenova/bge-small-en-v1.5', { dtype: 'q8' });
   console.log(`Embeddings ready: ${Object.keys(nodeEmbeddings).length} nodes`);
 
   loadDot.style.display = 'none';
@@ -267,11 +267,16 @@ function cosSim(a, b) {
   return d / (Math.sqrt(na) * Math.sqrt(nb));
 }
 
+// bge-base-en-v1.5 is asymmetric: queries need this instruction prefix, passages
+// (the project embeddings) do not. Without it, query/passage vectors land in
+// different regions and cosine scores collapse into a flat ~0.5 band.
+const QUERY_PREFIX = 'Represent this sentence for searching relevant passages: ';
+
 async function runQuery(t) {
   if (!t.trim()) { clearLines(); return; }
   state.searchActive = true;
   syncSendButtonState();
-  const out = await embedder(t, { pooling: 'mean', normalize: true });
+  const out = await embedder(QUERY_PREFIX + t, { pooling: 'mean', normalize: true });
   const q   = extractVec(out);
   const raw = {};
   for (const [nodeKey, vec] of Object.entries(nodeEmbeddings))
