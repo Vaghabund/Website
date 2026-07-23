@@ -23,7 +23,16 @@
       "Bash(dir /b c:\\\\Users\\\\Joel\\\\Documents\\\\GitHub\\\\Website\\\\projects)",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('scripts',{}\\), indent=2\\)\\)\")",
       "Bash(gh release *)",
-      "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\Joel\\\\Documents\\\\GitHub\\\\Website\\\\media\\\\projects\\\\c4d2gs\\\\images\")"
+      "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\Joel\\\\Documents\\\\GitHub\\\\Website\\\\media\\\\projects\\\\c4d2gs\\\\images\")",
+      "Bash(node -e \"const e=require\\('./embeddings.json'\\); console.log\\(Object.keys\\(e\\).length,'vectors, dim',e[Object.keys\\(e\\)[0]].length\\)\")",
+      "Bash(node --input-type=module -e \"import fs from 'fs'; const e=JSON.parse\\(fs.readFileSync\\('embeddings.json'\\)\\); console.log\\(Object.keys\\(e\\).length,'vectors, dim',e[Object.keys\\(e\\)[0]].length\\)\")",
+      "Bash(ls -la node_modules/.bin/ 2>/dev/null | head; echo \"===search paths===\"; find /opt/homebrew /usr/local /Users/joeltenenberg/.nvm /Users/joeltenenberg/.volta /Users/joeltenenberg/.local /Users/joeltenenberg/Library -maxdepth 4 -name node -type f 2>/dev/null | head)",
+      "Read(//opt/homebrew/**)",
+      "Read(//Users/joeltenenberg/.nvm/versions/**)",
+      "Read(//opt/homebrew/bin/**)",
+      "Read(//Users/joeltenenberg/Library/Application Support/fnm/**)",
+      "Read(//Users/joeltenenberg/.volta/bin/**)",
+      "Bash(zsh -lic 'which node')"
     ],
     "additionalDirectories": [
       "c:\\Users\\Joel\\Website\\media\\projects\\operational-analysis-of-photogrammetry\\images"
