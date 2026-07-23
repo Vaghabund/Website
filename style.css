@@ -384,7 +384,6 @@ body.list-view #view-toggle {
 .plb-model-panel {
   width: 100%;
   aspect-ratio: 1;
-  background: #080808;
 }
 .plb-model-panel canvas { width: 100% !important; height: 100% !important; display: block; }
 .plb-col-text {
