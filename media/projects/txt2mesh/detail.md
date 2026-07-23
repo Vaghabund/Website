@@ -13,17 +13,13 @@ tools:
 texts:
   - file: description.md
     label: "Overview"
-model: "models/ceramic-mug.glb"
+model: "models/banana.glb"
 images:
   - images/dialog-batch-render.webp
   - images/dialog-two-button-ui.webp
   - images/render-queue-live-status.webp
-  - images/viewport-material-variety.webp
-  - images/output-ceramic-mug.webp
-  - images/output-totoro.webp
-  - images/output-sword.webp
-  - images/output-office-chair.webp
-  - images/output-table.webp
-  - images/output-glass-bowl.webp
-  - images/output-carrot-geometry.webp
+  - images/banana.webp
+  - images/prompt-enhancer.webp
+  - images/txt2mesh-workflow.webp
+  - images/unreal-screenshot.webp
 ---
