@@ -52,6 +52,12 @@ const PROJECTS = [
     x: 0,
     y: 0,
   },
+  {
+    id: 'txt2mesh',
+    title: 'Txt2Mesh',
+    x: 0,
+    y: 0,
+  },
 ];
 
 export default PROJECTS;
