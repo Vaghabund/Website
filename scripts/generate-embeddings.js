@@ -17,13 +17,14 @@ import { pipeline, env } from '@xenova/transformers';
 import { writeFileSync, readFileSync, existsSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import PROJECTS from './projects.js';
+import PROJECTS from '../projects.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-env.cacheDir          = resolve(__dirname, '.model-cache');
+const ROOT = resolve(__dirname, '..');
+env.cacheDir          = resolve(ROOT, '.model-cache');
 env.allowRemoteModels = true;
 
-const EMBEDDINGS_PATH = resolve(__dirname, 'embeddings.json');
+const EMBEDDINGS_PATH = resolve(ROOT, 'embeddings.json');
 
 function readFile(path) {
   return existsSync(path) ? readFileSync(path, 'utf8').trim() : null;
@@ -95,7 +96,7 @@ async function embed(text) {
 const output = {};
 
 for (const project of PROJECTS) {
-  const base = resolve(__dirname, `media/projects/${project.id}`);
+  const base = resolve(ROOT, `media/projects/${project.id}`);
 
   const chunks = [];
   const curated = readFile(resolve(base, 'embedding.md'));

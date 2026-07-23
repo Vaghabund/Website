@@ -4,8 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "embeddings": "node generate-embeddings.js",
-    "optimize-images": "node optimize-images.js"
+    "embeddings": "node scripts/generate-embeddings.js",
+    "optimize-images": "node scripts/optimize-images.js"
   },
   "devDependencies": {
     "@xenova/transformers": "^2.17.2",

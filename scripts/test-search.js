@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Quick test: run queries against embeddings.json and print ranked scores.
-// Usage: node test-search.js
+// Usage: node scripts/test-search.js
 
 import { pipeline, env } from '@xenova/transformers';
 import { readFileSync }  from 'fs';
@@ -8,10 +8,11 @@ import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-env.cacheDir          = resolve(__dirname, '.model-cache');
+const ROOT = resolve(__dirname, '..');
+env.cacheDir          = resolve(ROOT, '.model-cache');
 env.allowRemoteModels = true;
 
-const embeddings = JSON.parse(readFileSync(resolve(__dirname, 'embeddings.json'), 'utf8'));
+const embeddings = JSON.parse(readFileSync(resolve(ROOT, 'embeddings.json'), 'utf8'));
 
 function cosSim(a, b) {
   let d = 0, na = 0, nb = 0;

@@ -13,8 +13,8 @@
 //   4. Deletes the raw source and any stale -thumb variants from the old pipeline
 //
 // Usage:
-//   node optimize-images.js            process every project
-//   node optimize-images.js c4d2gs     process a single project
+//   npm run optimize-images                process every project
+//   npm run optimize-images -- c4d2gs      process a single project
 
 import sharp from 'sharp';
 import { readdirSync, readFileSync, writeFileSync, unlinkSync, existsSync } from 'fs';
@@ -185,7 +185,7 @@ async function processDir(imgDir, detailPath, projectId) {
   appendNewImages(detailPath, newSlugs);
 }
 
-const projectsDir = resolve(__dirname, 'media/projects');
+const projectsDir = resolve(__dirname, '..', 'media/projects');
 const filterId = process.argv[2];
 
 for (const id of readdirSync(projectsDir)) {

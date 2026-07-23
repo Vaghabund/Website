@@ -79,5 +79,5 @@ files that actually exist.
 ### Naming convention
 
 Lowercase, hyphenated, no spaces, no capitals — for the project slug and for
-every image filename. `optimize-images.js` enforces this for images
+every image filename. `scripts/optimize-images.js` enforces this for images
 automatically; keep it in mind if you ever add files by hand.
