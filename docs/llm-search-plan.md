@@ -142,26 +142,50 @@ This is where the behaviour we actually want gets encoded. Rough shape:
 Tuning this prompt (and the per-project `category` field) is the main ongoing
 knob — replacing the old job of tuning embedding text + thresholds.
 
-## Defaults chosen (flip either freely)
+## Decisions (2026-07-23)
 
-- **LLM = Cloudflare Workers AI** (e.g. Llama 3.3 via `env.AI.run`). No extra API
-  key, stays in the existing Cloudflare account, generous free tier, more than
-  smart enough to rank 7 items + write short labels.
-  - _Alternative:_ **Claude Haiku** (Anthropic API) for max polish — ~10 isolated
-    lines of change, needs an `ANTHROPIC_API_KEY` Worker secret. Verify current
-    pricing; either way it is fractions of a cent per query at this scale.
+- **LLM = Cloudflare Workers AI**, run **fail-closed on the free tier** — chosen
+  specifically to kill the runaway-cost fear. Past the daily free allocation it
+  returns errors instead of billing, so it *cannot* run up a surprise bill. Model
+  e.g. Llama 3.3 via `env.AI.run`. No extra API key, stays in the existing
+  Cloudflare account, plenty smart for ranking 7 items + short labels.
+  - _Alternative if hints ever feel flat:_ **Claude Haiku** (Anthropic API) for
+    sharper reasoning/JSON — ~10 isolated lines of change, needs an
+    `ANTHROPIC_API_KEY` secret, and should be paired with a monthly spend cap on
+    the key (e.g. $5) so it also fails closed. ~a fraction of a cent per query.
 - **Worker URL = free `*.workers.dev`** to start (zero DNS). Can move to
   `search.tenenberg.net` later.
+- **In-browser LLM was considered and set aside** — the only zero-endpoint,
+  zero-cost option, but the ~0.5–1 GB first load + WebGPU-only requirement aren't
+  worth it once the endpoint is properly capped (see below).
 
-## Cost, latency, abuse
+## Abuse & cost controls (fail-closed by design)
 
-- **Latency**: an LLM call is ~0.5–2s vs instant cosine. Show a loading state on
-  submit, draw lines on response. Cache identical queries at the edge.
-- **Cost**: negligible at portfolio traffic; Workers AI free tier likely covers
-  it. Confirm before relying on it.
-- **Abuse**: a public LLM endpoint can be hammered. v1 protections: cap query
-  length, CORS-lock to the site origin, edge-cache repeats, and optionally
-  Cloudflare rate-limiting rules or Turnstile if it ever matters.
+The whole point: someone spamming the endpoint should top out at *mildly
+annoying*, never *expensive*. Layered so the flood is stopped for free long
+before it reaches the model, and the absolute ceiling is a number we choose.
+
+1. **Fail-closed ceiling.** Workers AI free tier returns errors past its daily
+   allocation instead of billing — no paid overage opted in. Max spend ≈ $0.
+   (If we ever switch to Haiku: a dedicated key in a workspace with a monthly
+   spend cap, e.g. $5, so it also just stops.)
+2. **Edge rate limiting.** A Cloudflare rate-limit rule / Workers rate-limit
+   binding caps requests per IP per minute at the edge — blocked requests never
+   run the Worker or the LLM, so they cost nothing.
+3. **Cache identical queries** (normalised: lowercased/trimmed) for ~24h via the
+   Cache API / KV. Repeat-spam of the same query hits cache after the first call.
+4. **Global daily counter** (KV or Durable Object): cap total LLM calls/day
+   (e.g. 500–1,000). A hard ceiling even against a distributed botnet — worst
+   case ≈ $1–2/day *if* every other layer failed and we were on a paid plan.
+5. **Input hardening / no free-LLM abuse.** Cap query length (~200 chars). The
+   user's text is inserted as *data to classify*, never as instructions, and the
+   Worker only returns JSON validated against the 7 known project ids — anything
+   else is discarded, so it is useless as a stolen general-purpose LLM.
+6. **In reserve:** Cloudflare Turnstile (invisible for most visitors) if it ever
+   actually gets targeted. Not needed at launch.
+
+**Latency note:** an LLM call is ~0.5–2s vs instant cosine — show a loading
+state on submit, draw the lines on response.
 
 ## What the LLM route lets us delete
 
