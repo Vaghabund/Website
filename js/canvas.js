@@ -52,11 +52,66 @@ function doZoom(delta, cx, cy) {
   }
 }
 
+// Trackpad drivers often report two-finger movement as single-axis wheel
+// deltas that flip between vertical-only and horizontal-only several times a
+// second (even during a smooth circular motion). Applying each event's delta
+// directly makes panning feel like it snaps between up/down and left/right.
+// Instead we blend incoming deltas into a decaying velocity, which smooths
+// that axis-flicker into continuous diagonal motion.
+let panVX = 0, panVY = 0, panLoopActive = false;
+
+// Windows' touchpad driver locks two-finger scrolling to whichever axis is
+// dominant at the start of a gesture, and only lets the other axis through
+// once you push hard enough to "break" the lock (an OS-level behaviour we
+// can't disable). These EMAs track how dominant each axis has recently been
+// so we can amplify whatever small amount of cross-axis movement does leak
+// through, making direction changes register sooner instead of needing an
+// exaggerated swing.
+let axisMagX = 0, axisMagY = 0, lastWheelTime = 0;
+
+function panLoop() {
+  state.pan.x += panVX;
+  state.pan.y += panVY;
+  applyTransform();
+  panVX *= 0.72;
+  panVY *= 0.72;
+  if (Math.abs(panVX) > 0.05 || Math.abs(panVY) > 0.05) {
+    requestAnimationFrame(panLoop);
+  } else {
+    panVX = panVY = 0;
+    panLoopActive = false;
+  }
+}
+
 document.addEventListener('wheel', e => {
   if (document.body.classList.contains('list-view')) return;
   if (e.target.closest('#plb-inner,#project-lightbox,#model-lightbox,#impressum-lightbox')) return;
   e.preventDefault();
-  doZoom(e.deltaY, e.clientX, e.clientY);
+  // Trackpad pinch-to-zoom is reported by the browser as a wheel event with
+  // ctrlKey set; plain two-finger scrolling is not. Only pinch should zoom —
+  // two-finger panning should just pan the canvas.
+  if (e.ctrlKey) {
+    doZoom(e.deltaY, e.clientX, e.clientY);
+    return;
+  }
+
+  const now = performance.now();
+  if (now - lastWheelTime > 150) axisMagX = axisMagY = 0; // fingers lifted — new gesture
+  lastWheelTime = now;
+
+  const adx = Math.abs(e.deltaX), ady = Math.abs(e.deltaY);
+  const total = axisMagX + axisMagY || 1;
+  const boostX = 1 + Math.min(1.5, (axisMagY / total) * 2.5);
+  const boostY = 1 + Math.min(1.5, (axisMagX / total) * 2.5);
+  axisMagX = axisMagX * 0.85 + adx * 0.15;
+  axisMagY = axisMagY * 0.85 + ady * 0.15;
+
+  panVX = panVX * 0.45 - e.deltaX * 0.55 * boostX;
+  panVY = panVY * 0.45 - e.deltaY * 0.55 * boostY;
+  if (!panLoopActive) {
+    panLoopActive = true;
+    requestAnimationFrame(panLoop);
+  }
 }, { passive: false });
 
 // ── Pinch-to-zoom (touch) ─────────────────────────────────────────────────

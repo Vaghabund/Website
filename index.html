@@ -20,11 +20,19 @@
 </head>
 <body>
 
-<header id="site-header" aria-label="Site introduction">
-  <img id="site-header-logo" src="media/icons/Name_bold.svg" alt="Joel Tenenberg">
-  <p id="site-header-intro">between creative technology and spatial design</p>
-</header>
+<div id="intro-overlay">
+  <canvas id="intro-canvas" width="420" height="420"></canvas>
+</div>
+
+<div id="top-left-stack">
+  <header id="site-header" aria-label="Site introduction">
+    <img id="site-header-logo" src="media/icons/Name_bold.svg" alt="Joel Tenenberg">
+    <p id="site-header-intro">between creative technology and spatial design</p>
+  </header>
+</div>
 <div id="mobile-sticky-header"></div>
+
+<div id="landing-view"></div>
 
 <div id="canvas-root">
   <svg id="dot-grid" style="position:absolute;top:0;left:0;width:4000px;height:3000px;pointer-events:none;">
@@ -75,7 +83,9 @@
   </div>
 </div>
 
-<button id="view-toggle" type="button" aria-pressed="false">list view</button>
+<div id="top-right-stack">
+  <button id="view-toggle" type="button" aria-pressed="false">list view</button>
+</div>
 <div id="desktop-list-view"></div>
 
 <div id="mobile-view"></div>

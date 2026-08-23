@@ -1,11 +1,11 @@
 // ─────────────────────────────────────────────
-// Semantic search: embeddings, search lines,
-// keyword suggestions, and input event wiring.
+// Search: search-line visualisation, keyword
+// suggestions, and input event wiring.
 // ─────────────────────────────────────────────
 
 import {
   state, lineSvg, inputWrap, inputEl, suggestionEl, sendBtn, loadDot,
-  nodePositions, projectNodeById,
+  nodePositions,
 } from './state.js';
 import { fetchKeywords } from './utils.js';
 import { cacheDims }     from './dom.js';
@@ -208,108 +208,25 @@ function animateLines() {
   });
 }
 
-// ── Embeddings / semantic search ──────────────────────────────────────────
-let pipelineFn = null;
-let embedder   = null;
-const nodeEmbeddings = {};
-
-async function ensureTransformers() {
-  if (pipelineFn) return true;
-  try {
-    const { pipeline, env } = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.2/dist/transformers.min.js');
-    env.allowLocalModels = false;
-    env.useBrowserCache  = true;
-    pipelineFn = pipeline;
-    return true;
-  } catch (err) {
-    console.error('Failed to load transformers runtime', err);
-    return false;
-  }
-}
-
-// Extract a flat Float32Array from whatever the pipeline returns.
-function extractVec(out) {
-  const raw = out?.data ?? out;
-  return raw instanceof Float32Array ? raw : new Float32Array(raw);
-}
-
+// ── Search ──────────────────────────────────────────────────────────────
+// The previous semantic-search backend (client-side transformers.js +
+// embeddings model) has been removed and is being replaced. This shell keeps
+// the input/button wiring and the line-drawing visualisation intact for
+// whatever scoring logic replaces it — runQuery() just needs to populate
+// state.lineScores and call redrawLines()/animateLines().
 export async function init() {
-  const runtimeReady = await ensureTransformers();
-  state.keywordList  = await fetchKeywords();
-  if (!runtimeReady) {
-    loadDot.style.display   = 'none';
-    inputEl.placeholder     = 'search unavailable';
-    return;
-  }
-  loadDot.style.display = 'block';
-  inputEl.placeholder   = 'archive agent loading…';
-
-  const stored = await fetch('embeddings.json').then(r => r.json()).catch(() => null);
-  if (stored) {
-    for (const [key, vec] of Object.entries(stored))
-      nodeEmbeddings[key] = new Float32Array(vec);
-  }
-
-  embedder = await pipelineFn('feature-extraction', 'Xenova/bge-small-en-v1.5', { dtype: 'q8' });
-  console.log(`Embeddings ready: ${Object.keys(nodeEmbeddings).length} nodes`);
-
+  state.keywordList = await fetchKeywords();
   loadDot.style.display = 'none';
   const hints = ['search', 'search', 'search', "you may ask what i'm proud of"];
   inputEl.placeholder = hints[Math.floor(Math.random() * hints.length)];
-  inputEl.disabled = false; sendBtn.disabled = false; inputEl.focus();
+  inputEl.disabled = false; sendBtn.disabled = false;
   refreshSuggestion();
 }
 
-function cosSim(a, b) {
-  let d = 0, na = 0, nb = 0;
-  for (let i = 0; i < a.length; i++) { d += a[i]*b[i]; na += a[i]*a[i]; nb += b[i]*b[i]; }
-  if (na === 0 || nb === 0) return 0;
-  return d / (Math.sqrt(na) * Math.sqrt(nb));
-}
-
-// bge-base-en-v1.5 is asymmetric: queries need this instruction prefix, passages
-// (the project embeddings) do not. Without it, query/passage vectors land in
-// different regions and cosine scores collapse into a flat ~0.5 band.
-const QUERY_PREFIX = 'Represent this sentence for searching relevant passages: ';
-
 async function runQuery(t) {
   if (!t.trim()) { clearLines(); return; }
-  state.searchActive = true;
-  syncSendButtonState();
-  const out = await embedder(QUERY_PREFIX + t, { pooling: 'mean', normalize: true });
-  const q   = extractVec(out);
-  const raw = {};
-  for (const [nodeKey, vec] of Object.entries(nodeEmbeddings))
-    raw[nodeKey] = Math.max(0, cosSim(q, vec));
-
-  const byProject = {};
-  for (const [nodeKey, score] of Object.entries(raw)) {
-    const projectId = nodeKey.split('::')[0];
-    if (!projectNodeById[projectId]) continue;
-    byProject[projectId] = Math.max(byProject[projectId] || 0, score);
-  }
-
-  const scores    = Object.values(byProject);
-  const max       = Math.max(...scores, 0);
-  // Only include projects that score at least 60% of the best match AND above an
-  // absolute floor — prevents weak semantic neighbours from always showing up.
-  const ABS_FLOOR  = 0.32;
-  const REL_THRESH = 0.60;
-  const eligible   = Object.entries(byProject).filter(([, s]) => s >= ABS_FLOOR && s >= max * REL_THRESH);
-  const eligMin    = eligible.length ? Math.min(...eligible.map(([, s]) => s)) : 0;
-  const spread     = (max - eligMin) || 1;
-  state.lineScores = {};
-  const noResults  = document.getElementById('no-results');
-  if (max >= 0.25 && eligible.length) {
-    for (const [projectId, score] of eligible) {
-      const norm = (score - eligMin) / spread;  // 0 = weakest eligible, 1 = best match
-      state.lineScores[`${projectId}::project`] = { norm, raw: score };
-    }
-    noResults.classList.remove('visible');
-  } else {
-    noResults.classList.add('visible');
-  }
-  redrawLines(); animateLines();
+  // No scoring backend wired up yet.
+  clearLines();
 }
 
 // ── Input event wiring ────────────────────────────────────────────────────

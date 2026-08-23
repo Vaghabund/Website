@@ -94,18 +94,18 @@ async function loadMobileItem(p, content) {
   imgSrcs.slice(1).forEach((src, i) => content.appendChild(makeImg(src, i + 1)));
 }
 
-export async function buildAccordionView(containerId, { desktop = false } = {}) {
+export async function buildAccordionView(containerId, { desktop = false, category = null } = {}) {
   const container = document.getElementById(containerId);
   if (!container) return;
   container.innerHTML = '';
 
-  const nonAbout = PROJECTS.filter(p => p.id !== 'about');
+  const nonAbout = PROJECTS.filter(p => p.id !== 'about' && (!category || p.category === category));
   const about    = PROJECTS.find(p => p.id === 'about');
 
   const withYears = await Promise.all(nonAbout.map(async p => ({ p, year: (await fetchDetail(p.id)).year || '' })));
   withYears.sort((a, b) => b.year.localeCompare(a.year));
 
-  const items = [...withYears, about ? { p: about, year: '' } : null].filter(Boolean);
+  const items = [...withYears, (!category && about) ? { p: about, year: '' } : null].filter(Boolean);
 
   for (const { p, year } of items) {
     const item    = document.createElement('div'); item.className = 'm-item';

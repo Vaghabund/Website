@@ -9,8 +9,9 @@ import PROJECTS from './projects.js';
 // both the mobile and desktop paths, so they are imported statically.
 import { IS_MOBILE, INITIAL_ZOOM }             from './js/state.js';
 import { CANVAS_CX, CANVAS_CY }               from './js/layout.js';
-import { buildMobileView, buildAccordionView } from './js/mobile.js';
+import { buildMobileView }                     from './js/mobile.js';
 import { buildFooter }                         from './js/footer.js';
+import './js/intro.js';
 
 // Disable right-click save on images sitewide.
 document.addEventListener('contextmenu', e => { if (e.target.tagName === 'IMG') e.preventDefault(); });
@@ -25,6 +26,9 @@ if (IS_MOBILE) {
   // Desktop modules are dynamically imported so their module-level side
   // effects (event listeners, initial applyTransform call, etc.) only run
   // when we are actually on a desktop browser.
+  // Landing is the default state — set synchronously so canvas-root/etc.
+  // stay hidden from the first frame, well before the boot intro finishes.
+  document.body.classList.add('landing-view');
   initDesktop();
 }
 
@@ -77,51 +81,23 @@ async function initDesktop() {
   //                 listeners during its own evaluation (side effects only).
   //   lightbox.js — wires all lightbox close buttons during its own evaluation.
   const [
-    ,                                                              // canvas.js — side effects only
-    { clearLines, init, syncSendButtonState, bindSearchEvents },   // search.js
-    { fetchDetail, stripMd },                                      // utils.js
-    { buildProjectNode },                                          // nodes.js
-    ,                                                              // lightbox.js — side effects only
+    ,                                                    // canvas.js — side effects only
+    { init, syncSendButtonState, bindSearchEvents },     // search.js
+    { fetchDetail, stripMd },                            // utils.js
+    { buildProjectNode },                                // nodes.js
+    ,                                                    // lightbox.js — side effects only
+    { initLanding },                                     // landing.js
   ] = await Promise.all([
     import('./js/canvas.js'),
     import('./js/search.js'),
     import('./js/utils.js'),
     import('./js/nodes.js'),
     import('./js/lightbox.js'),
+    import('./js/landing.js'),
   ]);
 
-  // ── View toggle (canvas ↔ list view) ──────────────────────────────────
-  const viewToggleBtn  = document.getElementById('view-toggle');
-  const siteHeader     = document.getElementById('site-header');
-  const desktopListView = document.getElementById('desktop-list-view');
-  buildAccordionView('desktop-list-view', { desktop: true });
-
-  function setDesktopViewMode(listMode) {
-    document.body.classList.toggle('list-view', listMode);
-    if (viewToggleBtn) {
-      viewToggleBtn.setAttribute('aria-pressed', listMode ? 'true' : 'false');
-      viewToggleBtn.textContent = listMode ? 'visual archive' : 'list view';
-    }
-    if (listMode) {
-      clearLines();
-      // Move site header into the scroll container so it scrolls away.
-      if (siteHeader && desktopListView && !desktopListView.contains(siteHeader)) {
-        desktopListView.insertBefore(siteHeader, desktopListView.firstChild);
-      }
-    } else {
-      // Return site header to body (before the list view element).
-      if (siteHeader && desktopListView && desktopListView.contains(siteHeader)) {
-        document.body.insertBefore(siteHeader, desktopListView);
-      }
-    }
-  }
-
-  if (viewToggleBtn) {
-    viewToggleBtn.addEventListener('click', () => {
-      setDesktopViewMode(!document.body.classList.contains('list-view'));
-    });
-    setDesktopViewMode(false);
-  }
+  // ── Landing hub + view toggle (landing ↔ canvas ↔ list view) ───────────
+  initLanding({ viewToggleBtn: document.getElementById('view-toggle') });
 
   // ── Build all project nodes ────────────────────────────────────────────
   PROJECTS.forEach(p => {

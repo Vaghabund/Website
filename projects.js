@@ -10,9 +10,12 @@
 //   5. Commit
 //
 // FIELDS:
-//   id    — matches the media/projects/<id>/ folder name exactly
-//   title — displayed in the title node
-//   x, y  — canvas anchor (0,0 = auto spiral layout; non-zero = fixed position)
+//   id       — matches the media/projects/<id>/ folder name exactly
+//   title    — displayed in the title node
+//   x, y     — canvas anchor (0,0 = auto spiral layout; non-zero = fixed position)
+//   category — 'spatial' | 'coding' | 'objects' | null — which landing-hub
+//              circle this project shows up under in the filtered list view.
+//              Unassigned (null) projects only appear in the unfiltered list.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PROJECTS = [
@@ -27,36 +30,42 @@ const PROJECTS = [
     title: 'Operational Analysis of Photogrammetry',
     x: 0,
     y: 0,
+    category: null,
   },
   {
     id: 'vision-of-the-hybrid',
     title: 'Vision of the Hybrid',
     x: 0,
     y: 0,
+    category: null,
   },
   {
     id: 'greyhound',
     title: 'Greyhound',
     x: 0,
     y: 0,
+    category: null,
   },
   {
     id: 'handheld-pixelsorter',
     title: 'Handheld Pixelsorter',
     x: 0,
     y: 0,
+    category: null,
   },
   {
     id: 'c4d2gs',
     title: 'C4D2GS',
     x: 0,
     y: 0,
+    category: null,
   },
   {
     id: 'txt2mesh',
     title: 'Txt2Mesh',
     x: 0,
     y: 0,
+    category: null,
   },
 ];
 

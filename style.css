@@ -11,6 +11,26 @@ html, body {
   user-select: none;
 }
 
+/* ─────────────────────────────────────────────
+   Boot intro
+   ───────────────────────────────────────────── */
+#intro-overlay {
+  position: fixed; inset: 0;
+  background: #0a0a0a;
+  z-index: 500;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 1;
+}
+#intro-overlay.intro-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+#intro-canvas {
+  width: clamp(220px, 46vw, 380px);
+  height: clamp(220px, 46vw, 380px);
+}
+
 /* Global scrollbar theme: subtle grey pill, no white track */
 * {
   scrollbar-width: thin;
@@ -43,19 +63,44 @@ html, body {
   background: rgba(180,180,180,0.62);
 }
 
-#site-header {
+#top-left-stack {
   position: fixed;
   top: 16px;
   left: 20px;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  pointer-events: none;
+}
+
+#site-header {
   display: flex;
   align-items: center;
   gap: 14px;
-  z-index: 40;
-  pointer-events: none;
   padding: 6px 12px 6px 8px;
   background: rgba(10,10,10,0.92);
   border: 1px solid rgba(255,255,255,0.09);
 }
+
+#landing-nav {
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: auto;
+  padding-left: 8px;
+}
+body.landing-view #landing-nav { display: flex; }
+#landing-nav a {
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.42);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+#landing-nav a:hover { color: rgba(255,255,255,0.9); }
 
 #site-header-logo {
   display: block;
@@ -75,10 +120,18 @@ html, body {
   text-align: left;
 }
 
-#view-toggle {
+#top-right-stack {
   position: fixed;
-  top: 18px;
+  top: 16px;
   right: 20px;
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+#view-toggle {
   background: rgba(10,10,10,0.88);
   border: 1px solid rgba(255,255,255,0.16);
   color: rgba(255,255,255,0.62);
@@ -87,7 +140,6 @@ html, body {
   text-transform: uppercase;
   padding: 8px 10px;
   cursor: pointer;
-  z-index: 45;
   transition: color 0.15s, border-color 0.15s;
 }
 #view-toggle:hover {
@@ -115,20 +167,6 @@ html, body {
 
 body.list-view #desktop-list-view { display: block; }
 
-/* When site-header is moved inside the list-view scroll container, reset its fixed positioning */
-#desktop-list-view #site-header {
-  position: relative;
-  top: auto;
-  left: auto;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: 24px 32px 20px;
-  border: none;
-  border-bottom: 1px solid rgba(255,255,255,0.09);
-  background: none;
-  pointer-events: none;
-}
 body.list-view #canvas-root,
 body.list-view #input-wrap,
 body.list-view #line-overlay { display: none !important; }
@@ -136,6 +174,173 @@ body.list-view #view-toggle {
   color: rgba(255,255,255,0.9);
   border-color: rgba(255,255,255,0.34);
 }
+
+/* ─────────────────────────────────────────────
+   Landing hub — intermediate page between the
+   boot intro and the visual archive / list view.
+   ───────────────────────────────────────────── */
+body.landing-view #canvas-root,
+body.landing-view #input-wrap,
+body.landing-view #line-overlay,
+body.landing-view #desktop-list-view,
+body.landing-view #view-toggle { display: none !important; }
+
+/* The title box is a landing-page-only element — everywhere else (plain
+   canvas or list view) the docked logo mark is the way back to the hub. */
+body:not(.landing-view) #site-header { display: none !important; }
+
+/* Plain canvas ("visual archive") state — neither landing nor list-view.
+   Keep it minimal: no list-view toggle either. */
+body:not(.list-view):not(.landing-view) #view-toggle { display: none !important; }
+
+#landing-view {
+  display: none;
+  position: fixed; inset: 0;
+  align-items: center; justify-content: center;
+  z-index: 20;
+  overflow: hidden;
+}
+body.landing-view #landing-view { display: flex; }
+
+/* Random per-load background (see BG_IMAGES in js/landing.js), with a dark
+   tint so the logo/nav stay legible. Kept crisp and un-transformed so the
+   per-circle magnifier lenses (which reuse the same cover/center rendering)
+   line up exactly with it at the lens boundary. */
+#landing-bg {
+  position: absolute; inset: 0;
+  z-index: 0;
+  background-size: cover;
+  background-position: center;
+  filter: blur(1px);
+}
+#landing-bg::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: rgba(10,10,10,0.34);
+}
+
+/* ── Magnifier lenses ──────────────────────────────────────────────────────
+   One per circle, positioned/sized from JS to track each SVG circle. Sits
+   above the background, below the SVG mark (which draws the rim + label). */
+#zone-mag-layer {
+  position: absolute; inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+.zone-mag {
+  position: fixed;
+  overflow: hidden;
+  border-radius: 50%;              /* circular aperture (blobs are ~circular) */
+  will-change: left, top, width, height;
+}
+.zone-mag-bg {
+  /* Absolute (not fixed) so .zone-mag — itself positioned — is its
+     containing block: a fixed parent does NOT contain a fixed child
+     (only transform/filter ancestors do), which was the bug — every
+     lens's "background" was silently painting as its own full-viewport
+     fixed layer, ignored by the parent's overflow:hidden clip, with the
+     last one in DOM order covering the other three. Absolute positioning
+     lets .zone-mag legitimately clip it into the circular aperture. */
+  position: absolute;
+  width: 100vw; height: 100vh;
+  background-size: cover;
+  background-position: center;
+  /* left/top (cancel the lens's own offset so this still lines up with
+     the real viewport-space background) and transform: scale(MAGNIFY)
+     with per-lens origin are set from JS */
+}
+
+/* Wrapper owns POSITION (the FLIP fly-to-corner transform); the svg inside
+   owns the continuous idle SPIN once docked. Kept on separate elements so
+   the two transforms never have to fight over one `transform` property. */
+#landing-logo-dock {
+  display: block;
+  position: relative;
+  z-index: 2;
+}
+#landing-view #landing-logo-dock {
+  width: clamp(220px, 46vw, 380px);
+  height: clamp(220px, 46vw, 380px);
+}
+#top-right-stack #landing-logo-dock {
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+#landing-logo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+@keyframes landing-logo-spin {
+  to { transform: rotate(360deg); }
+}
+#landing-logo.spinning {
+  animation: landing-logo-spin 10s linear infinite;
+}
+
+/* Growth/push/label-darken are driven continuously from JS (proximity to
+   the mouse), not by :hover — these transitions just smooth each frame's
+   inline-style update into a soft chase rather than a snap. easeOutBack
+   gives it a touch of overshoot. */
+.logo-zone {
+  transition: transform 0.35s cubic-bezier(.34,1.56,.64,1);
+}
+.logo-zone-fill {
+  fill: #fff;
+  cursor: pointer;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.35s cubic-bezier(.34,1.56,.64,1), fill 0.3s ease;
+}
+/* Landing-hub menu only; once docked in the corner it reverts to a plain
+   solid mark (below). The real lens/magnification comes from the HTML
+   magnifier layer behind this SVG; this fill is just a faint frosted tint +
+   a soft drop-shadow for depth, kept semi-transparent so the magnified
+   background shows through. */
+#landing-view .logo-zone-fill {
+  fill: rgba(255,255,255,0.05);
+  stroke: rgba(255,255,255,0.5);
+  stroke-width: 1.25;
+  filter: drop-shadow(0 10px 26px rgba(0,0,0,0.35));
+}
+
+/* Rim highlight — a gradient-stroked duplicate of the same blob shape,
+   simulating light catching the edge of the glass. Landing-hub only. */
+.logo-zone-rim {
+  fill: none;
+  stroke: none;
+  pointer-events: none;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.35s cubic-bezier(.34,1.56,.64,1);
+}
+#landing-view .logo-zone-rim {
+  stroke: url(#glass-rim);
+  stroke-width: 2.5;
+  mix-blend-mode: screen;
+}
+.logo-zone text {
+  fill: rgba(255,255,255,0.6);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+  transition: fill 0.25s ease;
+}
+#landing-view .logo-zone text {
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.5));
+}
+/* The proximity-grow/push/label reaction is a landing-hub-only menu
+   behaviour — once the mark is docked in the corner it's just the site
+   logo: static (aside from its idle spin) and label-free. */
+#top-right-stack .logo-zone text { display: none; }
 
 /*
   NO will-change, NO translateZ, NO GPU promotion on the canvas.
