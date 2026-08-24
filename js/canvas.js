@@ -84,7 +84,11 @@ function panLoop() {
 }
 
 document.addEventListener('wheel', e => {
-  if (document.body.classList.contains('list-view')) return;
+  // Canvas panning only applies in the plain node-canvas ("visual archive")
+  // state — during landing-view it would otherwise swallow every wheel/touch
+  // gesture (via preventDefault below) that's meant to natively scroll the
+  // landing → list hub instead (see #hub-scroll in js/landing.js).
+  if (document.body.classList.contains('list-view') || document.body.classList.contains('landing-view')) return;
   if (e.target.closest('#plb-inner,#project-lightbox,#model-lightbox,#impressum-lightbox')) return;
   e.preventDefault();
   // Trackpad pinch-to-zoom is reported by the browser as a wheel event with
@@ -128,7 +132,11 @@ document.addEventListener('touchstart', e => {
   if (e.touches.length === 2) lastPinch = pinchDist(e);
 }, { passive: true });
 document.addEventListener('touchmove',  e => {
-  if (document.body.classList.contains('list-view')) return;
+  // Canvas panning only applies in the plain node-canvas ("visual archive")
+  // state — during landing-view it would otherwise swallow every wheel/touch
+  // gesture (via preventDefault below) that's meant to natively scroll the
+  // landing → list hub instead (see #hub-scroll in js/landing.js).
+  if (document.body.classList.contains('list-view') || document.body.classList.contains('landing-view')) return;
   if (e.target.closest('#project-lightbox,#model-lightbox,#impressum-lightbox')) return;
   if (e.touches.length !== 2) return;
   const d  = pinchDist(e);

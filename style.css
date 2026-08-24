@@ -91,7 +91,10 @@ html, body {
   pointer-events: auto;
   padding-left: 8px;
 }
-body.landing-view #landing-nav { display: flex; }
+/* Nav (and the header above it) stay up for the whole scroll hub — landing
+   hero and the list beneath it — not just the top-of-page landing moment. */
+body.landing-view #landing-nav,
+body.list-view #landing-nav { display: flex; }
 #landing-nav a {
   font-size: 11px;
   letter-spacing: 0.07em;
@@ -122,7 +125,11 @@ body.landing-view #landing-nav { display: flex; }
 
 #top-right-stack {
   position: fixed;
-  top: 16px;
+  /* 16px + the docked logo's 40px + its old flex gap — the logo itself is no
+     longer a DOM child here (it's an always-fixed element positioned by
+     scroll progress, see #landing-logo-dock), so this reserves the same
+     visual space by hand instead of via flex. */
+  top: 66px;
   right: 20px;
   z-index: 45;
   display: flex;
@@ -147,16 +154,36 @@ body.landing-view #landing-nav { display: flex; }
   border-color: rgba(255,255,255,0.32);
 }
 
-#desktop-list-view {
+/* ─────────────────────────────────────────────
+   Hub scroll — landing hero (#landing-view, 100vh) followed in normal flow
+   by the project list (#desktop-list-view). One continuous scrollable page:
+   scrolling IS the landing → list transition (see js/landing.js's scroll
+   progress engine), not a click-triggered swap. Shown for both the landing
+   moment (progress 0) and the scrolled-into-list moment (progress 1) —
+   "list-view" / "landing-view" below just describe which end of that one
+   scroll you currently sit at.
+   ───────────────────────────────────────────── */
+#hub-scroll {
   display: none;
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   overflow-y: auto;
-  background: #0a0a0a;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   z-index: 12;
-  padding-top: 0;
+}
+body.landing-view #hub-scroll,
+body.list-view #hub-scroll { display: block; }
+
+#desktop-list-view {
+  background: #0a0a0a;
+  padding-top: 130px; /* clears the persistent top-left header/nav (bottom ~110px) */
   padding-bottom: 56px;
+  /* Scroll progress (0→1) is measured over #landing-view's 100vh — if the
+     (collapsed) list is shorter than that, there's not enough scroll room
+     to ever reach progress 1, and the hub gets stuck mid-transition. */
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 #desktop-list-view .m-content {
   padding: 0 20px 24px;
@@ -164,8 +191,6 @@ body.landing-view #landing-nav { display: flex; }
   font-size: 12px;
   line-height: 1.75;
 }
-
-body.list-view #desktop-list-view { display: block; }
 
 body.list-view #canvas-root,
 body.list-view #input-wrap,
@@ -182,41 +207,83 @@ body.list-view #view-toggle {
 body.landing-view #canvas-root,
 body.landing-view #input-wrap,
 body.landing-view #line-overlay,
-body.landing-view #desktop-list-view,
 body.landing-view #view-toggle { display: none !important; }
 
-/* The title box is a landing-page-only element — everywhere else (plain
-   canvas or list view) the docked logo mark is the way back to the hub. */
-body:not(.landing-view) #site-header { display: none !important; }
+/* The title box stays up for the whole scroll hub (landing hero + list
+   below it) — hidden only in the plain canvas ("visual archive") state,
+   where the docked logo mark is the way back to the hub. */
+body:not(.landing-view):not(.list-view) #site-header { display: none !important; }
 
 /* Plain canvas ("visual archive") state — neither landing nor list-view.
    Keep it minimal: no list-view toggle either. */
 body:not(.list-view):not(.landing-view) #view-toggle { display: none !important; }
 
 #landing-view {
-  display: none;
-  position: fixed; inset: 0;
+  position: relative;
+  height: 100vh;
+  display: flex;
   align-items: center; justify-content: center;
-  z-index: 20;
   overflow: hidden;
 }
-body.landing-view #landing-view { display: flex; }
 
 /* Random per-load background (see BG_IMAGES in js/landing.js), with a dark
-   tint so the logo/nav stay legible. Kept crisp and un-transformed so the
+   tint so the logo/nav stay legible. Fixed (not absolute) so it stays
+   pinned to the viewport — rather than scrolling away with #landing-view —
+   while js/landing.js fades its opacity out over the scroll, revealing the
+   list's flat background beneath it. Kept crisp and un-transformed so the
    per-circle magnifier lenses (which reuse the same cover/center rendering)
    line up exactly with it at the lens boundary. */
 #landing-bg {
-  position: absolute; inset: 0;
+  position: fixed; inset: 0;
   z-index: 0;
   background-size: cover;
   background-position: center;
   filter: blur(1px);
+  /* Purely decorative — and critically, being position:fixed it sits
+     outside #hub-scroll's containing-block chain, which silently breaks
+     the browser's native "find nearest scrollable ancestor" wheel-scroll
+     resolution for anything hit-testing to it (with no preventDefault
+     involved — just wheeling over the background did nothing at all).
+     pointer-events:none lets hit-testing fall through to #landing-view
+     itself underneath, which — being in normal flow inside #hub-scroll —
+     resolves scroll-chaining correctly. */
+  pointer-events: none;
 }
 #landing-bg::after {
   content: '';
   position: absolute; inset: 0;
   background: rgba(10,10,10,0.34);
+}
+
+/* "scroll for more" hint — sits at the bottom of the landing hero itself
+   (not fixed), so it scrolls away naturally as the hero does; its opacity
+   is also faded from JS the moment the user starts scrolling, whichever
+   happens first. */
+#landing-scroll-hint {
+  position: absolute;
+  left: 50%; bottom: 32px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255,255,255,0.5);
+  pointer-events: none;
+  z-index: 3;
+  transition: opacity 0.25s ease;
+}
+#landing-scroll-hint span {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+#landing-scroll-hint svg {
+  width: 14px; height: 9px;
+  animation: landing-scroll-hint-bob 1.6s ease-in-out infinite;
+}
+@keyframes landing-scroll-hint-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(5px); }
 }
 
 /* ── Magnifier lenses ──────────────────────────────────────────────────────
@@ -250,23 +317,28 @@ body.landing-view #landing-view { display: flex; }
      with per-lens origin are set from JS */
 }
 
-/* Wrapper owns POSITION (the FLIP fly-to-corner transform); the svg inside
-   owns the continuous idle SPIN once docked. Kept on separate elements so
-   the two transforms never have to fight over one `transform` property. */
+/* Always fixed and never reparented — its own DOM position doesn't matter
+   for layout, only for stacking. js/landing.js drives left/top/width/height
+   inline every scroll frame, lerping between this centred "landing" rest
+   state and the docked top-right corner as scroll progress goes 0 → 1 (see
+   applyHubProgress). At rest (progress 0, or before JS has run) these CSS
+   values are what's shown, so the very first paint already matches. */
 #landing-logo-dock {
   display: block;
-  position: relative;
-  z-index: 2;
-}
-#landing-view #landing-logo-dock {
+  position: fixed;
+  z-index: 30;
+  left: 50%; top: 50%;
   width: clamp(220px, 46vw, 380px);
   height: clamp(220px, 46vw, 380px);
-}
-#top-right-stack #landing-logo-dock {
-  width: 40px;
-  height: 40px;
+  transform: translate(-50%, -50%);
   cursor: pointer;
-  pointer-events: auto;
+  /* Transparent to hit-testing everywhere EXCEPT the actual circle shapes
+     (.logo-zone-fill opts back in below). The mark's bounding box is much
+     bigger than the visible petals, and it sits on top of #hub-scroll (a
+     sibling, not an ancestor, of this fixed element) — if the whole box
+     caught pointer events, hovering/scrolling over any gap between petals
+     would silently swallow wheel/hover input meant for the scroll hub. */
+  pointer-events: none;
 }
 
 #landing-logo {
@@ -292,16 +364,20 @@ body.landing-view #landing-view { display: flex; }
 .logo-zone-fill {
   fill: #fff;
   cursor: pointer;
+  pointer-events: auto; /* opts back in — see #landing-logo-dock's pointer-events:none */
   transform-box: fill-box;
   transform-origin: center;
-  transition: transform 0.35s cubic-bezier(.34,1.56,.64,1), fill 0.3s ease;
+  transition: transform 0.35s cubic-bezier(.34,1.56,.64,1), fill 0.3s ease, stroke 0.3s ease, filter 0.3s ease;
 }
-/* Landing-hub menu only; once docked in the corner it reverts to a plain
-   solid mark (below). The real lens/magnification comes from the HTML
-   magnifier layer behind this SVG; this fill is just a faint frosted tint +
-   a soft drop-shadow for depth, kept semi-transparent so the magnified
-   background shows through. */
-#landing-view .logo-zone-fill {
+/* The big landing-hub look; once scroll progress has mostly docked the mark
+   into the corner (.is-small, set from JS) it swaps to the plain solid mark
+   above. Never scoped to #landing-view as an ancestor — the mark is a
+   permanently fixed, never-reparented element (see #landing-logo-dock), so
+   its own class is the only thing that can key this. The real
+   lens/magnification comes from the HTML magnifier layer behind this SVG;
+   this fill is just a faint frosted tint + a soft drop-shadow for depth,
+   kept semi-transparent so the magnified background shows through. */
+#landing-logo:not(.is-small) .logo-zone-fill {
   fill: rgba(255,255,255,0.05);
   stroke: rgba(255,255,255,0.5);
   stroke-width: 1.25;
@@ -309,16 +385,16 @@ body.landing-view #landing-view { display: flex; }
 }
 
 /* Rim highlight — a gradient-stroked duplicate of the same blob shape,
-   simulating light catching the edge of the glass. Landing-hub only. */
+   simulating light catching the edge of the glass. Big landing-hub look only. */
 .logo-zone-rim {
   fill: none;
   stroke: none;
   pointer-events: none;
   transform-box: fill-box;
   transform-origin: center;
-  transition: transform 0.35s cubic-bezier(.34,1.56,.64,1);
+  transition: transform 0.35s cubic-bezier(.34,1.56,.64,1), stroke 0.3s ease;
 }
-#landing-view .logo-zone-rim {
+#landing-logo:not(.is-small) .logo-zone-rim {
   stroke: url(#glass-rim);
   stroke-width: 2.5;
   mix-blend-mode: screen;
@@ -334,13 +410,14 @@ body.landing-view #landing-view { display: flex; }
   pointer-events: none;
   transition: fill 0.25s ease;
 }
-#landing-view .logo-zone text {
+#landing-logo:not(.is-small) .logo-zone text {
   filter: drop-shadow(0 1px 3px rgba(0,0,0,0.5));
 }
 /* The proximity-grow/push/label reaction is a landing-hub-only menu
-   behaviour — once the mark is docked in the corner it's just the site
-   logo: static (aside from its idle spin) and label-free. */
-#top-right-stack .logo-zone text { display: none; }
+   behaviour — once scroll progress has mostly docked the mark into the
+   corner it's just the site logo: static (aside from its idle spin) and
+   label-free. */
+#landing-logo.is-small .logo-zone text { display: none; }
 
 /*
   NO will-change, NO translateZ, NO GPU promotion on the canvas.

@@ -137,8 +137,16 @@ export async function buildAccordionView(containerId, { desktop = false, categor
         header.classList.add('open');
         header.setAttribute('aria-expanded', 'true');
         content.classList.add('open');
-        const mv = document.getElementById('mobile-view');
-        if (mv) mv.scrollTo({ top: item.offsetTop, behavior: 'smooth' });
+        // Desktop's scroll container is #hub-scroll (the shared landing+list
+        // scroll hub, see js/landing.js) — the item's offset needs to be
+        // expressed relative to THAT container, not to `container` itself,
+        // since #desktop-list-view now just flows inside it rather than
+        // being its own scrollable box.
+        const scrollHost = document.getElementById(desktop ? 'hub-scroll' : 'mobile-view');
+        if (scrollHost) {
+          const target = scrollHost.scrollTop + item.getBoundingClientRect().top - scrollHost.getBoundingClientRect().top;
+          scrollHost.scrollTo({ top: target, behavior: 'smooth' });
+        }
         if (!content.dataset.loaded) {
           content.dataset.loaded = 'true';
           if (desktop) {
