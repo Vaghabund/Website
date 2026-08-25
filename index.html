@@ -30,12 +30,20 @@
     <p id="site-header-intro">between creative technology and spatial design</p>
   </header>
 </div>
-<div id="mobile-sticky-header"></div>
 
-<div id="hub-scroll">
-  <div id="landing-view"></div>
-  <div id="desktop-list-view"></div>
+<div id="top-bar">
+  <div id="view-toggle" role="group" aria-label="View mode">
+    <span id="view-toggle-pill" aria-hidden="true"></span>
+    <button type="button" data-view="nodes">nodes</button>
+    <button type="button" data-view="list">list</button>
+  </div>
+  <button type="button" id="about-link">about</button>
 </div>
+
+<div id="desktop-list-view"></div>
+
+<!-- Holds the throwaway "flyer" elements during a node ⇄ list transition. -->
+<div id="view-flight-layer" aria-hidden="true"></div>
 
 <div id="canvas-root">
   <svg id="dot-grid" style="position:absolute;top:0;left:0;width:4000px;height:3000px;pointer-events:none;">
@@ -46,22 +54,8 @@
     </defs>
     <rect width="8000" height="4000" fill="url(#dots)"/>
   </svg>
+  <svg id="theme-line-overlay" style="position:absolute;top:0;left:0;width:8000px;height:4000px;overflow:visible;pointer-events:none;"></svg>
 </div>
-
-<div id="input-wrap">
-  <div id="no-results">nothing found</div>
-  <div id="query-field">
-    <div id="query-suggestion" aria-hidden="true"></div>
-    <input id="query-input" type="text" placeholder="" autocomplete="off" disabled>
-  </div>
-  <button id="send-btn" disabled>&#x2192;</button>
-  <svg id="loading-dot" viewBox="0 0 420 420" xmlns="http://www.w3.org/2000/svg" style="fill-rule:evenodd;clip-rule:evenodd;">
-    <g><path d="M164.26,23.392c21.179,-27.227 60.479,-32.138 87.706,-10.958c27.227,21.179 32.138,60.479 10.958,87.706c-21.179,27.227 -60.479,32.138 -87.706,10.958c-27.227,-21.179 -32.138,-60.479 -10.958,-87.706Z"/><path d="M315.148,226.786c31.955,-12.99 68.445,2.408 81.435,34.363c12.99,31.955 -2.408,68.445 -34.363,81.435c-31.955,12.99 -68.445,-2.408 -81.435,-34.363c-12.99,-31.955 2.408,-68.445 34.363,-81.435Z"/><path d="M21.168,272.999c4.728,-34.169 36.308,-58.072 70.477,-53.343c34.169,4.728 58.072,36.308 53.343,70.477c-4.728,34.169 -36.308,58.072 -70.477,53.343c-34.169,-4.728 -58.072,-36.308 -53.343,-70.477Z"/></g>
-    <path d="M149.877,200.788c4.728,-34.169 36.308,-58.072 70.477,-53.343c34.169,4.728 58.072,36.308 53.343,70.477c-4.728,34.169 -36.308,58.072 -70.477,53.343c-34.169,-4.728 -58.072,-36.308 -53.343,-70.477Z"/>
-  </svg>
-</div>
-
-<svg id="line-overlay"></svg>
 
 <div id="lightbox">
   <button id="lb-close">&#x2715;</button>
@@ -84,10 +78,6 @@
     <div id="plb-tabs"></div>
     <div id="plb-body"></div>
   </div>
-</div>
-
-<div id="top-right-stack">
-  <button id="view-toggle" type="button" aria-pressed="false">list view</button>
 </div>
 
 <div id="mobile-view"></div>

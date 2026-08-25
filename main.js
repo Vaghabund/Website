@@ -12,6 +12,7 @@ import { CANVAS_CX, CANVAS_CY }               from './js/layout.js';
 import { buildMobileView }                     from './js/mobile.js';
 import { buildFooter }                         from './js/footer.js';
 import './js/intro.js';
+import './js/favicon-spin.js';
 
 // Disable right-click save on images sitewide.
 document.addEventListener('contextmenu', e => { if (e.target.tagName === 'IMG') e.preventDefault(); });
@@ -26,23 +27,26 @@ if (IS_MOBILE) {
   // Desktop modules are dynamically imported so their module-level side
   // effects (event listeners, initial applyTransform call, etc.) only run
   // when we are actually on a desktop browser.
-  // Landing is the default state — set synchronously so canvas-root/etc.
-  // stay hidden from the first frame, well before the boot intro finishes.
-  document.body.classList.add('landing-view');
+  // The node canvas is the default view — no body class needed; `list-view`
+  // is added by js/view-switch.js only once the user toggles into the list.
   initDesktop();
 }
 
 async function initDesktop() {
   // MAX_R is in screen pixels — divide by zoom to convert to canvas coords,
   // so the visual cluster size stays the same regardless of initial zoom level.
-  const MAX_R_SCREEN = 300;
+  const MAX_R_SCREEN = 250;
   const MAX_R = MAX_R_SCREEN / INITIAL_ZOOM;
-  PROJECTS.forEach(p => {
-    if (p.x || p.y) return;
-    const angle = Math.random() * 2 * Math.PI;
-    const r     = MAX_R * Math.sqrt(Math.random());
-    p.x = CANVAS_CX + r * Math.cos(angle);
-    p.y = CANVAS_CY + r * Math.sin(angle);
+  // "about" never becomes a node, so it must not take up a slot on the ring
+  // (that would leave a visible gap) or be nudged around by the overlap pass.
+  const CANVAS_PROJECTS = PROJECTS.filter(p => p.id !== 'about');
+  const unplaced = CANVAS_PROJECTS.filter(p => !p.x && !p.y);
+  unplaced.forEach((p, i) => {
+    // Evenly spaced around a ring, starting at 12 o'clock, going clockwise —
+    // rather than scattered randomly within the disk.
+    const angle = (i / unplaced.length) * 2 * Math.PI - Math.PI / 2;
+    p.x = CANVAS_CX + MAX_R * Math.cos(angle);
+    p.y = CANVAS_CY + MAX_R * Math.sin(angle);
   });
 
   // Resolve overlaps: repeatedly nudge colliding nodes apart until clear.
@@ -50,7 +54,7 @@ async function initDesktop() {
   const { SZ } = await import('./js/layout.js');
   const NODE_W = SZ.project.w + 60;
   const NODE_H = SZ.project.h + 60;
-  const movable = PROJECTS.filter(p => p.x && p.y);
+  const movable = CANVAS_PROJECTS.filter(p => p.x && p.y);
   for (let iter = 0; iter < 200; iter++) {
     let anyOverlap = false;
     for (let i = 0; i < movable.length; i++) {
@@ -82,24 +86,25 @@ async function initDesktop() {
   //   lightbox.js — wires all lightbox close buttons during its own evaluation.
   const [
     ,                                                    // canvas.js — side effects only
-    { init, syncSendButtonState, bindSearchEvents },     // search.js
     { fetchDetail, stripMd },                            // utils.js
-    { buildProjectNode },                                // nodes.js
+    { buildProjectNode, registerProjectData },           // nodes.js
     ,                                                    // lightbox.js — side effects only
-    { initLanding },                                     // landing.js
+    { initViewSwitch },                                  // view-switch.js
   ] = await Promise.all([
     import('./js/canvas.js'),
-    import('./js/search.js'),
     import('./js/utils.js'),
     import('./js/nodes.js'),
     import('./js/lightbox.js'),
-    import('./js/landing.js'),
+    import('./js/view-switch.js'),
   ]);
 
-  // ── Landing hub + view toggle (landing ↔ canvas ↔ list view) ───────────
-  initLanding({ viewToggleBtn: document.getElementById('view-toggle') });
+  // ── Node canvas ⇄ list toggle ───────────────────────────────────────────
+  initViewSwitch();
 
   // ── Build all project nodes ────────────────────────────────────────────
+  // "about" is deliberately excluded from the canvas AND from the list — its
+  // data is still registered so the top-bar "about" link can open it in the
+  // project lightbox, it just never becomes a node or a row.
   PROJECTS.forEach(p => {
     fetchDetail(p.id).then(async detail => {
       const textDefs = Array.isArray(detail.texts) && detail.texts.length
@@ -123,13 +128,11 @@ async function initDesktop() {
       const resolvedVideos = (detail.videos || []).map(resolve);
       detail._resolvedVideos = resolvedVideos;
       detail._resolvedPoster = detail.poster ? resolve(detail.poster) : null;
-      buildProjectNode(p, detail, cleanTexts, resolvedImages);
+      if (p.id === 'about') registerProjectData(p, detail, cleanTexts, resolvedImages);
+      else                  buildProjectNode(p, detail, cleanTexts, resolvedImages);
     }).catch(console.error);
   });
 
-  // ── Bootstrap search and footer ────────────────────────────────────────
-  bindSearchEvents();
-  init().catch(console.error);
-  syncSendButtonState();
+  // ── Bootstrap footer ─────────────────────────────────────────────────
   buildFooter();
 }

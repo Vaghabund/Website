@@ -5,12 +5,12 @@
 // project card that opens the project lightbox.
 // ─────────────────────────────────────────────
 
-import { state, nodePositions, projectDataById, projectNodeById } from './state.js';
+import { state, projectDataById, projectNodeById } from './state.js';
 import { SZ }                                from './layout.js';
 import { el, placeCentered }                 from './dom.js';
-import { redrawLines }                       from './search.js';
-import { openProjectLb, openImgLb }          from './lightbox.js';
+import { openProjectLb }                    from './lightbox.js';
 import { toThumb }                           from './utils.js';
+import { bindThemeLineHover, refreshLines }  from './theme-lines.js';
 
 // ── Shared node shell ─────────────────────────────────────────────────────
 // Returns { nodeEl, content } where content is where the node's body goes.
@@ -35,11 +35,19 @@ export function makeNode(cls, label, w, h, { resizable = true, aspect = null } =
     const startX = e.clientX, startY = e.clientY;
     const startL = parseInt(nodeEl.style.left), startT = parseInt(nodeEl.style.top);
     let moved = false;
+    let linesRafPending = false;
     function onMove(e) {
       if (!moved && Math.hypot(e.clientX - startX, e.clientY - startY) > 4) moved = true;
       nodeEl.style.left = Math.round(startL + (e.clientX - startX) / state.zoom) + 'px';
       nodeEl.style.top  = Math.round(startT + (e.clientY - startY) / state.zoom) + 'px';
-      redrawLines();
+      // Rebuilding the theme-line SVG is real DOM work — batch it to once
+      // per frame instead of once per raw mousemove, or a fast real mouse
+      // (far higher event rate than a scripted drag) makes the node feel
+      // laggy/unresponsive under all that churn.
+      if (!linesRafPending) {
+        linesRafPending = true;
+        requestAnimationFrame(() => { refreshLines(); linesRafPending = false; });
+      }
     }
     function onUp() {
       document.removeEventListener('mousemove', onMove);
@@ -58,6 +66,7 @@ export function makeNode(cls, label, w, h, { resizable = true, aspect = null } =
     const startX = e.clientX, startY = e.clientY;
     const startW = nodeEl.offsetWidth, startH = nodeEl.offsetHeight;
     let moved = false;
+    let linesRafPending = false;
     function onMove(e) {
       if (!moved && Math.hypot(e.clientX - startX, e.clientY - startY) > 4) moved = true;
       const newW = Math.max(80, startW + (e.clientX - startX) / state.zoom);
@@ -66,6 +75,10 @@ export function makeNode(cls, label, w, h, { resizable = true, aspect = null } =
       nodeEl.style.width  = Math.round(newW) + 'px';
       nodeEl.style.height = Math.round(newH) + 'px';
       nodeEl._cw = Math.round(newW); nodeEl._ch = Math.round(newH);
+      if (!linesRafPending) {
+        linesRafPending = true;
+        requestAnimationFrame(() => { refreshLines(); linesRafPending = false; });
+      }
     }
     function onUp() {
       document.removeEventListener('mousemove', onMove);
@@ -79,13 +92,11 @@ export function makeNode(cls, label, w, h, { resizable = true, aspect = null } =
   return { nodeEl, content };
 }
 
-// ── Project card ──────────────────────────────────────────────────────────
-// Single draggable card per project on the canvas; click opens the project
-// lightbox with the full tabbed overview.
-export function buildProjectNode(p, detail, texts, images) {
-  const W = SZ.project.w, H = SZ.project.h;
-
-  // Resolve model path.
+// ── Project data registration ─────────────────────────────────────────────
+// Everything openProjectLb() needs, independent of whether the project also
+// gets a canvas node. "about" is registered but never built as a node — it's
+// reached through the top-bar link instead (see js/view-switch.js).
+export function registerProjectData(p, detail, texts, images) {
   const modelSrc = detail.model
     ? (/^https?:\/\//i.test(detail.model) || detail.model.startsWith('media/')
         ? detail.model
@@ -93,10 +104,22 @@ export function buildProjectNode(p, detail, texts, images) {
     : null;
 
   const hasDetail = !!(detail.year || detail.role || detail.timeline || detail.tools?.length || detail.links?.length);
-  const imageSrcs = images.length ? images : [];
 
-  // Store data used by the project lightbox.
-  projectDataById[p.id] = { project: p, detail, texts, images: imageSrcs, hasDetail, modelSrc };
+  projectDataById[p.id] = {
+    project: p, detail, texts,
+    images: images.length ? images : [],
+    hasDetail, modelSrc,
+  };
+  return projectDataById[p.id];
+}
+
+// ── Project card ──────────────────────────────────────────────────────────
+// Single draggable card per project on the canvas; click opens the project
+// lightbox with the full tabbed overview.
+export function buildProjectNode(p, detail, texts, images) {
+  const W = SZ.project.w, H = SZ.project.h;
+
+  const { images: imageSrcs } = registerProjectData(p, detail, texts, images);
 
   const { nodeEl, content } = makeNode('node-image node-project', p.title, W, H, { resizable: false });
 
@@ -121,11 +144,6 @@ export function buildProjectNode(p, detail, texts, images) {
   if (imageSrcs.length > 1) stack.appendChild(el('div', 'image-count', String(imageSrcs.length)));
   content.appendChild(stack);
 
-  function showImage(idx) {
-    const src = imageSrcs[Math.max(0, Math.min(idx, imageSrcs.length - 1))];
-    img.src = toThumb(src);
-  }
-
   nodeEl.addEventListener('click', e => {
     if (e.target.closest('.node-bar')) return;
     e.stopPropagation();
@@ -143,8 +161,8 @@ export function buildProjectNode(p, detail, texts, images) {
   }
 
   placeCentered(nodeEl, p.x, p.y, W, H);
-  nodePositions[`${p.id}::project`] = { el: nodeEl, showImage, imgIndex: 0 };
   projectNodeById[p.id] = nodeEl;
+  bindThemeLineHover(nodeEl, p.id);
 }
 
 

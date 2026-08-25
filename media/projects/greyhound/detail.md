@@ -2,6 +2,8 @@
 year: "2025"
 role: ""
 timeline: ""
+themes:
+  - generative-ai
 tools:
   - ComfyUI
   - Wan2.2 14B

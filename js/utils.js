@@ -23,44 +23,13 @@ export async function fetchMdBody(id) {
   } catch { return null; }
 }
 
-export function parseKeywordMd(txt) {
-  const seen = new Set();
-  const keywords = [];
-  // Strip HTML comments before splitting into lines.  Use a loop to handle
-  // nested-style patterns (e.g. "<!-- <!-- -->") that a single pass misses.
-  let src = txt, prev;
-  do { prev = src; src = src.replace(/<!--[\s\S]*?-->/g, ''); } while (src !== prev);
-  src.split('\n').forEach(raw => {
-    const clean = raw
-      .replace(/^\s*[-*+]\s+/, '')
-      .replace(/^\s*\d+\.\s+/, '')
-      .replace(/^\s*#+\s+/, '')
-      .trim();
-    if (!clean) return;
-    const key = clean.toLowerCase();
-    if (seen.has(key)) return;
-    seen.add(key);
-    keywords.push(clean);
-  });
-  return keywords;
-}
-
-export async function fetchKeywords() {
-  try {
-    const txt = await fetch('media/search-keywords.md').then(r => r.ok ? r.text() : '');
-    return txt ? parseKeywordMd(txt) : [];
-  } catch {
-    return [];
-  }
-}
-
 // Parse YAML-ish frontmatter from detail.md into a plain object.
 // Supports string scalars, indented list items, and nested list-of-objects.
-export function parseFrontmatter(txt) {
+function parseFrontmatter(txt) {
   txt = txt.replace(/\r\n/g, '\n');
   const m = txt.match(/^---\n([\s\S]*?)\n---/);
   if (!m) return {};
-  const LIST_KEYS = new Set(['images', 'tools', 'links', 'texts', 'videos', 'exhibitions']);
+  const LIST_KEYS = new Set(['images', 'tools', 'links', 'texts', 'videos', 'exhibitions', 'themes']);
   const out = {};
   const lines = m[1].split('\n');
   let key = null, listKey = null, listObj = null;

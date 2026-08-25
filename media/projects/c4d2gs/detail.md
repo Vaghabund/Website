@@ -2,6 +2,9 @@
 year: "2026"
 role: ""
 timeline: ""
+themes:
+  - photogrammetry
+  - plugin-engineering
 tools:
   - Python
   - Cinema 4D SDK
@@ -16,6 +19,7 @@ texts:
   - file: description.md
     label: "Overview"
 images:
+  - images/c4d2gs_diagram.webp
   - images/banner.webp
   - images/comparison.webp
   - images/scene-setup.webp

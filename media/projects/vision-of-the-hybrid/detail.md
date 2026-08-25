@@ -2,6 +2,10 @@
 year: "2024"
 role: "—"
 timeline: "6 months"
+themes:
+  - generative-ai
+  - physical-object
+  - critical-theory
 tools:
   - Blender
   - Cinema4D

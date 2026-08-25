@@ -1,7 +1,0 @@
-Greyhound is an ongoing personal research project from 2025 into continuous animal movement generated with AI video. Joel uses a ComfyUI workflow driving Wan2.2 14B, a large latent diffusion video model, to study how these models handle biological locomotion, animal anatomy and cinematic light, producing looping video sequences and cinematic still frames of a running greyhound dog.
-
-The look is dark and cinematic. Ultra wide panoramic frames sit on near black backgrounds, a lean greyhound caught in mid sprint and rendered with hyper real detail, a smooth short coat over visible muscle and bone, tones running from dark grey to black, with a warm amber to silver rim light raking across the body in stark chiaroscuro like studio photography. Some frames carry motion blur and doubled, ghosted limbs left behind by the video generation process, emphasising speed and the continuity of movement across frames.
-
-The project is a study of motion and image synthesis, a purely visual and motion based body of work driven by image-to-video and text-to-video generation, prompt engineering for motion continuity, and iterative node graph workflows in ComfyUI. It is where the portfolio explores what generative video models do with a fast moving non-human subject.
-
-A visitor might find it searching for AI video, generative video, video generation, latent diffusion, ComfyUI, Wan, motion study, animal movement, running dog, greyhound, sprint, speed, or cinematic black and white studio imagery.

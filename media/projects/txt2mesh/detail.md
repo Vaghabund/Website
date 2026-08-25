@@ -2,6 +2,9 @@
 year: "2026"
 role: "Research & Development"
 timeline: "1 week"
+themes:
+  - generative-ai
+  - plugin-engineering
 tools:
   - Python
   - Cinema 4D SDK

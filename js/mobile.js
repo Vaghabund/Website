@@ -5,8 +5,13 @@
 // ─────────────────────────────────────────────
 
 import PROJECTS           from '../projects.js';
-import { stripMd, fetchMdBody, fetchDetail } from './utils.js';
+import { stripMd, fetchMdBody, fetchDetail, toThumb } from './utils.js';
 import { buildDesktopProjectLayout, openImgLb, createVideoWrap } from './lightbox.js';
+
+// Row layout, left to right: title (left-bound) — hero image — year
+// (right-bound). The image sits in a fixed-width zone between the two and
+// is the only thing that grows on cursor proximity (see initRowGrowth) —
+// title and year stay put at their bound edges.
 
 async function loadMobileItem(p, content) {
   const [mdText, media] = await Promise.all([
@@ -94,21 +99,38 @@ async function loadMobileItem(p, content) {
   imgSrcs.slice(1).forEach((src, i) => content.appendChild(makeImg(src, i + 1)));
 }
 
-export async function buildAccordionView(containerId, { desktop = false, category = null } = {}) {
+export async function buildAccordionView(containerId, { desktop = false } = {}) {
   const container = document.getElementById(containerId);
   if (!container) return;
   container.innerHTML = '';
 
-  const nonAbout = PROJECTS.filter(p => p.id !== 'about' && (!category || p.category === category));
+  const nonAbout = PROJECTS.filter(p => p.id !== 'about');
   const about    = PROJECTS.find(p => p.id === 'about');
 
-  const withYears = await Promise.all(nonAbout.map(async p => ({ p, year: (await fetchDetail(p.id)).year || '' })));
+  const isAbsolute = u => /^https?:\/\//i.test(u) || u.startsWith('media/');
+
+  async function rowInfo(p) {
+    const detail = await fetchDetail(p.id);
+    const base   = `media/projects/${p.id}/`;
+    const first  = detail.images?.[0];
+    const thumb  = first ? toThumb(isAbsolute(first) ? first : base + first) : null;
+    return { p, year: detail.year || '', thumb };
+  }
+
+  const withYears = await Promise.all(nonAbout.map(rowInfo));
   withYears.sort((a, b) => b.year.localeCompare(a.year));
 
-  const items = [...withYears, (!category && about) ? { p: about, year: '' } : null].filter(Boolean);
+  // On desktop the bio is reached through the top-bar "about" link, which
+  // opens it in the project lightbox — so it gets no row here. Mobile has no
+  // project lightbox, so there it stays the last row of the accordion.
+  const bioRow = (!desktop && about) ? await rowInfo(about).then(r => ({ ...r, year: '' })) : null;
+  const items = [...withYears, bioRow].filter(Boolean);
 
-  for (const { p, year } of items) {
+  for (const { p, year, thumb } of items) {
     const item    = document.createElement('div'); item.className = 'm-item';
+    // Lets js/view-switch.js pair a row up with its canvas node when it
+    // measures both ends of the node ⇄ list flight.
+    item.dataset.id = p.id;
     const content = document.createElement('div');
     content.className = 'm-content';
     content.id        = `${containerId}-content-${p.id}`;
@@ -116,14 +138,27 @@ export async function buildAccordionView(containerId, { desktop = false, categor
     const header = document.createElement('button');
     header.type      = 'button';
     header.className = 'm-header';
+
     const titleSpan  = document.createElement('span');
     titleSpan.className   = 'm-header-title';
     titleSpan.textContent = p.title;
+    header.appendChild(titleSpan);
+
+    if (thumb) {
+      // Absolutely positioned + centered on .m-header itself (not a flex
+      // sibling of title/year), so it sits at the true horizontal center of
+      // the row regardless of title length or year width.
+      const thumbImg = document.createElement('img');
+      thumbImg.className = 'm-header-thumb';
+      thumbImg.src = thumb; thumbImg.alt = ''; thumbImg.loading = 'lazy';
+      header.appendChild(thumbImg);
+    }
+
     const yearSpan = document.createElement('span');
     yearSpan.className   = 'm-header-year';
     yearSpan.textContent = year;
-    header.appendChild(titleSpan);
     header.appendChild(yearSpan);
+
     header.setAttribute('aria-controls', content.id);
     header.setAttribute('aria-expanded', 'false');
 
@@ -135,14 +170,13 @@ export async function buildAccordionView(containerId, { desktop = false, categor
       container.querySelectorAll('.m-content.open').forEach(c => c.classList.remove('open'));
       if (!isOpen) {
         header.classList.add('open');
+        // Snap back to base — proximity-grow is for closed rows only.
+        header.style.removeProperty('--row-h');
+        header.style.removeProperty('--thumb-w');
+        header.style.removeProperty('--thumb-h');
         header.setAttribute('aria-expanded', 'true');
         content.classList.add('open');
-        // Desktop's scroll container is #hub-scroll (the shared landing+list
-        // scroll hub, see js/landing.js) — the item's offset needs to be
-        // expressed relative to THAT container, not to `container` itself,
-        // since #desktop-list-view now just flows inside it rather than
-        // being its own scrollable box.
-        const scrollHost = document.getElementById(desktop ? 'hub-scroll' : 'mobile-view');
+        const scrollHost = document.getElementById(desktop ? 'desktop-list-view' : 'mobile-view');
         if (scrollHost) {
           const target = scrollHost.scrollTop + item.getBoundingClientRect().top - scrollHost.getBoundingClientRect().top;
           scrollHost.scrollTo({ top: target, behavior: 'smooth' });
@@ -162,6 +196,62 @@ export async function buildAccordionView(containerId, { desktop = false, categor
     item.appendChild(content);
     container.appendChild(item);
   }
+
+  if (desktop) initRowGrowth(container);
+}
+
+// ── Row hover-proximity growth (desktop list view only) ────────────────────
+// Rows nearer the cursor grow with a smoothstep falloff, easing back to base
+// size as the mouse moves away or leaves. `container` persists across
+// buildAccordionView() calls (only its children are rebuilt), so the
+// mousemove/mouseleave listeners are bound once via `boundContainers`.
+// Only the thumbnail grows — title and year stay static — and the growth
+// range is intentionally modest (a quarter of what it once was) for a
+// subtle effect rather than a dramatic one.
+const ROW_BASE      = 76;  // px — matches --row-h default in style.css
+const ROW_MAX       = 105; // px — fully grown, right under the cursor
+const THUMB_BASE_W = 90, THUMB_BASE_H = 40;
+const THUMB_MAX_W  = 190, THUMB_MAX_H = 76;
+const ROW_INFLUENCE = 220; // px — vertical falloff radius
+
+const boundContainers = new WeakSet();
+
+function initRowGrowth(container) {
+  if (boundContainers.has(container)) return;
+  boundContainers.add(container);
+
+  let mouseY = null, rafPending = false;
+
+  function apply() {
+    rafPending = false;
+    if (mouseY == null) return;
+    container.querySelectorAll('.m-header:not(.open)').forEach(h => {
+      const rect = h.getBoundingClientRect();
+      const cy   = rect.top + rect.height / 2;
+      const dist = Math.abs(mouseY - cy);
+      const t    = Math.max(0, 1 - dist / ROW_INFLUENCE);
+      const growth = t * t * (3 - 2 * t); // smoothstep
+      h.style.setProperty('--row-h',   (ROW_BASE     + (ROW_MAX     - ROW_BASE)     * growth).toFixed(1) + 'px');
+      h.style.setProperty('--thumb-w', (THUMB_BASE_W + (THUMB_MAX_W - THUMB_BASE_W) * growth).toFixed(1) + 'px');
+      h.style.setProperty('--thumb-h', (THUMB_BASE_H + (THUMB_MAX_H - THUMB_BASE_H) * growth).toFixed(1) + 'px');
+    });
+  }
+
+  container.addEventListener('mousemove', e => {
+    mouseY = e.clientY;
+    if (rafPending) return;
+    rafPending = true;
+    requestAnimationFrame(apply);
+  });
+
+  container.addEventListener('mouseleave', () => {
+    mouseY = null;
+    container.querySelectorAll('.m-header').forEach(h => {
+      h.style.removeProperty('--row-h');
+      h.style.removeProperty('--thumb-w');
+      h.style.removeProperty('--thumb-h');
+    });
+  });
 }
 
 async function loadDesktopItem(p, content) {
@@ -198,13 +288,12 @@ export function buildMobileView() {
 }
 
 function initMobileHeader() {
-  const siteHeader   = document.getElementById('site-header');
-  const stickyHeader = document.getElementById('mobile-sticky-header');
-  const mobileView   = document.getElementById('mobile-view');
-  if (!siteHeader || !stickyHeader || !mobileView) return;
+  const siteHeader = document.getElementById('site-header');
+  const mobileView = document.getElementById('mobile-view');
+  if (!siteHeader || !mobileView) return;
 
-  // Move the header into the scroll container so it scrolls with the content.
+  // Move the header into the scroll container so it scrolls with the
+  // content. No separate sticky bar needed — the open .m-header is itself
+  // sticky.
   mobileView.insertBefore(siteHeader, mobileView.firstChild);
-
-  // No separate sticky bar needed — the open .m-header is itself sticky.
 }

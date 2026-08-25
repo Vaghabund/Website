@@ -4,7 +4,7 @@
 
 import { projectDataById } from './state.js';
 import { el }              from './dom.js';
-import { openModelLb, closeModelLb, mountInlineModel, disposeInlineModel } from './three-viewer.js';
+import { closeModelLb, mountInlineModel, disposeInlineModel } from './three-viewer.js';
 
 // ── Image lightbox ────────────────────────────────────────────────────────
 const lightbox = document.getElementById('lightbox');

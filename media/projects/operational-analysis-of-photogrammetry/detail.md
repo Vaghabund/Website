@@ -2,6 +2,9 @@
 year: "2025"
 role: "Master Student"
 timeline: "12 months"
+themes:
+  - photogrammetry
+  - critical-theory
 tools:
   - TouchDesigner
   - Python

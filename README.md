@@ -1,6 +1,6 @@
 # Joel Tenenberg — Portfolio
 
-A canvas-based portfolio. Each project lives as a single draggable node on a pannable, zoomable canvas. Clicking a node opens a project lightbox with images, prose, detail fields, and an optional 3D model viewer. A semantic search bar lets visitors find work by concept, keyword, or feeling.
+A canvas-based portfolio. Each project lives as a single draggable node on a pannable, zoomable canvas. Clicking a node opens a project lightbox with images, prose, detail fields, and an optional 3D model viewer.
 
 No build step. Vanilla JS ES modules, single HTML file.
 
@@ -13,29 +13,28 @@ index.html          HTML shell — DOM structure, lightbox scaffolding
 main.js             Entry point — detects mobile/desktop, orchestrates init
 projects.js         Project registry — id, title, canvas position
 style.css           All styles
-embeddings.json     Pre-computed 768-dim search vectors (generated)
 
 scripts/
-  generate-embeddings.js  Node script to regenerate embeddings.json
   optimize-images.js      Node script to process/rename raw project images
-  test-search.js          Ad-hoc CLI to sanity-check search rankings
 
 js/
   state.js          Shared mutable state and DOM refs (the hub)
   canvas.js         Pan, zoom, drag — desktop only
   nodes.js          Node builders, project card logic
+  theme-lines.js    Hover-triggered project connection lines on the canvas
   lightbox.js       Image lightbox, project lightbox, model viewer trigger
   three-viewer.js   Three.js 3D model viewer (lazy-loaded)
-  search.js         Semantic search, autocomplete, SVG lines
+  view-switch.js    Node canvas ⇄ list toggle, and the FLIP flight between them
   mobile.js         Mobile accordion and desktop list view
   dom.js            DOM creation helpers
-  layout.js         Canvas constants, Fibonacci spiral geometry
+  layout.js         Canvas/node-size constants
   utils.js          Markdown parsing, fetch wrappers, frontmatter parser
   footer.js         Footer and Impressum modal
+  intro.js          Boot intro canvas animation
+  favicon-spin.js   Spinning tab favicon
 
 media/
   projects/{id}/    One folder per project, including about/
-  search-keywords.md  Autocomplete keyword list
   icons/            Site header SVG and other UI icons
 ```
 
@@ -51,16 +50,9 @@ All stateful modules import from here. No side effects.
 | `IS_MOBILE` | bool | Computed once at load (`max-width:600px` or coarse pointer in landscape) |
 | `MIN_ZOOM` | number | `0.2` |
 | `MAX_ZOOM` | number | `3.0` |
-| `INITIAL_ZOOM` | number | `0.6` |
-| `state` | object | Live mutable state: `zoom`, `pan {x,y}`, `searchActive`, `keywordList`, `activeSuggestion`, `lineScores` |
+| `INITIAL_ZOOM` | number | `0.8` |
+| `state` | object | Live mutable state: `zoom`, `pan {x,y}` |
 | `canvasRoot` | Element | `#canvas-root` |
-| `lineSvg` | Element | `#line-overlay` |
-| `inputWrap` | Element | `#input-wrap` |
-| `inputEl` | Element | `#query-input` |
-| `suggestionEl` | Element | `#query-suggestion` |
-| `sendBtn` | Element | `#send-btn` |
-| `loadDot` | Element | `#loading-dot` |
-| `nodePositions` | object | `nodeKey → { el, imgIndex? }` — written by nodes.js, read by search.js |
 | `projectDataById` | object | `id → { project, detail, texts, images, hasDetail, modelSrc }` |
 | `projectNodeById` | object | `id → DOM element` |
 
@@ -83,7 +75,7 @@ Desktop only. No exports — all side effects run at module evaluation.
 - **Pan:** Mousedown on empty canvas begins drag. Mouseup ends. Canvas gets `.dragging` class during drag.
 - **Zoom:** Wheel → exponential zoom (`zoom * exp(-deltaY * 0.001)`), world point under cursor stays fixed. Skipped in list view and inside overlay containers.
 - **Touch pinch:** Two-finger pinch drives the same `doZoom()`.
-- **`applyTransform()`** — Sets `translate(panX, panY) scale(zoom)` on `#canvas-root` and calls `redrawLines()`.
+- **`applyTransform()`** — Sets `translate(panX, panY) scale(zoom)` on `#canvas-root`.
 - RAF-throttled; `rafPending` flag prevents stacked frames.
 - Overlay guard selectors: `#project-lightbox, #model-lightbox, #impressum-lightbox, #plb-inner` — interactions inside these never pan or zoom the canvas.
 
@@ -93,7 +85,8 @@ Desktop only. No exports — all side effects run at module evaluation.
 | Export | Description |
 |---|---|
 | `makeNode(cls, label, w, h, options)` → `{nodeEl, content}` | Creates a draggable/resizable node shell with a title bar and body div. `options.resizable` (default true), `options.aspect` for locked ratio. |
-| `buildProjectNode(p, detail, texts, images)` | Creates one project card on the canvas. Stores data in `projectDataById`. Shows first image as thumbnail + image count badge. Click opens project lightbox. Registers in `nodePositions` and `projectNodeById`. |
+| `registerProjectData(p, detail, texts, images)` | Resolves `modelSrc`/`hasDetail` and stores the entry in `projectDataById` — everything `openProjectLb()` needs, with no canvas node. Used directly for `about`. |
+| `buildProjectNode(p, detail, texts, images)` | Calls `registerProjectData`, then creates the project card on the canvas. Shows first image as thumbnail + image count badge. Click opens project lightbox. Registers in `projectNodeById`. |
 
 Internals:
 - **Node drag:** Mousedown on `.node-bar` → drag updates position in canvas coords (accounting for zoom). Click suppressed if mouse moved >4px.
@@ -113,7 +106,7 @@ Project lightbox layout:
 - Desktop (≥860px): two-column — images left, text + detail fields right.
 - Mobile (<860px): single column, images then text.
 - Detail fields rendered: year, role, timeline, tools, links (from `detail.md` frontmatter).
-- If `modelSrc` is set, shows "Open 3D Model" button → calls `openModelLb()`.
+- If `modelSrc` is set, an "3D Model" tab swaps the gallery for an inline viewer via `mountInlineModel()`.
 - All lightboxes close on Escape. Close buttons wired at module load.
 
 ---
@@ -129,34 +122,6 @@ Scene setup: perspective camera 45°, ambient light 1.5 + two directional lights
 
 ---
 
-### `js/search.js` — semantic search and autocomplete
-| Export | Description |
-|---|---|
-| `init()` | Loads Transformers.js, fetches `embeddings.json`, enables input. Returns promise. |
-| `bindSearchEvents()` | Wires input, send button, keyboard handlers. |
-| `refreshSuggestion()` | Updates `#query-suggestion` ghost text from `state.keywordList`. |
-| `redrawLines()` | Clears and redraws search result SVG lines (canvas → screen coord conversion). |
-| `clearLines()` | Resets `state.lineScores`, hides lines, resets send button. |
-| `syncSendButtonState()` | Sets send button to → or × depending on `state.searchActive`. |
-
-Search flow:
-1. Input text embedded with `bge-base-en-v1.5` int8 (CDN, lazy-loaded).
-2. Cosine similarity computed against all vectors in `embeddings.json`.
-3. Results filtered: score ≥ 0.25 × max score.
-4. Lines drawn as cubic Bézier paths from input box to rect edge of each matching node.
-5. Line weight: `sqrt(score) ^ 1.8` drives stroke-width and opacity.
-6. Paths animated via `stroke-dasharray` with 40ms stagger per line.
-
-Coordinate helpers:
-- `c2s(cx, cy)` — canvas coords → screen coords using `state.pan` and `state.zoom`.
-- `rectEdgePoint(rx, ry, rw, rh, tx, ty)` — point on rect edge closest to target.
-
-Autocomplete:
-- Keywords fetched from `media/search-keywords.md`, stored in `state.keywordList`.
-- Shift accepts current ghost suggestion.
-
----
-
 ### `js/mobile.js` — mobile accordion and list view
 | Export | Description |
 |---|---|
@@ -165,8 +130,26 @@ Autocomplete:
 
 - One accordion item per project. Only one open at a time.
 - Content lazy-loaded on first expand: images, description text, detail fields.
-- Desktop list view uses the same accordion, shown when view-toggle pressed.
-- About item fetches `media/about/bio.md` + `profile-small.webp`.
+- Desktop list view uses the same accordion, reached via the top-centre view toggle (see `js/view-switch.js`).
+- `.m-item` carries `data-id` so `view-switch.js` can pair each row with its canvas node.
+- The "about" bio lives at `media/projects/about/` and is authored like any other project, but it is routed differently per platform: on desktop it has no canvas node and no list row, and is reached only through the top-bar `#about-link` (which opens it in the project lightbox); on mobile — which has no project lightbox — it stays the last row of the accordion.
+
+---
+
+### `js/view-switch.js` — node canvas ⇄ list
+| Export | Description |
+|---|---|
+| `initViewSwitch()` | Builds the list, wires the `#view-toggle` buttons, adds the corner brand mark. |
+
+The node canvas is the default view; `body.list-view` swaps in `#desktop-list-view`. Switching runs a FLIP flight:
+
+1. Measure each project's hero thumbnail in the view being left (already on screen).
+2. Reveal the target view at `opacity: 0` (the `.measuring` rules) and measure it too. Neither view participates in the other's layout, so this shifts nothing.
+3. Commit `body.list-view` plus `body.view-flying`, which hides the real thumbnails and row labels so nothing is doubled up.
+4. Animate one throwaway `.view-flyer` per project from rect to rect, staggered.
+5. Drop `view-flying` — the real elements fade back in through their own transitions.
+
+The flyer is a div with a `background-image`, not an `<img>`: the two ends fit their image differently (node `cover`/top, row `contain`/centre) and `object-fit` can't be animated, but explicit pixel `background-size` can — so the crop resolves continuously instead of popping on the first frame.
 
 ---
 
@@ -186,8 +169,6 @@ Autocomplete:
 |---|---|
 | `stripMd(txt)` | Removes YAML frontmatter, headers, bold, links, lists. Returns plain text. |
 | `fetchMdBody(id)` | Fetches `media/projects/{id}/description.md`, strips markdown. |
-| `parseKeywordMd(txt)` | Parses keyword list (one per line, removes list markers, deduplicates). |
-| `fetchKeywords()` | Fetches and parses `media/search-keywords.md`. |
 | `parseFrontmatter(txt)` | Regex-based YAML frontmatter parser. Handles scalars, inline arrays, and lists of `{label, url}` objects. |
 | `fetchDetail(id)` | Fetches `media/projects/{id}/detail.md`, returns parsed frontmatter object. |
 
@@ -205,15 +186,13 @@ No imports. Self-contained. `buildFooter()` creates the footer DOM (Instagram li
 | `site-header` | Fixed top-left: logo + intro text |
 | `canvas-root` | 8000×4000px transformed canvas, holds all nodes |
 | `dot-grid` | SVG background grid (same size as canvas) |
-| `line-overlay` | Fixed viewport SVG for search result lines |
-| `input-wrap` | Search bar container (fixed, bottom-centre) |
-| `query-input` | Text input |
-| `query-suggestion` | Ghost-text autocomplete overlay |
-| `send-btn` | → / × toggle button |
-| `loading-dot` | Pulse animation while embedder loads |
-| `no-results` | "nothing found" message |
-| `view-toggle` | Canvas ↔ list view toggle button |
-| `desktop-list-view` | Accordion list (desktop) |
+| `theme-line-overlay` | SVG for the hover-triggered project connection lines (see `js/theme-lines.js`) |
+| `top-bar` | Top-centre bar holding the view toggle and the about link |
+| `view-toggle` | Nodes/list segmented toggle |
+| `about-link` | Opens the bio in the project lightbox |
+| `view-flight-layer` | Holds the throwaway flyers during a node ⇄ list transition |
+| `logo-mark` | Decorative spinning corner mark (built from JS, `pointer-events:none`) |
+| `desktop-list-view` | Accordion list (desktop) — its own fixed scroll container |
 | `mobile-view` | Accordion list (mobile) |
 | `lightbox` | Image viewer modal |
 | `project-lightbox` | Project detail modal |
@@ -230,30 +209,17 @@ Node classes on canvas: `.node`, `.node-bar`, `.node-bar-label`, `.node-resize`,
 ## Data files
 
 ### `projects.js`
-Array of `{ id, title, x, y }`. `x` and `y` are set to 0 for randomly-placed projects; `main.js` assigns a random position within a 300px radius of canvas centre at load time. Fixed positions (non-zero `x`/`y`) are used as-is.
-
-### `embeddings.json`
-```json
-{
-  "project-id::project": [0.057, 0.054, ...],
-  ...
-}
-```
-768-element Float32 vectors, one per project. Key format: `{id}::project`. Generated by `scripts/generate-embeddings.js`, consumed by `search.js` in the browser.
+Array of `{ id, title, x, y }`. `x` and `y` are set to 0 for auto-placed projects; `main.js` spaces those evenly around a 250px-radius ring at canvas centre. Fixed positions (non-zero `x`/`y`) are used as-is. `about` is the one entry with no `x`/`y` at all — it never becomes a node, so `main.js` filters it out of the ring layout entirely rather than letting it consume a slot.
 
 ### `media/projects/{id}/`
 
 | File | Purpose |
 |---|---|
-| `embedding.md` | Plain prose (~250–450 tokens). The **only** text fed to the embedder — write it as a dense keyword summary of what the project is, does, uses, and means. |
 | `description.md` | Prose shown in the project lightbox. Any length; markdown is stripped before display. |
 | `detail.md` | YAML frontmatter: `year`, `role`, `timeline`, `tools` (array), `links` (array of `{label, url}`), `images` (array of paths), `model` (glb path), `texts` (array of `{file, label}`). |
 | `images/*.webp` | Project images. First image = thumbnail on the canvas node. |
 | `models/*.glb` | Optional 3D model file. |
 | `documents/` | Optional PDFs or downloads linked from `detail.md`. |
-
-### `media/search-keywords.md`
-One keyword per line (markdown list format). Autocomplete source. No embedding regeneration needed when edited.
 
 ---
 
@@ -262,40 +228,23 @@ One keyword per line (markdown list format). Autocomplete source. No embedding r
 | Space | Range | Notes |
 |---|---|---|
 | Canvas space | 0–8000 × 0–4000px | Node positions stored here |
-| Screen space | 0–vw × 0–vh | Search lines drawn here |
-| Conversion | `screen = pan + canvas * zoom` | `c2s()` in search.js |
 | Inverse | `canvas = (screen - pan) / zoom` | Used for node drag |
 
 ---
 
 ## Initialisation sequence (desktop)
 
-1. `main.js` assigns random positions (uniform disk, max radius 300px from canvas centre) to all projects without a fixed position.
-2. Dynamically imports `canvas.js`, `search.js`, `nodes.js`, `lightbox.js`, `utils.js` in parallel.
+1. `main.js` places every canvas project without a fixed position evenly around a ring (radius 250px from canvas centre), then nudges apart any that still overlap. `about` is excluded from this set.
+2. Dynamically imports `canvas.js`, `utils.js`, `nodes.js`, `lightbox.js`, `view-switch.js` in parallel.
 3. Each module's side effects run (pan/zoom handlers, lightbox close buttons, etc.).
-4. Fetches `detail.md` and images for all projects; calls `buildProjectNode()` for each.
-5. Builds desktop accordion (`buildAccordionView`), wires view-toggle button.
-6. Calls `search.init()` → loads Transformers.js CDN, fetches `embeddings.json`.
-7. Calls `search.bindSearchEvents()`, enables input.
-8. Calls `buildFooter()`.
+4. Calls `initViewSwitch()` — wires the view toggle, builds the corner brand mark, and builds the list up front via `buildAccordionView` (it must be laid out, even while hidden, for its row rects to be measurable on the first flight).
+5. Fetches `detail.md` and images for every project. `about` gets `registerProjectData()` only — enough for the lightbox to open it, but no canvas node; every other project gets `buildProjectNode()`.
+6. Calls `buildFooter()`.
 
-Mobile path: skip steps 1–2 and 4–8, call `buildMobileView()` then `buildFooter()`. Canvas, search, and lightboxes are not loaded on mobile.
+Mobile path: skip steps 1–2 and 4–6, call `buildMobileView()` then `buildFooter()`. Canvas and lightboxes are not loaded on mobile.
 
 ---
 
 ## Adding a new project
 
-1. Create `media/projects/your-id/` with `embedding.md`, `description.md`, `detail.md`, and an `images/` folder.
-2. Add an entry to `projects.js` (`x: 0, y: 0` for auto spiral placement).
-3. Run `npm run embeddings` to update `embeddings.json`.
-4. Commit `projects.js`, `embeddings.json`, and the new `media/projects/your-id/` folder.
-
-Serve locally with any static server (e.g. `npx serve .`). No build step.
-
----
-
-## Search model
-
-- **Offline (embeddings generation):** `bge-base-en-v1.5` fp32, via `@xenova/transformers` in Node.js. Run once per change to `embedding.md` files.
-- **Browser (query embedding):** `bge-base-en-v1.5` int8 quantized, via `@huggingface/transformers` CDN. Lazy-loaded on first search, then browser-cached.
-- Both sides produce 768-dim vectors in the same embedding space. Max sequence length: 512 tokens — keep `embedding.md` under ~450 tokens to avoid truncation.
+See [CLAUDE.md](CLAUDE.md) for the step-by-step fast path.

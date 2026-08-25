@@ -2,6 +2,8 @@
 year: "2025"
 role: ""
 timeline: ""
+themes:
+  - physical-object
 tools:
   - Rust
   - egui

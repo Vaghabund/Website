@@ -13,14 +13,10 @@ want them, but everything you need to know is here.
    lowercase-hyphenated (`vision-of-the-hybrid`, not `Vision Of The Hybrid`).
    This exact string is the project's id everywhere else below.
 
-2. **Write the three text files** (all plain files, no frontmatter except
+2. **Write the two text files** (all plain files, no frontmatter except
    `detail.md`):
    - `description.md` — prose shown in the project's text lightbox. Plain
      paragraphs; markdown formatting is stripped before display.
-   - `embedding.md` — 200–400 words of plain prose (no markdown) fed into
-     semantic search as the *only* search text for this project. Cover what
-     the project is, what it's about, how it was made, and words a visitor
-     might search for.
    - `detail.md` — YAML-ish frontmatter, see field reference below.
 
 3. **Add images.** Drop raw `.png`/`.jpg`/`.jpeg` files straight into
@@ -48,12 +44,7 @@ want them, but everything you need to know is here.
    `{ id: '<slug>', title: '...', x: 0, y: 0 }` (`x`/`y` of `0,0` means
    auto-placed on the spiral; only set real coordinates to pin a fixed spot).
 
-6. **Regenerate search embeddings:**
-   ```
-   npm run embeddings
-   ```
-
-7. Commit.
+6. Commit.
 
 ### `detail.md` field reference
 
@@ -66,6 +57,7 @@ files that actually exist.
 | `role` | string | |
 | `timeline` | string | |
 | `tools` | list | plain strings |
+| `themes` | list | plain strings, lowercase-hyphenated (e.g. `generative-ai`); hovering a project node on the canvas draws a line to every other project sharing a theme — see `js/theme-lines.js` for the label map |
 | `links` | list of `{label, url}` | rendered as buttons; a `.zip` url adds a download badge to the node |
 | `images` | list | paths relative to the project folder, e.g. `images/foo.webp` |
 | `texts` | list of `{file, label}` | extra text tabs beyond `description.md`; omit to default to a single "Overview" tab from `description.md` |

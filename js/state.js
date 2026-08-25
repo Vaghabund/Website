@@ -17,7 +17,7 @@ import { CANVAS_CX, CANVAS_CY } from './layout.js';
 // Canvas zoom/pan constants
 export const MIN_ZOOM     = 0.2;
 export const MAX_ZOOM     = 3.0;
-export const INITIAL_ZOOM = 1.2;
+export const INITIAL_ZOOM = 0.8;
 
 // IS_MOBILE is computed once at load so CSS and JS stay in sync
 // even if the viewport is later resized.
@@ -33,23 +33,12 @@ export const state = {
     x: window.innerWidth  / 2 - CANVAS_CX * INITIAL_ZOOM,
     y: window.innerHeight / 2 - CANVAS_CY * INITIAL_ZOOM,
   },
-  searchActive:     false,
-  keywordList:      [],
-  activeSuggestion: '',
-  lineScores:       {}, // nodeKey → normalised relevance score (0–1)
 };
 
 // ── Stable DOM element refs ───────────────────────────────────────────────
 export const canvasRoot   = document.getElementById('canvas-root');
-export const lineSvg      = document.getElementById('line-overlay');
-export const inputWrap    = document.getElementById('input-wrap');
-export const inputEl      = document.getElementById('query-input');
-export const suggestionEl = document.getElementById('query-suggestion');
-export const sendBtn      = document.getElementById('send-btn');
-export const loadDot      = document.getElementById('loading-dot');
 
 // ── Node tracking maps ────────────────────────────────────────────────────
-// Mutated by nodes.js; read by search.js.
-export const nodePositions   = {}; // nodeKey → { el, [imgIndex], [showImage] }
+// Mutated by nodes.js.
 export const projectDataById = {}; // id → { project, detail, texts, images, hasDetail, modelSrc }
 export const projectNodeById = {}; // id → DOM element

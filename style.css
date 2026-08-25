@@ -54,7 +54,6 @@ html, body {
 
 *::-webkit-scrollbar-thumb {
   background: rgba(170,170,170,0.45);
-  border-radius: 999px;
   border: 2px solid transparent;
   background-clip: padding-box;
 }
@@ -84,27 +83,6 @@ html, body {
   border: 1px solid rgba(255,255,255,0.09);
 }
 
-#landing-nav {
-  display: none;
-  flex-direction: column;
-  gap: 6px;
-  pointer-events: auto;
-  padding-left: 8px;
-}
-/* Nav (and the header above it) stay up for the whole scroll hub — landing
-   hero and the list beneath it — not just the top-of-page landing moment. */
-body.landing-view #landing-nav,
-body.list-view #landing-nav { display: flex; }
-#landing-nav a {
-  font-size: 11px;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.42);
-  text-decoration: none;
-  transition: color 0.15s;
-}
-#landing-nav a:hover { color: rgba(255,255,255,0.9); }
-
 #site-header-logo {
   display: block;
   width: 210px;
@@ -123,47 +101,84 @@ body.list-view #landing-nav { display: flex; }
   text-align: left;
 }
 
-#top-right-stack {
+/* ─────────────────────────────────────────────
+   View switch — the node canvas is the default view; adding `list-view` to
+   <body> swaps it for the flat project list. The transition between the two
+   is animated in js/view-switch.js (see .view-flyer / .measuring below).
+   ───────────────────────────────────────────── */
+
+/* Top centre: the view toggle, plus the "about" link that opens the bio in
+   the project lightbox (the bio has no canvas node and no list row).
+   Both share the node/name-banner chrome — square corners, 1px hairline
+   border, near-opaque dark fill — rather than a pill shape. */
+#top-bar {
   position: fixed;
-  /* 16px + the docked logo's 40px + its old flex gap — the logo itself is no
-     longer a DOM child here (it's an always-fixed element positioned by
-     scroll progress, see #landing-logo-dock), so this reserves the same
-     visual space by hand instead of via flex. */
-  top: 66px;
-  right: 20px;
-  z-index: 45;
+  top: 18px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 41;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
   gap: 10px;
 }
+body.is-mobile #top-bar { display: none; }
 
-#view-toggle {
-  background: rgba(10,10,10,0.88);
-  border: 1px solid rgba(255,255,255,0.16);
-  color: rgba(255,255,255,0.62);
+#about-link {
+  padding: 6px 16px;
+  border: 1px solid rgba(255,255,255,0.09);
+  background: rgba(10,10,10,0.92);
+  font-family: inherit;
   font-size: 10px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  padding: 8px 10px;
+  color: rgba(255,255,255,0.42);
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
+  transition: color 0.25s ease, border-color 0.25s ease;
 }
-#view-toggle:hover {
-  color: rgba(255,255,255,0.9);
-  border-color: rgba(255,255,255,0.32);
+#about-link:hover {
+  color: rgba(255,255,255,0.85);
+  border-color: rgba(255,255,255,0.22);
 }
 
-/* ─────────────────────────────────────────────
-   Hub scroll — landing hero (#landing-view, 100vh) followed in normal flow
-   by the project list (#desktop-list-view). One continuous scrollable page:
-   scrolling IS the landing → list transition (see js/landing.js's scroll
-   progress engine), not a click-triggered swap. Shown for both the landing
-   moment (progress 0) and the scrolled-into-list moment (progress 1) —
-   "list-view" / "landing-view" below just describe which end of that one
-   scroll you currently sit at.
-   ───────────────────────────────────────────── */
-#hub-scroll {
+/* Small segmented toggle. */
+#view-toggle {
+  position: relative;
+  display: flex;
+  padding: 3px;
+  border: 1px solid rgba(255,255,255,0.09);
+  background: rgba(10,10,10,0.92);
+}
+#view-toggle button {
+  position: relative;
+  z-index: 1;
+  padding: 5px 16px;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.42);
+  cursor: pointer;
+  transition: color 0.25s ease;
+}
+#view-toggle button.active { color: rgba(10,10,10,0.92); }
+#view-toggle button:hover:not(.active) { color: rgba(255,255,255,0.75); }
+
+/* Sliding indicator behind the labels — a plain rectangle, matching the
+   node cards' square chrome. Both buttons are the same width (their labels
+   are both 5 characters), so a flat 50% split is exact. */
+#view-toggle-pill {
+  position: absolute;
+  top: 3px; bottom: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  background: rgba(255,255,255,0.9);
+  transition: transform 0.35s cubic-bezier(.65,0,.35,1);
+}
+#view-toggle.on-list #view-toggle-pill { transform: translateX(100%); }
+
+/* ── The flat project list ─────────────────────────────────────────────── */
+#desktop-list-view {
   display: none;
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -171,20 +186,13 @@ body.list-view #landing-nav { display: flex; }
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   z-index: 12;
-}
-body.landing-view #hub-scroll,
-body.list-view #hub-scroll { display: block; }
-
-#desktop-list-view {
   background: #0a0a0a;
-  padding-top: 130px; /* clears the persistent top-left header/nav (bottom ~110px) */
+  padding-top: 130px;    /* clears the persistent top-left header (bottom ~110px) */
   padding-bottom: 56px;
-  /* Scroll progress (0→1) is measured over #landing-view's 100vh — if the
-     (collapsed) list is shorter than that, there's not enough scroll room
-     to ever reach progress 1, and the hub gets stuck mid-transition. */
-  min-height: 100vh;
-  box-sizing: border-box;
 }
+body.list-view #desktop-list-view { display: block; }
+body.list-view #canvas-root { display: none !important; }
+
 #desktop-list-view .m-content {
   padding: 0 20px 24px;
   color: rgba(255,255,255,0.56);
@@ -192,232 +200,103 @@ body.list-view #hub-scroll { display: block; }
   line-height: 1.75;
 }
 
-body.list-view #canvas-root,
-body.list-view #input-wrap,
-body.list-view #line-overlay { display: none !important; }
-body.list-view #view-toggle {
-  color: rgba(255,255,255,0.9);
-  border-color: rgba(255,255,255,0.34);
+/* ── Node ⇄ list flight ────────────────────────────────────────────────────
+   js/view-switch.js needs to read the rects of BOTH views before it can
+   animate between them, so it briefly reveals the one that's hidden at
+   opacity 0. Neither view participates in the other's layout (both are
+   fixed/absolute), so this can't shift anything or reset a scroll position. */
+body:not(.list-view) #desktop-list-view.measuring,
+body.list-view #canvas-root.measuring {
+  display: block !important;
+  opacity: 0;
+  pointer-events: none;
 }
 
-/* ─────────────────────────────────────────────
-   Landing hub — intermediate page between the
-   boot intro and the visual archive / list view.
-   ───────────────────────────────────────────── */
-body.landing-view #canvas-root,
-body.landing-view #input-wrap,
-body.landing-view #line-overlay,
-body.landing-view #view-toggle { display: none !important; }
-
-/* The title box stays up for the whole scroll hub (landing hero + list
-   below it) — hidden only in the plain canvas ("visual archive") state,
-   where the docked logo mark is the way back to the hub. */
-body:not(.landing-view):not(.list-view) #site-header { display: none !important; }
-
-/* Plain canvas ("visual archive") state — neither landing nor list-view.
-   Keep it minimal: no list-view toggle either. */
-body:not(.list-view):not(.landing-view) #view-toggle { display: none !important; }
-
-#landing-view {
-  position: relative;
-  height: 100vh;
-  display: flex;
-  align-items: center; justify-content: center;
-  overflow: hidden;
-}
-
-/* Random per-load background (see BG_IMAGES in js/landing.js), with a dark
-   tint so the logo/nav stay legible. Fixed (not absolute) so it stays
-   pinned to the viewport — rather than scrolling away with #landing-view —
-   while js/landing.js fades its opacity out over the scroll, revealing the
-   list's flat background beneath it. Kept crisp and un-transformed so the
-   per-circle magnifier lenses (which reuse the same cover/center rendering)
-   line up exactly with it at the lens boundary. */
-#landing-bg {
+#view-flight-layer {
   position: fixed; inset: 0;
-  z-index: 0;
-  background-size: cover;
-  background-position: center;
-  filter: blur(1px);
-  /* Purely decorative — and critically, being position:fixed it sits
-     outside #hub-scroll's containing-block chain, which silently breaks
-     the browser's native "find nearest scrollable ancestor" wheel-scroll
-     resolution for anything hit-testing to it (with no preventDefault
-     involved — just wheeling over the background did nothing at all).
-     pointer-events:none lets hit-testing fall through to #landing-view
-     itself underneath, which — being in normal flow inside #hub-scroll —
-     resolves scroll-chaining correctly. */
+  z-index: 20;
   pointer-events: none;
 }
-#landing-bg::after {
-  content: '';
-  position: absolute; inset: 0;
-  background: rgba(10,10,10,0.34);
-}
-
-/* "scroll for more" hint — sits at the bottom of the landing hero itself
-   (not fixed), so it scrolls away naturally as the hero does; its opacity
-   is also faded from JS the moment the user starts scrolling, whichever
-   happens first. */
-#landing-scroll-hint {
-  position: absolute;
-  left: 50%; bottom: 32px;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  color: rgba(255,255,255,0.5);
-  pointer-events: none;
-  z-index: 3;
-  transition: opacity 0.25s ease;
-}
-#landing-scroll-hint span {
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-#landing-scroll-hint svg {
-  width: 14px; height: 9px;
-  animation: landing-scroll-hint-bob 1.6s ease-in-out infinite;
-}
-@keyframes landing-scroll-hint-bob {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(5px); }
-}
-
-/* ── Magnifier lenses ──────────────────────────────────────────────────────
-   One per circle, positioned/sized from JS to track each SVG circle. Sits
-   above the background, below the SVG mark (which draws the rim + label). */
-#zone-mag-layer {
-  position: absolute; inset: 0;
-  z-index: 1;
-  pointer-events: none;
-}
-.zone-mag {
+.view-flyer {
   position: fixed;
-  overflow: hidden;
-  border-radius: 50%;              /* circular aperture (blobs are ~circular) */
-  will-change: left, top, width, height;
-}
-.zone-mag-bg {
-  /* Absolute (not fixed) so .zone-mag — itself positioned — is its
-     containing block: a fixed parent does NOT contain a fixed child
-     (only transform/filter ancestors do), which was the bug — every
-     lens's "background" was silently painting as its own full-viewport
-     fixed layer, ignored by the parent's overflow:hidden clip, with the
-     last one in DOM order covering the other three. Absolute positioning
-     lets .zone-mag legitimately clip it into the circular aperture. */
-  position: absolute;
-  width: 100vw; height: 100vh;
-  background-size: cover;
-  background-position: center;
-  /* left/top (cancel the lens's own offset so this still lines up with
-     the real viewport-space background) and transform: scale(MAGNIFY)
-     with per-lens origin are set from JS */
+  background-repeat: no-repeat;
+  /* Fallback only — js/view-switch.js sets this inline to whatever the
+     destination hero image actually computes to, so the hand-off is an
+     exact match. */
+  opacity: 1;
 }
 
-/* Always fixed and never reparented — its own DOM position doesn't matter
-   for layout, only for stacking. js/landing.js drives left/top/width/height
-   inline every scroll frame, lerping between this centred "landing" rest
-   state and the docked top-right corner as scroll progress goes 0 → 1 (see
-   applyHubProgress). At rest (progress 0, or before JS has run) these CSS
-   values are what's shown, so the very first paint already matches. */
-#landing-logo-dock {
-  display: block;
+/* While the flyers are travelling the destination's chrome — row labels,
+   node cards — stays hidden. js/view-switch.js drops `view-flying` only
+   once every flyer has landed, so a node card assembles itself around its
+   hero image rather than sitting there waiting with a hole in it. The
+   flyers stay on top during this fade and are swapped out afterwards. */
+/* `transition: none` here is load-bearing, not tidiness. A transition is
+   driven by the AFTER-change style, so declaring none on the hidden state
+   makes entering it instant while leaving it still animates. Without it the
+   destination's labels sit on screen visibly fading OUT for the first
+   ~280ms of every flight, which read as part of the step. */
+body.view-flying .node-project,
+body.view-flying .m-header-title,
+body.view-flying .m-header-year,
+body.view-flying .m-header::after {
+  opacity: 0;
+  transition: none;
+}
+/* Cards additionally settle out of a slight shrink, so the frame grows into
+   place around its hero image instead of just flashing on over it. */
+body.view-flying .node-project {
+  transform: scale(0.97);
+}
+
+/* --chrome-dur / --chrome-delay are set per host from js/view-switch.js
+   (CHROME_NODES / CHROME_LIST). Both inherit, so setting them on .m-header
+   drives its title, year and ::after icon together. The delay is currently
+   0 for every host, so the whole view blends in at once. The fallbacks only
+   apply if this ever runs outside a flight.
+   cubic-bezier(.4,0,.2,1) rather than `ease`: a symmetric ease-in-out reads
+   as a smooth blend, where an ease-out fade snaps to near-full almost
+   immediately and looks like a step. */
+.m-header-title,
+.m-header-year,
+.m-header::after {
+  transition:
+    opacity   var(--chrome-dur, 280ms) cubic-bezier(.4, 0, .2, 1) var(--chrome-delay, 0ms),
+    transform var(--chrome-dur, 280ms) cubic-bezier(.4, 0, .2, 1) var(--chrome-delay, 0ms);
+}
+/* `.node.node-project`, not `.node-project`: project cards also carry
+   .node-image, whose `transition: border-color` rule sits later in this file
+   at equal specificity and would otherwise replace this declaration whole,
+   leaving the cards to snap from 0 to 1 with no blend at all. Winning on
+   specificity means re-stating that border-color transition here. */
+.node.node-project {
+  transition:
+    opacity      var(--chrome-dur, 280ms) cubic-bezier(.4, 0, .2, 1) var(--chrome-delay, 0ms),
+    transform    var(--chrome-dur, 280ms) cubic-bezier(.4, 0, .2, 1) var(--chrome-delay, 0ms),
+    border-color 0.2s;
+}
+
+/* The one hero image a flyer is currently standing in for. `visibility`,
+   not opacity: the hand-off has to be an instant, exact swap, and visibility
+   can't be caught up in any opacity transition the thumbnail might carry —
+   a fade there is precisely the pop this exists to avoid. */
+.flight-hidden { visibility: hidden; }
+
+/* Corner brand mark — decorative only. pointer-events:none so it can never
+   swallow a wheel gesture or click meant for the view underneath it. */
+#logo-mark {
   position: fixed;
-  z-index: 30;
-  left: 50%; top: 50%;
-  width: clamp(220px, 46vw, 380px);
-  height: clamp(220px, 46vw, 380px);
-  transform: translate(-50%, -50%);
-  cursor: pointer;
-  /* Transparent to hit-testing everywhere EXCEPT the actual circle shapes
-     (.logo-zone-fill opts back in below). The mark's bounding box is much
-     bigger than the visible petals, and it sits on top of #hub-scroll (a
-     sibling, not an ancestor, of this fixed element) — if the whole box
-     caught pointer events, hovering/scrolling over any gap between petals
-     would silently swallow wheel/hover input meant for the scroll hub. */
+  top: 16px; right: 20px;
+  width: 40px; height: 40px;
+  z-index: 40;
+  fill: rgba(255,255,255,0.55);
   pointer-events: none;
+  animation: logo-mark-spin 10s linear infinite;
 }
-
-#landing-logo {
-  display: block;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-@keyframes landing-logo-spin {
+@keyframes logo-mark-spin {
   to { transform: rotate(360deg); }
 }
-#landing-logo.spinning {
-  animation: landing-logo-spin 10s linear infinite;
-}
-
-/* Growth/push/label-darken are driven continuously from JS (proximity to
-   the mouse), not by :hover — these transitions just smooth each frame's
-   inline-style update into a soft chase rather than a snap. easeOutBack
-   gives it a touch of overshoot. */
-.logo-zone {
-  transition: transform 0.35s cubic-bezier(.34,1.56,.64,1);
-}
-.logo-zone-fill {
-  fill: #fff;
-  cursor: pointer;
-  pointer-events: auto; /* opts back in — see #landing-logo-dock's pointer-events:none */
-  transform-box: fill-box;
-  transform-origin: center;
-  transition: transform 0.35s cubic-bezier(.34,1.56,.64,1), fill 0.3s ease, stroke 0.3s ease, filter 0.3s ease;
-}
-/* The big landing-hub look; once scroll progress has mostly docked the mark
-   into the corner (.is-small, set from JS) it swaps to the plain solid mark
-   above. Never scoped to #landing-view as an ancestor — the mark is a
-   permanently fixed, never-reparented element (see #landing-logo-dock), so
-   its own class is the only thing that can key this. The real
-   lens/magnification comes from the HTML magnifier layer behind this SVG;
-   this fill is just a faint frosted tint + a soft drop-shadow for depth,
-   kept semi-transparent so the magnified background shows through. */
-#landing-logo:not(.is-small) .logo-zone-fill {
-  fill: rgba(255,255,255,0.05);
-  stroke: rgba(255,255,255,0.5);
-  stroke-width: 1.25;
-  filter: drop-shadow(0 10px 26px rgba(0,0,0,0.35));
-}
-
-/* Rim highlight — a gradient-stroked duplicate of the same blob shape,
-   simulating light catching the edge of the glass. Big landing-hub look only. */
-.logo-zone-rim {
-  fill: none;
-  stroke: none;
-  pointer-events: none;
-  transform-box: fill-box;
-  transform-origin: center;
-  transition: transform 0.35s cubic-bezier(.34,1.56,.64,1), stroke 0.3s ease;
-}
-#landing-logo:not(.is-small) .logo-zone-rim {
-  stroke: url(#glass-rim);
-  stroke-width: 2.5;
-  mix-blend-mode: screen;
-}
-.logo-zone text {
-  fill: rgba(255,255,255,0.6);
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 13px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  text-anchor: middle;
-  dominant-baseline: middle;
-  pointer-events: none;
-  transition: fill 0.25s ease;
-}
-#landing-logo:not(.is-small) .logo-zone text {
-  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.5));
-}
-/* The proximity-grow/push/label reaction is a landing-hub-only menu
-   behaviour — once scroll progress has mostly docked the mark into the
-   corner it's just the site logo: static (aside from its idle spin) and
-   label-free. */
-#landing-logo.is-small .logo-zone text { display: none; }
+body.is-mobile #logo-mark { display: none; }
 
 /*
   NO will-change, NO translateZ, NO GPU promotion on the canvas.
@@ -433,6 +312,32 @@ body:not(.list-view):not(.landing-view) #view-toggle { display: none !important;
 }
 #canvas-root.dragging { cursor: grabbing; }
 
+/* Theme connection lines — see js/theme-lines.js. Sits between the
+   dot-grid background and the node cards (DOM order), so lines pass
+   visually under the cards they connect. */
+#theme-line-overlay {
+  opacity: 0;
+  transition: opacity 200ms ease-out;
+}
+#theme-line-overlay.visible { opacity: 1; }
+.theme-line {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1.5;
+  stroke-opacity: 0.45;
+  stroke-linecap: round;
+}
+.theme-line-label {
+  fill: rgba(255,255,255,0.72);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  paint-order: stroke;
+  stroke: #0a0a0a;
+  stroke-width: 4px;
+}
 
 .node {
   position: absolute;
@@ -462,12 +367,11 @@ body:not(.list-view):not(.landing-view) #view-toggle { display: none !important;
   pointer-events: none;
 }
 
-/* Resize handle — bottom-right dot */
+/* Resize handle — bottom-right grip */
 .node-resize {
   position: absolute;
   bottom: 4px; right: 4px;
   width: 7px; height: 7px;
-  border-radius: 50%;
   background: rgba(255,255,255,0.18);
   cursor: nwse-resize;
   z-index: 10;
@@ -485,7 +389,7 @@ body:not(.list-view):not(.landing-view) #view-toggle { display: none !important;
 .image-stack { position: absolute; inset: 0; }
 .image-stack img {
   display: block; width: 100%; height: 100%;
-  object-fit: cover; object-position: top; opacity: 0.88;
+  object-fit: cover; object-position: top;
 }
 
 /* Stack layers — ghost nodes behind the main card, offset down-right */
@@ -627,11 +531,22 @@ body:not(.list-view):not(.landing-view) #view-toggle { display: none !important;
 .plb-col-images .plb-left-tabs {
   flex-shrink: 0;
 }
+/* The two columns scroll independently, and each puts its scrollbar on the
+   lightbox's OUTER edge rather than both meeting in the middle: the text
+   column scrolls ltr (bar on the right, its natural side), and the image
+   column is flipped to rtl so its bar lands on the left. `direction` is
+   inherited, so the panel's children are flipped back to ltr — otherwise the
+   gallery grid would lay its columns out right-to-left too. */
 .plb-col-images .plb-left-panel,
 .plb-col-images .plb-model-panel {
   overflow-y: auto;
   flex: 1;
-  padding-right: 8px;
+  direction: rtl;
+  padding-left: 8px; /* gutter between the (now left-hand) scrollbar and content */
+}
+.plb-col-images .plb-left-panel > *,
+.plb-col-images .plb-model-panel > * {
+  direction: ltr;
 }
 .plb-left-tabs {
   display: flex;
@@ -694,7 +609,6 @@ body:not(.list-view):not(.landing-view) #view-toggle { display: none !important;
 .plb-video {
   width: 100%;
   display: block;
-  border-radius: 2px;
   cursor: pointer;
 }
 .plb-video-play {
@@ -709,7 +623,6 @@ body:not(.list-view):not(.landing-view) #view-toggle { display: none !important;
   justify-content: center;
   background: rgba(10, 10, 10, 0.62);
   border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 999px;
   color: #fff;
   cursor: pointer;
   padding: 0;
@@ -735,7 +648,6 @@ body:not(.list-view):not(.landing-view) #view-toggle { display: none !important;
   justify-content: center;
   background: rgba(10, 10, 10, 0.72);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 999px;
   color: #ccc;
   cursor: pointer;
   padding: 0;
@@ -819,11 +731,14 @@ body:not(.list-view):not(.landing-view) #view-toggle { display: none !important;
     overflow: visible;
     padding-right: 0;
   }
+  /* Stacked single column — no inner scrollers left to place a bar for. */
   .plb-col-images .plb-left-panel,
   .plb-col-images .plb-model-panel,
   .plb-col-text .plb-right-panels {
     overflow-y: visible;
+    direction: ltr;
     padding-right: 0;
+    padding-left: 0;
   }
 }
 #plb-close {
@@ -833,13 +748,6 @@ body:not(.list-view):not(.landing-view) #view-toggle { display: none !important;
   font-size: 20px; cursor: pointer; transition: color 0.15s; z-index: 111;
 }
 #plb-close:hover { color: rgba(255,255,255,0.9); }
-
-/* Search line overlay — fixed viewport, above canvas */
-#line-overlay {
-  position: fixed; top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  pointer-events: none; z-index: 10;
-}
 
 /* Image lightbox */
 #lightbox {
@@ -867,77 +775,6 @@ body:not(.list-view):not(.landing-view) #view-toggle { display: none !important;
   font-size: 10px; color: rgba(255,255,255,0.25); letter-spacing: 0.1em;
 }
 
-/* Search input — fixed to viewport bottom center */
-#input-wrap {
-  position: fixed;
-  left: 50%;
-  bottom: 44px;
-  transform: translateX(-50%);
-  display: flex; align-items: center;
-  z-index: 20;
-}
-#no-results {
-  display: none;
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 0; right: 0;
-  text-align: center;
-  font-size: 9.5px;
-  letter-spacing: 0.1em;
-  color: rgba(255,255,255,0.22);
-  pointer-events: none;
-  white-space: nowrap;
-}
-#no-results.visible { display: block; }
-#query-field {
-  position: relative;
-  width: 320px;
-  background: rgba(10,10,10,0.92);
-  border: 1px solid rgba(255,255,255,0.13);
-  border-right: none;
-}
-#query-suggestion {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  font-size: 12px;
-  padding: 8px 12px;
-  color: rgba(255,255,255,0.22);
-  pointer-events: none;
-  white-space: pre;
-  overflow: hidden;
-}
-#query-input {
-  width: 100%;
-  background: transparent;
-  border: none;
-  color: #ddd; font-size: 12px; padding: 8px 12px;
-  outline: none; font-family: inherit; transition: border-color 0.2s;
-  position: relative;
-  z-index: 1;
-}
-#query-input::placeholder { color: rgba(255,255,255,0.2); }
-#query-field:focus-within { border-color: rgba(255,255,255,0.28); }
-#query-input:disabled { opacity: 0.35; cursor: not-allowed; }
-#send-btn {
-  background: rgba(10,10,10,0.92);
-  border: 1px solid rgba(255,255,255,0.13);
-  color: rgba(255,255,255,0.38); padding: 8px 12px;
-  cursor: pointer; font-size: 12px; font-family: inherit; transition: color 0.15s;
-}
-#send-btn:hover:not(:disabled) { color: #ddd; }
-#send-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-#loading-dot {
-  width: 18px; height: 18px;
-  fill: rgba(255,255,255,0.45);
-  margin-left: 10px; display: none;
-  animation: logo-spin 2s linear infinite;
-  flex-shrink: 0;
-}
-@keyframes logo-spin { to { transform: rotate(360deg); } }
-
 /* ─────────────────────────────────────────────
    Mobile accordion view — keyed to .is-mobile class set once at load,
    not a media query, so orientation changes don't flip the layout.
@@ -946,9 +783,6 @@ body:not(.list-view):not(.landing-view) #view-toggle { display: none !important;
 
 body.is-mobile { overflow: auto; }
 body.is-mobile #canvas-root,
-body.is-mobile #input-wrap,
-body.is-mobile #line-overlay,
-body.is-mobile #view-toggle,
 body.is-mobile #desktop-list-view,
 body.is-mobile #project-lightbox { display: none !important; }
 
@@ -981,31 +815,6 @@ body.is-mobile #site-header-intro {
   font-size: 11px;
 }
 
-#mobile-sticky-header {
-  display: none;
-}
-
-body.is-mobile #mobile-sticky-header {
-  display: block;
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  z-index: 50;
-  padding: 12px 16px;
-  background: rgba(10,10,10,0.96);
-  border-bottom: 1px solid rgba(255,255,255,0.09);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.52);
-  transform: translateY(-100%);
-  transition: transform 0.22s ease;
-  pointer-events: none;
-}
-
-body.is-mobile #mobile-sticky-header.header-scrolled.visible {
-  transform: translateY(0);
-}
-
 body.is-mobile #mobile-view {
   display: block;
   position: fixed;
@@ -1020,7 +829,13 @@ body.is-mobile #mobile-view {
 .m-item { border-bottom: 1px solid rgba(255,255,255,0.09); }
 
 .m-header {
-  padding: 18px 20px;
+  --row-h:   76px; /* base row height — grown toward ROW_MAX in js/mobile.js on cursor proximity */
+  --thumb-w: 90px; /* base thumbnail size — grown toward THUMB_MAX_W/H in lockstep with --row-h */
+  --thumb-h: 40px;
+  position: relative;
+  min-height: var(--row-h);
+  transition: min-height 150ms ease-out;
+  padding: 3px 20px;
   font-size: 13px;
   font-weight: 500;
   color: rgba(255,255,255,0.72);
@@ -1037,22 +852,43 @@ body.is-mobile #mobile-view {
   text-align: left;
   font-family: inherit;
 }
-.m-header-title { flex: 1; }
+/* Left to right: title (left-bound, flex:1) — image — year (right-bound).
+   The image is NOT a flex sibling — it's absolutely positioned on
+   .m-header itself so it sits at the true horizontal center of the whole
+   row, regardless of title length or year width. Text size is static;
+   only the image grows on cursor proximity (see initRowGrowth). */
+.m-header-title { flex: 1; min-width: 0; font-size: 26px; }
+.m-header-thumb {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--thumb-w);
+  height: var(--thumb-h);
+  /* contain, not cover: always show the full image, never cropped — it
+     scales up in place as --thumb-w/h grow. */
+  object-fit: contain;
+  object-position: center;
+  transition: width 150ms ease-out, height 150ms ease-out;
+}
 .m-header-year {
-  font-size: 13px;
+  font-size: 20px;
   font-weight: 500;
   color: rgba(255,255,255,0.72);
   letter-spacing: 0.02em;
   margin-left: 16px;
-  margin-right: 12px;
+  margin-right: 48px; /* clears the absolutely positioned +/− icon (right:20px, ~20px wide) */
   flex-shrink: 0;
 }
 .m-header::after {
   content: '+';
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
   font-size: 20px;
   color: rgba(255,255,255,0.25);
   line-height: 1;
-  flex-shrink: 0;
 }
 .m-header.open {
   color: rgba(255,255,255,0.9);
@@ -1156,9 +992,6 @@ body.is-mobile #mobile-view {
 }
 .m-video {
   margin: 0;
-}
-.m-video .plb-video {
-  border-radius: 0;
 }
 
 /* About project: profile image at half size */
