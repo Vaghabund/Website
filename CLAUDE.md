@@ -65,7 +65,6 @@ files that actually exist.
 | `model` | URL or path | `.glb` for the 3D viewer; usually external-hosted |
 | `poster` | path | poster image for the first video |
 | `silentVideos` | bool | mute autoplay videos |
-| `firstImageAfterText` | bool | defers the first image to render after the text/info block instead of before it |
 | `exhibitions` | list of strings | shown/printed history, e.g. `"UdK Rundgang, 2025"` |
 
 ### Naming convention

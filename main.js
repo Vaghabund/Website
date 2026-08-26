@@ -9,7 +9,7 @@ import PROJECTS from './projects.js';
 // both the mobile and desktop paths, so they are imported statically.
 import { IS_MOBILE, INITIAL_ZOOM }             from './js/state.js';
 import { CANVAS_CX, CANVAS_CY }               from './js/layout.js';
-import { buildMobileView }                     from './js/mobile.js';
+import { buildMobileList }                     from './js/list.js';
 import { buildFooter }                         from './js/footer.js';
 import './js/intro.js';
 import './js/favicon-spin.js';
@@ -20,7 +20,7 @@ document.addEventListener('contextmenu', e => { if (e.target.tagName === 'IMG') 
 if (IS_MOBILE) {
   // ── Mobile path ──────────────────────────────────────────────────────────
   document.body.classList.add('is-mobile');
-  buildMobileView();
+  buildMobileList();
   buildFooter();
 } else {
   // ── Desktop path ─────────────────────────────────────────────────────────

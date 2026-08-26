@@ -1,6 +1,6 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 img { -webkit-user-drag: none; pointer-events: none; user-select: none; }
-.plb-gallery img, .m-img { pointer-events: auto; }
+.plb-gallery img { pointer-events: auto; }
 
 html, body {
   width: 100%; height: 100%;
@@ -62,6 +62,7 @@ html, body {
   background: rgba(180,180,180,0.62);
 }
 
+/* Header runs wordmark (left) — spinning mark (centre) — controls (right). */
 #top-left-stack {
   position: fixed;
   top: 16px;
@@ -101,20 +102,30 @@ html, body {
   text-align: left;
 }
 
+/* Below this the wordmark plus its tagline reaches the centred mark, and the
+   tagline also starts wrapping to a second line — which would push the header
+   past the 56px strip the list scrolls under. Drop the tagline; it is the
+   most expendable part of the header. Once it is gone the wordmark is only
+   ~230px, which clears the mark all the way down to the 600px mobile
+   breakpoint, so no further steps are needed. */
+@media (max-width: 1150px) {
+  #site-header-intro { display: none; }
+}
+
 /* ─────────────────────────────────────────────
    View switch — the node canvas is the default view; adding `list-view` to
    <body> swaps it for the flat project list. The transition between the two
    is animated in js/view-switch.js (see .view-flyer / .measuring below).
    ───────────────────────────────────────────── */
 
-/* Top centre: the view toggle, plus the "about" link that opens the bio in
+/* Top right: the view toggle, plus the "about" link that opens the bio in
    the project lightbox (the bio has no canvas node and no list row).
    Both share the node/name-banner chrome — square corners, 1px hairline
    border, near-opaque dark fill — rather than a pill shape. */
 #top-bar {
   position: fixed;
-  top: 18px; left: 50%;
-  transform: translateX(-50%);
+  top: 18px;
+  right: 20px;
   z-index: 41;
   display: flex;
   align-items: center;
@@ -187,18 +198,29 @@ body.is-mobile #top-bar { display: none; }
   -webkit-overflow-scrolling: touch;
   z-index: 12;
   background: #0a0a0a;
-  padding-top: 130px;    /* clears the persistent top-left header (bottom ~110px) */
+  /* Clears the floating site header and view toggle, which both end ~50px
+     down. This also sets where an open row's sticky header comes to rest: a
+     sticky offset is measured from the scrollport ALREADY inset by the
+     container's padding, so `top: 0` on .p-row lands it at exactly 56px. */
+  padding-top: 56px;
   padding-bottom: 56px;
 }
 body.list-view #desktop-list-view { display: block; }
 body.list-view #canvas-root { display: none !important; }
 
-#desktop-list-view .m-content {
-  padding: 0 20px 24px;
-  color: rgba(255,255,255,0.56);
-  font-size: 12px;
-  line-height: 1.75;
+/* Padding is inside the scrollport, so rows scroll up through that top 56px
+   and would otherwise be visible above the sticky header. This masks the
+   strip: above the list (z 12), below the site header and toggle (z 40/41). */
+body.list-view::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 56px;
+  background: #0a0a0a;
+  z-index: 13;
+  pointer-events: none;
 }
+
 
 /* ── Node ⇄ list flight ────────────────────────────────────────────────────
    js/view-switch.js needs to read the rects of BOTH views before it can
@@ -237,9 +259,9 @@ body.list-view #canvas-root.measuring {
    destination's labels sit on screen visibly fading OUT for the first
    ~280ms of every flight, which read as part of the step. */
 body.view-flying .node-project,
-body.view-flying .m-header-title,
-body.view-flying .m-header-year,
-body.view-flying .m-header::after {
+body.view-flying .p-row-title,
+body.view-flying .p-row-year,
+body.view-flying .p-row-mark {
   opacity: 0;
   transition: none;
 }
@@ -250,21 +272,17 @@ body.view-flying .node-project {
 }
 
 /* --chrome-dur / --chrome-delay are set per host from js/view-switch.js
-   (CHROME_NODES / CHROME_LIST). Both inherit, so setting them on .m-header
-   drives its title, year and ::after icon together. The delay is currently
+   (CHROME_NODES / CHROME_LIST). Both inherit, so setting them on a .p-row
+   drives its title, year, mark and scrim together. The delay is currently
    0 for every host, so the whole view blends in at once. The fallbacks only
    apply if this ever runs outside a flight.
    cubic-bezier(.4,0,.2,1) rather than `ease`: a symmetric ease-in-out reads
    as a smooth blend, where an ease-out fade snaps to near-full almost
-   immediately and looks like a step. */
-.m-header-title,
-.m-header-year,
-.m-header::after {
-  transition:
-    opacity   var(--chrome-dur, 280ms) cubic-bezier(.4, 0, .2, 1) var(--chrome-delay, 0ms),
-    transform var(--chrome-dur, 280ms) cubic-bezier(.4, 0, .2, 1) var(--chrome-delay, 0ms);
-}
-/* `.node.node-project`, not `.node-project`: project cards also carry
+   immediately and looks like a step.
+   The list row's half of this lives down in the project-list block instead of
+   here — those elements carry transitions of their own, and a second bare
+   `transition` written later in the file would replace this one whole.
+   `.node.node-project`, not `.node-project`: project cards also carry
    .node-image, whose `transition: border-color` rule sits later in this file
    at equal specificity and would otherwise replace this declaration whole,
    leaving the cards to snap from 0 to 1 with no blend at all. Winning on
@@ -284,9 +302,13 @@ body.view-flying .node-project {
 
 /* Corner brand mark — decorative only. pointer-events:none so it can never
    swallow a wheel gesture or click meant for the view underneath it. */
+/* Centred via `left` arithmetic, NOT translateX(-50%): the spin animation
+   below animates `transform`, and an animated transform replaces the
+   element's own outright — the mark would sit half its width off-centre.
+   The width is fixed, so subtracting half of it is exact. */
 #logo-mark {
   position: fixed;
-  top: 16px; right: 20px;
+  top: 16px; left: calc(50% - 20px);
   width: 40px; height: 40px;
   z-index: 40;
   fill: rgba(255,255,255,0.55);
@@ -753,8 +775,13 @@ body.is-mobile #logo-mark { display: none; }
 }
 
 /* ─────────────────────────────────────────────
-   Mobile accordion view — keyed to .is-mobile class set once at load,
-   not a media query, so orientation changes don't flip the layout.
+   Project list — ONE design serving both #desktop-list-view and #mobile-view
+   (see js/list.js). Rows are full-bleed banners: hero image, title, year.
+   Opening collapses the banner into a slim sticky header and grows the panel
+   beneath it inline — never a modal.
+
+   The .is-mobile class is set once at load rather than by a media query, so
+   an orientation change can't flip the layout mid-session.
    ───────────────────────────────────────────── */
 #mobile-view { display: none; }
 
@@ -763,33 +790,39 @@ body.is-mobile #canvas-root,
 body.is-mobile #desktop-list-view,
 body.is-mobile #project-lightbox { display: none !important; }
 
+/* Keeps the bordered-box treatment the desktop header uses, rather than
+   letting the wordmark run edge to edge — at 16:1 the mark then flattened
+   into a thin full-width strip with the tagline crammed straight underneath
+   and the first banner right below that. Inset and boxed, it gets room. */
 body.is-mobile #site-header {
   display: flex;
   position: relative;
   top: auto;
   left: auto;
   right: auto;
-  margin: 0;
-  padding: 20px 16px 16px;
-  gap: 8px;
   flex-direction: column;
   align-items: flex-start;
+  gap: 13px;
+  margin: 16px 16px 22px;
+  padding: 17px 18px 19px;
   pointer-events: none;
-  border: none;
-  border-bottom: 1px solid rgba(255,255,255,0.09);
-  background: none;
+  border: 1px solid rgba(255,255,255,0.09);
+  background: rgba(10,10,10,0.92);
 }
 
 body.is-mobile #site-header-logo {
   width: 100%;
   max-width: none;
+  opacity: 0.62;
 }
 
 body.is-mobile #site-header-intro {
   max-width: none;
   width: 100%;
   text-align: left;
-  font-size: 11px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: rgba(255,255,255,0.5);
 }
 
 body.is-mobile #mobile-view {
@@ -799,202 +832,223 @@ body.is-mobile #mobile-view {
   overflow-y: auto;
   background: #0a0a0a;
   -webkit-overflow-scrolling: touch;
-  padding-top: 0;
   padding-bottom: 56px;
 }
 
-.m-item { border-bottom: 1px solid rgba(255,255,255,0.09); }
+/* ── Row ─────────────────────────────────────────────────────────────────
+   Three flat columns: title left, hero image centred, year and mark right.
+   Nothing overlaps anything, so there is no scrim and no gradient — the
+   image is simply a block in its own cell. --band-h is the resting height;
+   opening collapses the row to --band-open-h and the image column to zero,
+   leaving a slim sticky header. min-height rather than height, so a title
+   that wraps grows the row instead of overflowing it. */
+.p-item {
+  --band-h: 150px;
+  --band-open-h: 64px;
+  border-bottom: 1px solid rgba(255,255,255,0.09);
+}
+#mobile-view .p-item {
+  --band-h: 118px;
+  --band-open-h: 56px;
+}
 
-.m-header {
-  --row-h:   76px; /* base row height — grown toward ROW_MAX in js/mobile.js on cursor proximity */
-  --thumb-w: 90px; /* base thumbnail size — grown toward THUMB_MAX_W/H in lockstep with --row-h */
-  --thumb-h: 40px;
-  position: relative;
-  min-height: var(--row-h);
-  transition: min-height 150ms ease-out;
-  padding: 3px 20px;
-  font-size: 13px;
-  font-weight: 500;
-  color: rgba(255,255,255,0.72);
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  display: flex;
+.p-row {
+  display: grid;
+  /* Equal outer columns are what actually centres the image on the row —
+     `auto` sides would let each title's length shove it off-centre by a
+     different amount, and the ragged result is very visible down a list. */
+  grid-template-columns: 1fr 260px 1fr;
+  column-gap: 28px;
   align-items: center;
-  justify-content: space-between;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-  background: none;
-  border: none;
   width: 100%;
-  text-align: left;
+  min-height: var(--band-h);
+  padding: 20px 24px;
+  border: none;
+  background: none;
   font-family: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    min-height            460ms cubic-bezier(.4, 0, .2, 1),
+    grid-template-columns 460ms cubic-bezier(.4, 0, .2, 1),
+    column-gap            460ms cubic-bezier(.4, 0, .2, 1),
+    padding               460ms cubic-bezier(.4, 0, .2, 1),
+    background            240ms ease;
 }
-/* Left to right: title (left-bound, flex:1) — image — year (right-bound).
-   The image is NOT a flex sibling — it's absolutely positioned on
-   .m-header itself so it sits at the true horizontal center of the whole
-   row, regardless of title length or year width. Text size is static;
-   only the image grows on cursor proximity (see initRowGrowth). */
-.m-header-title { flex: 1; min-width: 0; font-size: 26px; }
-.m-header-thumb {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: var(--thumb-w);
-  height: var(--thumb-h);
-  /* contain, not cover: always show the full image, never cropped — it
-     scales up in place as --thumb-w/h grow. */
-  object-fit: contain;
-  object-position: center;
-  transition: width 150ms ease-out, height 150ms ease-out;
-}
-.m-header-year {
-  font-size: 20px;
-  font-weight: 500;
-  color: rgba(255,255,255,0.72);
-  letter-spacing: 0.02em;
-  margin-left: 16px;
-  margin-right: 48px; /* clears the absolutely positioned +/− icon (right:20px, ~20px wide) */
-  flex-shrink: 0;
-}
-.m-header::after {
-  content: '+';
-  position: absolute;
-  top: 50%;
-  right: 20px;
-  transform: translateY(-50%);
-  font-size: 20px;
-  color: rgba(255,255,255,0.25);
-  line-height: 1;
-}
-.m-header.open {
-  color: rgba(255,255,255,0.9);
+.p-row:hover { background: rgba(255,255,255,0.022); }
+.p-item.open .p-row {
+  min-height: var(--band-open-h);
+  grid-template-columns: 1fr 0px 1fr;
+  column-gap: 0;
+  padding: 0 24px;
   position: sticky;
   top: 0;
   z-index: 10;
-  background: rgba(10,10,10,0.97);
+  background: #0a0a0a;
 }
-.m-item:has(.m-header.open) {
-  border-bottom-color: transparent;
+/* True centring costs equal outer columns, so at phone widths the title only
+   gets half the leftover space — a narrower image buys it back. */
+#mobile-view .p-row {
+  grid-template-columns: 1fr 84px 1fr;
+  column-gap: 10px;
+  padding: 16px;
 }
-
-/* Desktop list view: sticky accordion header sits at top of scroll container */
-#desktop-list-view .m-header.open {
-  top: 0;
-}
-.m-header.open::after { content: '−'; }
-
-.m-content {
-  display: none;
-  padding: 0 0 24px;
-}
-.m-content.open { display: block; }
-.m-content .m-img { width: 100%; display: block; }
-.m-content .m-text {
-  padding: 20px 20px;
-  font-size: 12px;
-  line-height: 1.75;
-  color: rgba(255,255,255,0.56);
-  white-space: pre-wrap;
-}
-.m-content .m-info { padding: 0 20px 8px; }
-
-.m-split {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  gap: 14px;
+#mobile-view .p-row-title { font-size: 15px; }
+#mobile-view .p-item.open .p-row {
+  grid-template-columns: 1fr 0px 1fr;
+  column-gap: 0;
+  padding: 0 16px;
 }
 
-.m-col {
+/* Right column: year and mark grouped together, pushed to the row's edge. */
+.p-row-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 20px;
   min-width: 0;
-  max-height: 58vh;
-  overflow-y: auto;
-  padding-right: 6px;
 }
 
-.m-gallery {
+.p-row-media {
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  /* The row centres its items; the image cell alone fills the band height. */
+  align-self: stretch;
+}
+/* Absolute, not in flow: as a normal grid-item child the image's intrinsic
+   height drove the row's height, so a portrait hero produced a 400px row and
+   the list came out wildly uneven. Out of flow it contributes nothing, the
+   cell simply stretches to the band, and every row matches. */
+.p-row-img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 700ms cubic-bezier(.22, .61, .36, 1);
+}
+.p-row:hover .p-row-img { transform: scale(1.03); }
+
+.p-row-title {
+  min-width: 0;
+  /* A single word longer than the column (e.g. "Photogrammetry") would
+     otherwise overflow and run under the image rather than wrapping. */
+  overflow-wrap: break-word;
+  /* Weight, tracking and colour all come straight from the page defaults —
+     body's own #ccc, no weight bump, no negative tracking. Only the size is
+     the row's own. */
+  font-size: clamp(17px, 2.4vw, 30px);
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: normal;
+  color: #ccc;
+  /* The FLIP hand-over fades these three in via body.view-flying (see
+     js/view-switch.js). --chrome-dur/--chrome-delay are set per .p-row and
+     inherit down. Each element folds that fade into its own transition list
+     rather than inheriting it from the rule further up this file, because a
+     bare `transition` written here would replace that one outright. */
+  transition:
+    opacity var(--chrome-dur, 280ms) cubic-bezier(.4, 0, .2, 1) var(--chrome-delay, 0ms),
+    color   240ms ease;
+}
+.p-row:hover .p-row-title,
+.p-item.open .p-row-title { color: #fff; }
+
+.p-row-year {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  transition: opacity var(--chrome-dur, 280ms) cubic-bezier(.4, 0, .2, 1) var(--chrome-delay, 0ms);
+}
+
+/* +/− drawn as two bars so the vertical one can rotate away on open rather
+   than the glyph swapping instantly. */
+.p-row-mark {
+  position: relative;
+  flex-shrink: 0;
+  width: 13px; height: 13px;
+  transition: opacity var(--chrome-dur, 280ms) cubic-bezier(.4, 0, .2, 1) var(--chrome-delay, 0ms);
+}
+.p-row-mark::before,
+.p-row-mark::after {
+  content: '';
+  position: absolute;
+  left: 0; top: 50%;
+  width: 100%; height: 1px;
+  margin-top: -0.5px;
+  background: rgba(255,255,255,0.55);
+}
+.p-row-mark::after {
+  transform: rotate(90deg);
+  transition: transform 460ms cubic-bezier(.4, 0, .2, 1);
+}
+.p-item.open .p-row-mark::after { transform: rotate(0deg); }
+
+/* ── Inline panel ────────────────────────────────────────────────────────
+   grid-template-rows 0fr → 1fr animates to the content's own height with no
+   measuring and no hard-coded max-height, so a project of any length works.
+   .p-panel-inner must keep min-height:0 and overflow:hidden, or the grid
+   track has nothing to shrink against and the transition does nothing. */
+.p-panel {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 460ms cubic-bezier(.4, 0, .2, 1);
 }
+.p-item.open .p-panel { grid-template-rows: 1fr; }
 
-.m-text {
+/* While a project is open, keep slack below the list so ANY row — including
+   the last — can be scrolled to the top. Without it the scroll clamps
+   against the end of the document and the row settles short; worse, the
+   panel's height keeps changing as lazy images arrive, and each change
+   re-clamps scrollTop and shunts the row back down again. Only applied while
+   something is open (js/list.js toggles it), so the list never carries a
+   screen of dead space at rest.
+   The mobile selector needs `body.is-mobile` on it: the base padding lives on
+   `body.is-mobile #mobile-view`, which outranks a bare `#mobile-view.p-list-open`. */
+#desktop-list-view.p-list-open,
+body.is-mobile #mobile-view.p-list-open { padding-bottom: 90vh; }
+.p-panel-inner {
+  min-height: 0;
+  overflow: hidden;
+  color: rgba(255,255,255,0.56);
   font-size: 12px;
   line-height: 1.75;
-  color: rgba(255,255,255,0.42);
-  margin-bottom: 18px;
-  white-space: pre-wrap;
 }
 
-.m-text + .m-info {
-  margin-top: 32px;
-}
-.m-info {
-  margin-top: 4px;
-}
-
-.m-info-row + .m-info-row {
-  margin-top: 8px;
-}
-
-.m-info-label {
-  font-size: 9px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.24);
-  margin-bottom: 2px;
-}
-
-.m-info-value {
-  font-size: 12px;
-  color: rgba(255,255,255,0.58);
-  line-height: 1.6;
-}
-
-.m-link {
+/* The panel reuses the project lightbox's layout builder so a project reads
+   the same wherever it opens. Undo the parts that only make sense in a modal:
+   the 82vh cap and the two inner scrollers. Inline, content just flows and
+   the list itself scrolls. */
+.p-panel-inner .plb-split { padding: 26px 24px 34px; }
+#mobile-view .p-panel-inner .plb-split { padding: 18px 16px 26px; }
+.p-panel-inner .plb-col-images,
+.p-panel-inner .plb-col-text {
+  max-height: none;
   display: block;
-  color: rgba(255,255,255,0.45);
-  text-decoration: none;
-  margin-bottom: 2px;
 }
-
-.m-link:hover {
-  color: rgba(255,255,255,0.78);
-}
-
-.m-img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-.m-video {
-  margin: 0;
+.p-panel-inner .plb-left-panel,
+.p-panel-inner .plb-model-panel,
+.p-panel-inner .plb-right-panels {
+  overflow: visible;
+  direction: ltr;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 /* About project: profile image at half size */
-#mobile-view-content-about .m-img {
-  width: 50%;
-  margin: 0 auto;
-}
 #desktop-list-view-content-about .plb-gallery img,
+#mobile-view-content-about .plb-gallery img,
 #project-lightbox[data-project="about"] .plb-gallery img {
   max-width: 50%;
   margin: 0 auto;
-}
-
-@media (max-width: 860px) {
-  .m-split {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-  .m-col {
-    max-height: none;
-    overflow: visible;
-    padding-right: 0;
-  }
-  .m-gallery {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* ─────────────────────────────────────────────
