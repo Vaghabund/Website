@@ -4,7 +4,7 @@
 
 import { projectDataById } from './state.js';
 import { el }              from './dom.js';
-import { closeModelLb, mountInlineModel, disposeInlineModel } from './three-viewer.js';
+import { mountInlineModel, disposeInlineModel } from './three-viewer.js';
 
 // ── Image lightbox ────────────────────────────────────────────────────────
 const lightbox = document.getElementById('lightbox');
@@ -310,7 +310,6 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     lightbox.classList.remove('open');
     closePlb();
-    closeModelLb();
     document.getElementById('impressum-lightbox')?.classList.remove('open');
   }
   if (lightbox.classList.contains('open')) {

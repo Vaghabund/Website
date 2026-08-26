@@ -77,7 +77,7 @@ Desktop only. No exports — all side effects run at module evaluation.
 - **Touch pinch:** Two-finger pinch drives the same `doZoom()`.
 - **`applyTransform()`** — Sets `translate(panX, panY) scale(zoom)` on `#canvas-root`.
 - RAF-throttled; `rafPending` flag prevents stacked frames.
-- Overlay guard selectors: `#project-lightbox, #model-lightbox, #impressum-lightbox, #plb-inner` — interactions inside these never pan or zoom the canvas.
+- Overlay guard selectors: `#project-lightbox, #impressum-lightbox, #plb-inner` — interactions inside these never pan or zoom the canvas.
 
 ---
 
@@ -115,8 +115,8 @@ Project lightbox layout:
 | Export | Description |
 |---|---|
 | `loadThree()` | Lazy-loads and caches Three.js + GLTFLoader + OrbitControls. Returns promise. |
-| `openModelLb(src)` | Opens `#model-lightbox`, creates WebGL renderer, loads .glb, starts render loop. |
-| `closeModelLb()` | Closes modal, cancels animation frame, disposes renderer and geometry. |
+| `mountInlineModel(src, container)` | Creates a WebGL renderer in `container`, loads the .glb, starts the render loop. Mounted in the project lightbox's left column behind a "3D Model" tab. |
+| `disposeInlineModel()` | Cancels the animation frame and disposes the renderer. Called when the tab is switched away or the lightbox closes. |
 
 Scene setup: perspective camera 45°, ambient light 1.5 + two directional lights (2.5 and 1.0), OrbitControls with auto-rotate (0.8°/frame), damping 0.07, zoom enabled, pan disabled. Model is auto-centred and scaled to fit (2.2× bounding sphere). Tone mapping: ACES filmic, exposure 1.4, sRGB output.
 
@@ -197,8 +197,6 @@ No imports. Self-contained. `buildFooter()` creates the footer DOM (Instagram li
 | `lightbox` | Image viewer modal |
 | `project-lightbox` | Project detail modal |
 | `plb-inner` | Project modal scroll container |
-| `model-lightbox` | Three.js 3D model modal |
-| `mlb-canvas-wrap` | WebGL renderer target |
 | `site-footer` | Footer (copyright, links, impressum button) |
 | `impressum-lightbox` | Legal info modal |
 

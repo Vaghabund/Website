@@ -429,29 +429,6 @@ body.is-mobile #logo-mark { display: none; }
   filter: drop-shadow(0 1px 3px rgba(0,0,0,0.7));
 }
 
-/* Model lightbox */
-#model-lightbox {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.96); z-index: 100;
-  align-items: center; justify-content: center;
-}
-#model-lightbox.open { display: flex; }
-#mlb-canvas-wrap {
-  width: min(88vw, 88vh);
-  height: min(88vw, 88vh);
-}
-#mlb-canvas-wrap canvas {
-  display: block;
-  width: 100% !important;
-  height: 100% !important;
-}
-#mlb-close {
-  position: fixed; top: 16px; right: 20px;
-  background: none; border: none; color: rgba(255,255,255,0.4);
-  font-size: 20px; cursor: pointer; transition: color 0.15s; z-index: 101;
-}
-#mlb-close:hover { color: rgba(255,255,255,0.9); }
-
 /* Project lightbox (tabbed project unfold) */
 @keyframes plb-backdrop-in {
   from { opacity: 0; }

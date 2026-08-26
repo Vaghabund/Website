@@ -15,7 +15,7 @@ let dragging = false, dragStart = { x: 0, y: 0 }, panStart = { x: 0, y: 0 };
 let rafPending = false;
 
 document.addEventListener('mousedown', e => {
-  if (e.target.closest('#lightbox,#project-lightbox,#model-lightbox,#impressum-lightbox,.node-image,.node-bar,.node-resize')) return;
+  if (e.target.closest('#lightbox,#project-lightbox,#impressum-lightbox,.node-image,.node-bar,.node-resize')) return;
   dragging = true;
   dragStart = { x: e.clientX, y: e.clientY };
   panStart  = { x: state.pan.x, y: state.pan.y };
@@ -86,7 +86,7 @@ document.addEventListener('wheel', e => {
   // otherwise swallow every wheel gesture (via preventDefault below) that's
   // meant to natively scroll #desktop-list-view instead.
   if (document.body.classList.contains('list-view')) return;
-  if (e.target.closest('#plb-inner,#project-lightbox,#model-lightbox,#impressum-lightbox')) return;
+  if (e.target.closest('#plb-inner,#project-lightbox,#impressum-lightbox')) return;
   e.preventDefault();
   // Trackpad pinch-to-zoom is reported by the browser as a wheel event with
   // ctrlKey set; plain two-finger scrolling is not. Only pinch should zoom —
@@ -125,13 +125,13 @@ function pinchDist(e) {
 let lastPinch = null;
 
 document.addEventListener('touchstart', e => {
-  if (e.target.closest('#project-lightbox,#model-lightbox,#impressum-lightbox')) return;
+  if (e.target.closest('#project-lightbox,#impressum-lightbox')) return;
   if (e.touches.length === 2) lastPinch = pinchDist(e);
 }, { passive: true });
 document.addEventListener('touchmove',  e => {
   // Pinch-zoom only applies in the node view — see the wheel handler above.
   if (document.body.classList.contains('list-view')) return;
-  if (e.target.closest('#project-lightbox,#model-lightbox,#impressum-lightbox')) return;
+  if (e.target.closest('#project-lightbox,#impressum-lightbox')) return;
   if (e.touches.length !== 2) return;
   const d  = pinchDist(e);
   const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
