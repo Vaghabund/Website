@@ -18,6 +18,7 @@ texts:
     label: "Overview"
 model: "models/banana.glb"
 images:
+  - images/txt2mesh-diagram.webp
   - images/dialog-batch-render.webp
   - images/dialog-two-button-ui.webp
   - images/render-queue-live-status.webp
