@@ -1,3 +1,5 @@
+Hi I'm Joel!
+
 I'm an art director and spatial thinker, based in Berlin. My work is a chimera of computational design, brand experience, and physical space, built on a core of experimental technology and a lot of R&D.
 
 My background in architecture gave me a deep fluency in systems thinking, spatial logic, and the understanding that environments shape behaviour. But architecture moves slowly, and my curiosity doesn't. So I took what the discipline gave me and moved it into the digital and maker world, where prototyping and execution flow rapidly into one another.
