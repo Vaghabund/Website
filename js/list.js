@@ -26,7 +26,7 @@ const isAbsolute = u => /^https?:\/\//i.test(u) || u.startsWith('media/');
 async function rowInfo(p) {
   const detail = await fetchDetail(p.id);
   const base   = `media/projects/${p.id}/`;
-  const first  = detail.images?.[0];
+  const first  = detail.hero || detail.images?.[0];
   return {
     p,
     year:  detail.year || '',

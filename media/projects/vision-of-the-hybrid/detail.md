@@ -12,6 +12,7 @@ tools:
   - NomadSculpt
   - Whisper
 links: []
+hero: images/photo_1_2026-05-17_20-34-07.webp
 texts:
   - file: description.md
     label: "Overview"

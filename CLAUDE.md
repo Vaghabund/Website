@@ -60,6 +60,7 @@ files that actually exist.
 | `themes` | list | plain strings, lowercase-hyphenated (e.g. `generative-ai`); hovering a project node on the canvas draws a line to every other project sharing a theme — see `js/theme-lines.js` for the label map |
 | `links` | list of `{label, url}` | rendered as buttons; a `.zip` url adds a download badge to the node |
 | `images` | list | paths relative to the project folder, e.g. `images/foo.webp` |
+| `hero` | path | overrides the auto-picked hero/thumbnail (normally `images[0]`) shown on the canvas node and list row, without reordering `images` itself |
 | `texts` | list of `{file, label}` | extra text tabs beyond `description.md`; omit to default to a single "Overview" tab from `description.md` |
 | `videos` | list of URLs | usually external-hosted |
 | `model` | URL or path | `.glb` for the 3D viewer; usually external-hosted |

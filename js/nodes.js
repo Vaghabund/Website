@@ -138,7 +138,8 @@ export function buildProjectNode(p, detail, texts, images) {
 
   const stack = el('div', 'image-stack');
   const img   = document.createElement('img');
-  img.src = imageSrcs[0] ? toThumb(imageSrcs[0]) : 'media/icons/LOGO.svg';
+  const heroSrc = detail._resolvedHero || imageSrcs[0];
+  img.src = heroSrc ? toThumb(heroSrc) : 'media/icons/LOGO.svg';
   img.alt = `${p.title} preview`; img.loading = 'lazy';
   stack.appendChild(img);
   if (imageSrcs.length > 1) stack.appendChild(el('div', 'image-count', String(imageSrcs.length)));
