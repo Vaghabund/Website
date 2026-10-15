@@ -113,6 +113,33 @@ export function registerProjectData(p, detail, texts, images) {
   return projectDataById[p.id];
 }
 
+// ── Hover video preview ───────────────────────────────────────────────────
+// Plays a short muted loop over the node's image while hovered. The <video> is
+// created and its file fetched on the first hover, so nodes cost nothing
+// until someone actually points at them.
+function bindVideoPreview(nodeEl, stack, src) {
+  let video = null;
+  nodeEl.addEventListener('mouseenter', () => {
+    if (!video) {
+      video = document.createElement('video');
+      video.className = 'node-preview-video';
+      video.src = src;
+      video.muted = true; video.loop = true;
+      video.setAttribute('playsinline', '');
+      video.preload = 'auto';
+      video.addEventListener('playing', () => video.classList.add('is-playing'));
+      stack.appendChild(video);
+    }
+    video.play().catch(() => {});
+  });
+  nodeEl.addEventListener('mouseleave', () => {
+    if (!video) return;
+    video.pause();
+    video.classList.remove('is-playing');
+    video.currentTime = 0;
+  });
+}
+
 // ── Project card ──────────────────────────────────────────────────────────
 // Single draggable card per project on the canvas; click opens the project
 // lightbox with the full tabbed overview.
@@ -144,6 +171,8 @@ export function buildProjectNode(p, detail, texts, images) {
   stack.appendChild(img);
   if (imageSrcs.length > 1) stack.appendChild(el('div', 'image-count', String(imageSrcs.length)));
   content.appendChild(stack);
+
+  if (detail._resolvedPreview) bindVideoPreview(nodeEl, stack, detail._resolvedPreview);
 
   nodeEl.addEventListener('click', e => {
     if (e.target.closest('.node-bar')) return;

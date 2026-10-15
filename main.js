@@ -129,6 +129,7 @@ async function initDesktop() {
       detail._resolvedVideos = resolvedVideos;
       detail._resolvedPoster = detail.poster ? resolve(detail.poster) : null;
       detail._resolvedHero = detail.hero ? resolve(detail.hero) : null;
+      detail._resolvedPreview = detail.preview ? resolve(detail.preview) : null;
       if (p.id === 'about') registerProjectData(p, detail, cleanTexts, resolvedImages);
       else                  buildProjectNode(p, detail, cleanTexts, resolvedImages);
     }).catch(console.error);

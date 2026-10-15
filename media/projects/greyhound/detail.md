@@ -10,6 +10,7 @@ tools:
 silentVideos: true
 videos:
   - "https://pub-b7e89c5a97934958a56ec645d4696d9d.r2.dev/projects/greyhound/videos/greyhound.webm"
+preview: "preview.mp4"
 images:
   - images/greyhound_2.webp
   - images/greyhound_1.webp

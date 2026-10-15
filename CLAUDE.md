@@ -61,6 +61,7 @@ files that actually exist.
 | `links` | list of `{label, url}` | rendered as buttons; a `.zip` url adds a download badge to the node |
 | `images` | list | paths relative to the project folder, e.g. `images/foo.webp` |
 | `hero` | path | overrides the auto-picked hero/thumbnail (normally `images[0]`) shown on the canvas node and list row, without reordering `images` itself |
+| `preview` | URL or path | short muted looping clip (`.webm`/`.mp4`) that plays over the node's image on canvas hover; fetched on first hover only, so keep it small. Omit for no preview |
 | `texts` | list of `{file, label}` | extra text tabs beyond `description.md`; omit to default to a single "Overview" tab from `description.md` |
 | `videos` | list of URLs | usually external-hosted |
 | `model` | URL or path | `.glb` for the 3D viewer; usually external-hosted |

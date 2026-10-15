@@ -18,6 +18,7 @@ texts:
     label: "Overview"
   - file: visions.md
     label: "The Vision"
+preview: "preview.mp4"
 images:
   - images/poster-vision-text-opt-01.webp
   - images/poster-vision-text-opt-02.webp
