@@ -20,7 +20,7 @@ document.addEventListener('contextmenu', e => { if (e.target.tagName === 'IMG') 
 if (IS_MOBILE) {
   // ── Mobile path ──────────────────────────────────────────────────────────
   document.body.classList.add('is-mobile');
-  buildMobileList();
+  buildMobileList().catch(console.error);
   buildFooter();
 } else {
   // ── Desktop path ─────────────────────────────────────────────────────────

@@ -24,8 +24,8 @@ js/
   theme-lines.js    Hover-triggered project connection lines on the canvas
   lightbox.js       Image lightbox, project lightbox, model viewer trigger
   three-viewer.js   Three.js 3D model viewer (lazy-loaded)
-  view-switch.js    Node canvas ⇄ list toggle, and the FLIP flight between them
-  list.js           Project list — banner rows with inline expansion, both platforms
+  view-switch.js    Node canvas ⇄ project index toggle (a crossfade)
+  list.js           Project index — left-bound list + detail pane (desktop), wordmark + menu + project pages (mobile)
   dom.js            DOM creation helpers
   layout.js         Canvas/node-size constants
   utils.js          Markdown parsing, fetch wrappers, frontmatter parser
@@ -122,44 +122,32 @@ Scene setup: perspective camera 45°, ambient light 1.5 + two directional lights
 
 ---
 
-### `js/list.js` — project list
+### `js/list.js` — project index
 | Export | Description |
 |---|---|
-| `buildProjectList(containerId, { desktop })` | Builds the list. Used for both `#desktop-list-view` and `#mobile-view`. |
-| `buildMobileList()` | Calls the above for `#mobile-view`, then moves `#site-header` inside it so it scrolls with the content. |
+| `buildProjectList(containerId)` | Desktop. Builds the year-grouped index and detail pane in `#desktop-list-view`; returns `{ activateDefault }`, which opens the first project on the list's first visit. |
+| `buildMobileList()` | Mobile. Builds the wordmark header, home page, full-screen menu and project pages in `#mobile-view`. |
 
-One design serves both platforms — identical markup and behaviour, with only the band and type sizes differing:
+**Desktop** — a left-bound index (`.idx`) of uppercase titles grouped under year headings, with the selected project in a pane (`.idx-detail`) on the right. The first project is open from the start. The pane scrolls independently of the index.
 
-- Each row is a full-bleed banner: hero image, title, year, and a `+` that rotates into a `−`.
-- Opening collapses the banner to a slim sticky header and grows the panel beneath it **inline** — never a modal.
-- Panel height animates via a `grid-template-rows: 0fr → 1fr` transition, so it needs no measuring and no hard-coded `max-height`.
-- The panel is built by `buildDesktopProjectLayout()` — the same builder the project lightbox uses, so a project reads identically wherever it opens. CSS on `.p-panel-inner` strips the modal-only bits (the `82vh` cap and the two inner scrollers) so content flows inline instead.
-- Content is fetched and built *before* the panel opens, so the expansion animates to the content's real height rather than to nothing.
-- The scroll-to-top runs only after the expand transition ends; earlier and it silently clamps, because until the panel has height there isn't enough content below the row to scroll it that far.
+**Mobile** — a big text wordmark with a burger button. The burger opens a full-screen version of the same index (plus About and Contact); picking a project replaces the page under the wordmark with that project. The route is the hash — `''` is home, `#<id>` is a project — written with `pushState`, so Back steps through what you looked at and projects can be linked directly. The bio is the `about` entry, labelled "About" here; Contact is the `Email` link from `media/projects/about/detail.md`; the home page text is `#site-header-intro`.
 
-- One row per project, only one open at a time. Content is lazy-loaded on first expand and kept thereafter.
-- Reached on desktop via the top-centre view toggle (see `js/view-switch.js`); on mobile it is the whole site.
-- `.p-item` carries `data-id`, and `.p-row-img` is the hero, so `view-switch.js` can pair each row with its canvas node for the FLIP flight.
-- The "about" bio lives at `media/projects/about/` and is authored like any other project, but is routed differently per platform: on desktop it has no canvas node and no list row, and is reached only through the top-bar `#about-link` (which opens it in the project lightbox); on mobile — which has no project lightbox — it stays the last row of the list.
+Both platforms:
+- A project is rendered by `buildDesktopProjectLayout()` — the same builder the project lightbox uses, so it reads identically wherever it opens. CSS on `.idx-content` strips the modal-only bits (the `82vh` cap and the two inner scrollers) so content flows inline; the mobile layout stacks via the existing `max-width: 860px` rule.
+- Content is rebuilt on every selection, not cached: an inline 3D viewer and autoplaying videos can't safely be left running in a hidden section. A newer selection supersedes one still loading.
+- Projects are grouped by `detail.year`, newest first; a project with no year goes in an unheaded group.
+- The "about" bio is authored like any other project but is routed differently per platform: on desktop it has no canvas node and no index entry, and is reached only through the top-bar `#about-link` (which opens it in the project lightbox); on mobile it sits in the menu.
 
-Row classes: `.p-item`, `.p-row`, `.p-row-media`, `.p-row-img`, `.p-row-scrim`, `.p-row-meta`, `.p-row-title`, `.p-row-year`, `.p-row-mark`, `.p-panel`, `.p-panel-inner`.
+Classes: `.idx`, `.idx-group`, `.idx-year`, `.idx-item`, `.idx-detail`, `.idx-project`, `.idx-title`, `.idx-content` (shared); `.m-head`, `.m-mark`, `.m-burger`, `.m-menu`, `.m-main`, `.m-home*` (mobile).
 
 ---
 
-### `js/view-switch.js` — node canvas ⇄ list
+### `js/view-switch.js` — node canvas ⇄ index
 | Export | Description |
 |---|---|
-| `initViewSwitch()` | Builds the list, wires the `#view-toggle` buttons, adds the corner brand mark. |
+| `initViewSwitch()` | Builds the index, wires the `#view-toggle` buttons, adds the corner brand mark. |
 
-The node canvas is the default view; `body.list-view` swaps in `#desktop-list-view`. Switching runs a FLIP flight:
-
-1. Measure each project's hero thumbnail in the view being left (already on screen).
-2. Reveal the target view at `opacity: 0` (the `.measuring` rules) and measure it too. Neither view participates in the other's layout, so this shifts nothing.
-3. Commit `body.list-view` plus `body.view-flying`, which hides the real thumbnails and row labels so nothing is doubled up.
-4. Animate one throwaway `.view-flyer` per project from rect to rect, staggered.
-5. Drop `view-flying` — the real elements fade back in through their own transitions.
-
-The flyer is a div with a `background-image`, not an `<img>`: the two ends fit their image differently (node `cover`/top, row `contain`/centre) and `object-fit` can't be animated, but explicit pixel `background-size` can — so the crop resolves continuously instead of popping on the first frame.
+The node canvas is the default view; `body.list-view` swaps in `#desktop-list-view`. Switching is a plain crossfade: the index is always laid out and just faded and hidden, and the canvas does the reverse. `visibility` is delayed by the fade length on the way out, so a hidden view also drops out of painting and hit-testing. The index's first project is opened lazily on the first visit, so staying on the canvas never loads its images.
 
 ---
 
@@ -200,10 +188,9 @@ No imports. Self-contained. `buildFooter()` creates the footer DOM (Instagram li
 | `top-bar` | Top-centre bar holding the view toggle and the about link |
 | `view-toggle` | Nodes/list segmented toggle |
 | `about-link` | Opens the bio in the project lightbox |
-| `view-flight-layer` | Holds the throwaway flyers during a node ⇄ list transition |
 | `logo-mark` | Decorative spinning corner mark (built from JS, `pointer-events:none`) |
-| `desktop-list-view` | Project list (desktop) — its own fixed scroll container |
-| `mobile-view` | Project list (mobile) |
+| `desktop-list-view` | Project index (desktop) — grid of index + detail pane |
+| `mobile-view` | Wordmark, menu and project pages (mobile) |
 | `lightbox` | Image viewer modal |
 | `project-lightbox` | Project detail modal |
 | `plb-inner` | Project modal scroll container |
@@ -245,7 +232,7 @@ Array of `{ id, title, x, y }`. `x` and `y` are set to 0 for auto-placed project
 1. `main.js` places every canvas project without a fixed position evenly around a ring (radius 250px from canvas centre), then nudges apart any that still overlap. `about` is excluded from this set.
 2. Dynamically imports `canvas.js`, `utils.js`, `nodes.js`, `lightbox.js`, `view-switch.js` in parallel.
 3. Each module's side effects run (pan/zoom handlers, lightbox close buttons, etc.).
-4. Calls `initViewSwitch()` — wires the view toggle, builds the corner brand mark, and builds the list up front via `buildProjectList` (it must be laid out, even while hidden, for its row rects to be measurable on the first flight).
+4. Calls `initViewSwitch()` — wires the view toggle, builds the corner brand mark, and builds the index up front via `buildProjectList`.
 5. Fetches `detail.md` and images for every project. `about` gets `registerProjectData()` only — enough for the lightbox to open it, but no canvas node; every other project gets `buildProjectNode()`.
 6. Calls `buildFooter()`.
 

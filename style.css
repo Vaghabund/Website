@@ -114,8 +114,7 @@ html, body {
 
 /* ─────────────────────────────────────────────
    View switch — the node canvas is the default view; adding `list-view` to
-   <body> swaps it for the flat project list. The transition between the two
-   is animated in js/view-switch.js (see .view-flyer / .measuring below).
+   <body> crossfades it into the project index (see the index block below).
    ───────────────────────────────────────────── */
 
 /* Top right: the view toggle, plus the "about" link that opens the bio in
@@ -188,29 +187,41 @@ body.is-mobile #top-bar { display: none; }
 }
 #view-toggle.on-list #view-toggle-pill { transform: translateX(100%); }
 
-/* ── The flat project list ─────────────────────────────────────────────── */
+/* ── Project index (desktop list view) ───────────────────────────────────────
+   A left-bound index grouped by year; the selected project opens in the pane
+   on the right (see js/list.js). Switching with the canvas is a crossfade:
+   the list is always laid out and just faded/hidden, and the canvas does the
+   reverse. `visibility` is delayed by the fade length on the way out so it
+   hides only once the opacity has finished, and drops out of hit-testing and
+   painting entirely afterwards. */
 #desktop-list-view {
-  display: none;
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
   z-index: 12;
+  display: grid;
+  grid-template-columns: 270px minmax(0, 1fr);
   background: #0a0a0a;
-  /* Clears the floating site header and view toggle, which both end ~50px
-     down. This also sets where an open row's sticky header comes to rest: a
-     sticky offset is measured from the scrollport ALREADY inset by the
-     container's padding, so `top: 0` on .p-row lands it at exactly 56px. */
-  padding-top: 56px;
-  padding-bottom: 56px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.35s ease, visibility 0s linear 0.35s;
 }
-body.list-view #desktop-list-view { display: block; }
-body.list-view #canvas-root { display: none !important; }
+body.list-view #desktop-list-view {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 0.35s ease;
+}
+#canvas-root { transition: opacity 0.35s ease, visibility 0s; }
+body.list-view #canvas-root {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.35s ease, visibility 0s linear 0.35s;
+}
 
-/* Padding is inside the scrollport, so rows scroll up through that top 56px
-   and would otherwise be visible above the sticky header. This masks the
-   strip: above the list (z 12), below the site header and toggle (z 40/41). */
+/* The detail pane scrolls up through the top 56px; this masks the strip so
+   it never shows above the site header and toggle (z 40/41). */
 body.list-view::before {
   content: '';
   position: fixed;
@@ -221,84 +232,94 @@ body.list-view::before {
   pointer-events: none;
 }
 
+/* ── Index: year headings over uppercase titles ─────────────────────────── */
+.idx {
+  overflow-y: auto;
+  /* Clears the floating site header, which ends ~60px down. */
+  padding: 92px 16px 64px 20px;
+}
+.idx-group + .idx-group { margin-top: 22px; }
+.idx-year {
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #e6e6e6;
+}
+.idx-item {
+  display: block;
+  width: 100%;
+  padding: 2px 0 2px 14px;
+  /* Hanging indent: a wrapped title tucks in under its first line. */
+  text-indent: -14px;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  text-align: left;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  transition: color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.idx-item:hover { color: rgba(255,255,255,0.9); }
+.idx-item.active { color: #fff; font-weight: 600; }
 
-/* ── Node ⇄ list flight ────────────────────────────────────────────────────
-   js/view-switch.js needs to read the rects of BOTH views before it can
-   animate between them, so it briefly reveals the one that's hidden at
-   opacity 0. Neither view participates in the other's layout (both are
-   fixed/absolute), so this can't shift anything or reset a scroll position. */
-body:not(.list-view) #desktop-list-view.measuring,
-body.list-view #canvas-root.measuring {
-  display: block !important;
-  opacity: 0;
-  pointer-events: none;
+/* ── Detail pane ─────────────────────────────────────────────────────────── */
+.idx-detail {
+  overflow-y: auto;
+  min-width: 0;
+  padding: 72px 20px 72px 8px;
 }
-
-#view-flight-layer {
-  position: fixed; inset: 0;
-  z-index: 20;
-  pointer-events: none;
+.idx-project { animation: idx-in 0.35s ease both; }
+@keyframes idx-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
 }
-.view-flyer {
-  position: fixed;
-  background-repeat: no-repeat;
-  /* Fallback only — js/view-switch.js sets this inline to whatever the
-     destination hero image actually computes to, so the hand-off is an
-     exact match. */
-  opacity: 1;
+.idx-title {
+  padding: 0 24px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #fff;
 }
-
-/* While the flyers are travelling the destination's chrome — row labels,
-   node cards — stays hidden. js/view-switch.js drops `view-flying` only
-   once every flyer has landed, so a node card assembles itself around its
-   hero image rather than sitting there waiting with a hole in it. The
-   flyers stay on top during this fade and are swapped out afterwards. */
-/* `transition: none` here is load-bearing, not tidiness. A transition is
-   driven by the AFTER-change style, so declaring none on the hidden state
-   makes entering it instant while leaving it still animates. Without it the
-   destination's labels sit on screen visibly fading OUT for the first
-   ~280ms of every flight, which read as part of the step. */
-body.view-flying .node-project,
-body.view-flying .p-row-title,
-body.view-flying .p-row-year,
-body.view-flying .p-row-mark {
-  opacity: 0;
-  transition: none;
-}
-/* Cards additionally settle out of a slight shrink, so the frame grows into
-   place around its hero image instead of just flashing on over it. */
-body.view-flying .node-project {
-  transform: scale(0.97);
-}
-
-/* --chrome-dur / --chrome-delay are set per host from js/view-switch.js
-   (CHROME_NODES / CHROME_LIST). Both inherit, so setting them on a .p-row
-   drives its title, year, mark and scrim together. The delay is currently
-   0 for every host, so the whole view blends in at once. The fallbacks only
-   apply if this ever runs outside a flight.
-   cubic-bezier(.4,0,.2,1) rather than `ease`: a symmetric ease-in-out reads
-   as a smooth blend, where an ease-out fade snaps to near-full almost
-   immediately and looks like a step.
-   The list row's half of this lives down in the project-list block instead of
-   here — those elements carry transitions of their own, and a second bare
-   `transition` written later in the file would replace this one whole.
-   `.node.node-project`, not `.node-project`: project cards also carry
-   .node-image, whose `transition: border-color` rule sits later in this file
-   at equal specificity and would otherwise replace this declaration whole,
-   leaving the cards to snap from 0 to 1 with no blend at all. Winning on
-   specificity means re-stating that border-color transition here. */
-.node.node-project {
-  transition:
-    opacity      var(--chrome-dur, 280ms) cubic-bezier(.4, 0, .2, 1) var(--chrome-delay, 0ms),
-    transform    var(--chrome-dur, 280ms) cubic-bezier(.4, 0, .2, 1) var(--chrome-delay, 0ms),
-    border-color 0.2s;
+.idx-content {
+  color: rgba(255,255,255,0.56);
+  font-size: 12.5px;
+  line-height: 1.75;
 }
 
-/* The one hero image a flyer is currently standing in for. `visibility`,
-   not opacity: the hand-off has to be an instant, exact swap, and visibility
-   can't be caught up in any opacity transition the thumbnail might carry —
-   a fade there is precisely the pop this exists to avoid. */
-.flight-hidden { visibility: hidden; }
+/* The pane reuses the project lightbox's layout builder so a project reads
+   the same wherever it opens. Undo the parts that only make sense in a modal:
+   the 82vh cap and the two inner scrollers. Inline, content just flows and
+   the pane itself scrolls. */
+.idx-content .plb-split { padding: 16px 24px 34px; }
+.idx-content .plb-col-images,
+.idx-content .plb-col-text {
+  max-height: none;
+  display: block;
+}
+.idx-content .plb-left-panel,
+.idx-content .plb-model-panel,
+.idx-content .plb-right-panels {
+  overflow: visible;
+  direction: ltr;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* About project: profile image at half size */
+#desktop-list-view-content-about .plb-gallery img,
+#mobile-view-content-about .plb-gallery img,
+#project-lightbox[data-project="about"] .plb-gallery img {
+  max-width: 50%;
+  margin: 0 auto;
+}
 
 /* Corner brand mark — decorative only. pointer-events:none so it can never
    swallow a wheel gesture or click meant for the view underneath it. */
@@ -785,10 +806,9 @@ body.is-mobile #logo-mark { display: none; }
 }
 
 /* ─────────────────────────────────────────────
-   Project list — ONE design serving both #desktop-list-view and #mobile-view
-   (see js/list.js). Rows are full-bleed banners: hero image, title, year.
-   Opening collapses the banner into a slim sticky header and grows the panel
-   beneath it inline — never a modal.
+   Mobile (#mobile-view, see js/list.js): a big wordmark with a menu button.
+   The menu is a full-screen year-grouped index; a chosen project replaces the
+   page below the wordmark.
 
    The .is-mobile class is set once at load rather than by a media query, so
    an orientation change can't flip the layout mid-session.
@@ -798,42 +818,8 @@ body.is-mobile #logo-mark { display: none; }
 body.is-mobile { overflow: auto; }
 body.is-mobile #canvas-root,
 body.is-mobile #desktop-list-view,
-body.is-mobile #project-lightbox { display: none !important; }
-
-/* Keeps the bordered-box treatment the desktop header uses, rather than
-   letting the wordmark run edge to edge — at 16:1 the mark then flattened
-   into a thin full-width strip with the tagline crammed straight underneath
-   and the first banner right below that. Inset and boxed, it gets room. */
-body.is-mobile #site-header {
-  display: flex;
-  position: relative;
-  top: auto;
-  left: auto;
-  right: auto;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 13px;
-  margin: 16px 16px 22px;
-  padding: 17px 18px 19px;
-  pointer-events: none;
-  border: 1px solid rgba(255,255,255,0.09);
-  background: rgba(10,10,10,0.92);
-}
-
-body.is-mobile #site-header-logo {
-  width: 100%;
-  max-width: none;
-  opacity: 0.62;
-}
-
-body.is-mobile #site-header-intro {
-  max-width: none;
-  width: 100%;
-  text-align: left;
-  font-size: 11.5px;
-  line-height: 1.5;
-  color: rgba(255,255,255,0.5);
-}
+body.is-mobile #project-lightbox,
+body.is-mobile #top-left-stack { display: none !important; }
 
 body.is-mobile #mobile-view {
   display: block;
@@ -842,224 +828,106 @@ body.is-mobile #mobile-view {
   overflow-y: auto;
   background: #0a0a0a;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 56px;
+  padding-bottom: 64px;
 }
+body.is-mobile #mobile-view.menu-open { overflow: hidden; }
+/* The menu's z-index only counts inside #mobile-view's own stacking context,
+   so it can't rise above the (body-level) footer — hide the footer instead. */
+#mobile-view.menu-open ~ #site-footer { display: none; }
 
-/* ── Row ─────────────────────────────────────────────────────────────────
-   Three flat columns: title left, hero image centred, year and mark right.
-   Nothing overlaps anything, so there is no scrim and no gradient — the
-   image is simply a block in its own cell. --band-h is the resting height;
-   opening collapses the row to --band-open-h and the image column to zero,
-   leaving a slim sticky header. min-height rather than height, so a title
-   that wraps grows the row instead of overflowing it. */
-.p-item {
-  --band-h: 150px;
-  --band-open-h: 64px;
-  border-bottom: 1px solid rgba(255,255,255,0.09);
+.m-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 18px 20px 0;
 }
-#mobile-view .p-item {
-  --band-h: 118px;
-  --band-open-h: 56px;
-}
-
-.p-row {
-  display: grid;
-  /* Equal outer columns are what actually centres the image on the row —
-     `auto` sides would let each title's length shove it off-centre by a
-     different amount, and the ragged result is very visible down a list. */
-  grid-template-columns: 1fr 260px 1fr;
-  column-gap: 28px;
-  align-items: center;
-  width: 100%;
-  min-height: var(--band-h);
-  padding: 20px 24px;
+.m-mark {
+  padding: 0;
   border: none;
   background: none;
   font-family: inherit;
-  color: inherit;
+  font-size: clamp(36px, 11.5vw, 52px);
+  font-weight: 400;
+  line-height: 0.98;
+  letter-spacing: -0.01em;
   text-align: left;
+  text-transform: uppercase;
+  color: #ececec;
   cursor: pointer;
-  overflow: hidden;
   -webkit-tap-highlight-color: transparent;
-  transition:
-    min-height            460ms cubic-bezier(.4, 0, .2, 1),
-    grid-template-columns 460ms cubic-bezier(.4, 0, .2, 1),
-    column-gap            460ms cubic-bezier(.4, 0, .2, 1),
-    padding               460ms cubic-bezier(.4, 0, .2, 1),
-    background            240ms ease;
 }
-.p-row:hover { background: rgba(255,255,255,0.022); }
-.p-item.open .p-row {
-  min-height: var(--band-open-h);
-  grid-template-columns: 1fr 0px 1fr;
-  column-gap: 0;
-  padding: 0 24px;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+
+/* Three bars that cross into an ×. */
+.m-burger {
+  position: relative;
+  flex-shrink: 0;
+  width: 44px; height: 44px;
+  margin: -4px -10px 0 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.m-burger span {
+  position: absolute;
+  left: 10px; right: 10px;
+  height: 2px;
+  background: #ddd;
+  transition: top 0.25s ease, transform 0.25s ease, opacity 0.2s ease;
+}
+.m-burger span:nth-child(1) { top: 14px; }
+.m-burger span:nth-child(2) { top: 21px; }
+.m-burger span:nth-child(3) { top: 28px; }
+.m-burger.is-close span:nth-child(1) { top: 21px; transform: rotate(45deg); }
+.m-burger.is-close span:nth-child(2) { opacity: 0; }
+.m-burger.is-close span:nth-child(3) { top: 21px; transform: rotate(-45deg); }
+
+.m-menu {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 60;
+  overflow-y: auto;
   background: #0a0a0a;
 }
-/* True centring costs equal outer columns, so at phone widths the title only
-   gets half the leftover space — a narrower image buys it back. */
-#mobile-view .p-row {
-  grid-template-columns: 1fr 84px 1fr;
-  column-gap: 10px;
-  padding: 16px;
+.m-menu[hidden] { display: none; }
+.m-menu .idx { padding: 28px 20px 64px; overflow: visible; }
+.m-menu .idx-year { margin-bottom: 6px; font-size: 18px; }
+.m-menu .idx-item {
+  padding: 3px 0 3px 18px;
+  text-indent: -18px;
+  font-size: 18px;
+  line-height: 1.3;
+  color: rgba(255,255,255,0.82);
 }
-#mobile-view .p-row-title { font-size: 15px; }
-#mobile-view .p-item.open .p-row {
-  grid-template-columns: 1fr 0px 1fr;
-  column-gap: 0;
-  padding: 0 16px;
-}
+.m-menu .idx-item.active { color: #fff; font-weight: 600; }
+.m-menu .idx-group + .idx-group { margin-top: 26px; }
+.m-menu .idx-extras .idx-item { text-transform: none; }
 
-/* Right column: year and mark grouped together, pushed to the row's edge. */
-.p-row-foot {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 20px;
-  min-width: 0;
-}
+.m-main { padding: 28px 20px 0; }
 
-.p-row-media {
-  position: relative;
-  overflow: hidden;
-  min-width: 0;
-  /* The row centres its items; the image cell alone fills the band height. */
-  align-self: stretch;
-}
-/* Absolute, not in flow: as a normal grid-item child the image's intrinsic
-   height drove the row's height, so a portrait hero produced a 400px row and
-   the list came out wildly uneven. Out of flow it contributes nothing, the
-   cell simply stretches to the band, and every row matches. */
-.p-row-img {
-  position: absolute;
-  inset: 0;
+.m-home-link {
   display: block;
-  width: 100%; height: 100%;
-  object-fit: cover;
-  object-position: center;
-  transition: transform 700ms cubic-bezier(.22, .61, .36, 1);
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 20px;
+  line-height: 1.5;
+  text-align: left;
+  text-decoration: none;
+  color: #ddd;
+  cursor: pointer;
 }
-.p-row:hover .p-row-img { transform: scale(1.03); }
-
-.p-row-title {
-  min-width: 0;
-  /* A single word longer than the column (e.g. "Photogrammetry") would
-     otherwise overflow and run under the image rather than wrapping. */
-  overflow-wrap: break-word;
-  /* Weight, tracking and colour all come straight from the page defaults —
-     body's own #ccc, no weight bump, no negative tracking. Only the size is
-     the row's own. */
-  font-size: clamp(17px, 2.4vw, 30px);
-  font-weight: 400;
-  line-height: 1.2;
-  letter-spacing: normal;
-  color: #ccc;
-  /* The FLIP hand-over fades these three in via body.view-flying (see
-     js/view-switch.js). --chrome-dur/--chrome-delay are set per .p-row and
-     inherit down. Each element folds that fade into its own transition list
-     rather than inheriting it from the rule further up this file, because a
-     bare `transition` written here would replace that one outright. */
-  transition:
-    opacity var(--chrome-dur, 280ms) cubic-bezier(.4, 0, .2, 1) var(--chrome-delay, 0ms),
-    color   240ms ease;
-}
-.p-row:hover .p-row-title,
-.p-item.open .p-row-title { color: #fff; }
-
-.p-row-year {
-  flex-shrink: 0;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.45);
-  transition: opacity var(--chrome-dur, 280ms) cubic-bezier(.4, 0, .2, 1) var(--chrome-delay, 0ms);
+.m-home-intro {
+  margin-top: 56px;
+  font-size: 20px;
+  line-height: 1.4;
+  color: #e6e6e6;
 }
 
-/* +/− drawn as two bars so the vertical one can rotate away on open rather
-   than the glyph swapping instantly. */
-.p-row-mark {
-  position: relative;
-  flex-shrink: 0;
-  width: 13px; height: 13px;
-  transition: opacity var(--chrome-dur, 280ms) cubic-bezier(.4, 0, .2, 1) var(--chrome-delay, 0ms);
-}
-.p-row-mark::before,
-.p-row-mark::after {
-  content: '';
-  position: absolute;
-  left: 0; top: 50%;
-  width: 100%; height: 1px;
-  margin-top: -0.5px;
-  background: rgba(255,255,255,0.55);
-}
-.p-row-mark::after {
-  transform: rotate(90deg);
-  transition: transform 460ms cubic-bezier(.4, 0, .2, 1);
-}
-.p-item.open .p-row-mark::after { transform: rotate(0deg); }
-
-/* ── Inline panel ────────────────────────────────────────────────────────
-   grid-template-rows 0fr → 1fr animates to the content's own height with no
-   measuring and no hard-coded max-height, so a project of any length works.
-   .p-panel-inner must keep min-height:0 and overflow:hidden, or the grid
-   track has nothing to shrink against and the transition does nothing. */
-.p-panel {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 460ms cubic-bezier(.4, 0, .2, 1);
-}
-.p-item.open .p-panel { grid-template-rows: 1fr; }
-
-/* While a project is open, keep slack below the list so ANY row — including
-   the last — can be scrolled to the top. Without it the scroll clamps
-   against the end of the document and the row settles short; worse, the
-   panel's height keeps changing as lazy images arrive, and each change
-   re-clamps scrollTop and shunts the row back down again. Only applied while
-   something is open (js/list.js toggles it), so the list never carries a
-   screen of dead space at rest.
-   The mobile selector needs `body.is-mobile` on it: the base padding lives on
-   `body.is-mobile #mobile-view`, which outranks a bare `#mobile-view.p-list-open`. */
-#desktop-list-view.p-list-open,
-body.is-mobile #mobile-view.p-list-open { padding-bottom: 90vh; }
-.p-panel-inner {
-  min-height: 0;
-  overflow: hidden;
-  color: rgba(255,255,255,0.56);
-  font-size: 12px;
-  line-height: 1.75;
-}
-
-/* The panel reuses the project lightbox's layout builder so a project reads
-   the same wherever it opens. Undo the parts that only make sense in a modal:
-   the 82vh cap and the two inner scrollers. Inline, content just flows and
-   the list itself scrolls. */
-.p-panel-inner .plb-split { padding: 26px 24px 34px; }
-#mobile-view .p-panel-inner .plb-split { padding: 18px 16px 26px; }
-.p-panel-inner .plb-col-images,
-.p-panel-inner .plb-col-text {
-  max-height: none;
-  display: block;
-}
-.p-panel-inner .plb-left-panel,
-.p-panel-inner .plb-model-panel,
-.p-panel-inner .plb-right-panels {
-  overflow: visible;
-  direction: ltr;
-  padding-left: 0;
-  padding-right: 0;
-}
-
-/* About project: profile image at half size */
-#desktop-list-view-content-about .plb-gallery img,
-#mobile-view-content-about .plb-gallery img,
-#project-lightbox[data-project="about"] .plb-gallery img {
-  max-width: 50%;
-  margin: 0 auto;
-}
+#mobile-view .idx-title { padding: 0; font-size: 20px; margin-bottom: 14px; }
+#mobile-view .idx-content { font-size: 14px; }
+#mobile-view .idx-content .plb-split { padding: 0 0 34px; }
 
 /* ─────────────────────────────────────────────
    Footer

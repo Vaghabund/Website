@@ -1,44 +1,14 @@
 // ─────────────────────────────────────────────
-// View switch — node canvas ⇄ flat project list.
+// View switch — node canvas ⇄ project index.
 //
 // The boot intro hands straight over to the node canvas; a small toggle at
 // the top of the screen is the only navigation between the two views.
-//
-// Switching runs a FLIP flight: each project's hero thumbnail is measured in
-// BOTH views (the one being left is already on screen; the one being entered
-// is briefly revealed at opacity 0 — see the .measuring rules in style.css),
-// then a throwaway "flyer" is animated from one rect to the other while the
-// real thumbnails stay hidden. The result is that the nodes visibly fly into
-// their list rows, and back out into the ring again.
-//
-// The flyer is a div with a background-image rather than an <img> because
-// the two ends crop their image differently (node: cover/top, row banner:
-// cover/centre, and the aspect ratios are far apart). object-fit can't be
-// animated, but explicit pixel background-size can — see bgFrame() — so the
-// crop resolves continuously over the flight instead of popping on frame one.
+// Switching is a plain crossfade (see body.list-view in style.css) — the list
+// is a text index with no thumbnails, so there is nothing to fly between.
 // ─────────────────────────────────────────────
 
-import PROJECTS              from '../projects.js';
-import { projectNodeById }   from './state.js';
 import { buildProjectList }  from './list.js';
 import { openProjectLb }      from './lightbox.js';
-
-// The flight runs in two beats: every hero image travels first, then the
-// destination's chrome blends in around the images once they have landed.
-// Everything within a beat moves in unison — the per-element `stagger`
-// offsets below are all 0. They stay wired up (rather than being ripped out)
-// purely as a knob: raising one reintroduces a wave for that stage.
-const FLIGHT_MS  = 520;
-const STAGGER_MS = 0;
-
-// Beat two, per direction. Durations differ because the work differs:
-//   nodes: slower; a whole card has to materialise around its image, so it
-//          gets room to settle.
-//   list:  quicker; the labels are light text next to an image that is
-//          already there, and dragging them out just feels sluggish.
-// Driven from CSS via --chrome-dur / --chrome-delay (see style.css).
-const CHROME_NODES = { dur: 420, stagger: 0 };
-const CHROME_LIST  = { dur: 240, stagger: 0 };
 
 // Same path data as media/icons/LOGO.svg (three petals + centre dot).
 const LOGO_PATHS = [
@@ -50,19 +20,15 @@ const LOGO_PATHS = [
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
-let listEl, flightLayer, toggleEl, canvasEl;
+let toggleEl, list;
 let isList = false;
-let busy   = false;
 
 export function initViewSwitch() {
-  listEl      = document.getElementById('desktop-list-view');
-  flightLayer = document.getElementById('view-flight-layer');
-  toggleEl    = document.getElementById('view-toggle');
-  canvasEl    = document.getElementById('canvas-root');
+  toggleEl = document.getElementById('view-toggle');
 
-  // Built once, up front: the list has to be laid out (even while hidden)
-  // for its row rects to be measurable when the first flight runs.
-  buildProjectList('desktop-list-view', { desktop: true });
+  // Built up front so the index is ready the moment it is first shown; its
+  // first project only opens on that first visit (see activateDefault).
+  buildProjectList('desktop-list-view').then(l => { list = l; if (isList) list.activateDefault(); });
 
   buildLogoMark();
 
@@ -70,7 +36,7 @@ export function initViewSwitch() {
     btn.addEventListener('click', () => setView(btn.dataset.view === 'list'));
   });
 
-  // The bio has no canvas node and no list row — this link is its only way
+  // The bio has no canvas node and no index entry — this link is its only way
   // in. openProjectLb no-ops until main.js has registered the data, which
   // lands well inside the boot intro.
   document.getElementById('about-link')
@@ -104,176 +70,10 @@ function syncToggle() {
   toggleEl?.classList.toggle('on-list', isList);
 }
 
-async function setView(wantList) {
-  if (busy || wantList === isList) return;
-  busy = true;
+function setView(wantList) {
+  if (wantList === isList) return;
   isList = wantList;
   syncToggle();
-  try {
-    await flyBetweenViews(wantList);
-  } finally {
-    busy = false;
-  }
-}
-
-// ── Measuring ─────────────────────────────────────────────────────────────
-// Both measure functions return { id → {rect, src, nw, nh, fit, posY} }.
-// `reveal` briefly un-hides the view being measured (at opacity 0) for the
-// duration of the read — neither view affects the other's layout, so this
-// is invisible and can't disturb scroll position.
-
-function measureNodes({ reveal = false } = {}) {
-  if (reveal) canvasEl.classList.add('measuring');
-  const out = {};
-  PROJECTS.forEach(p => {
-    const img = projectNodeById[p.id]?.querySelector('.image-stack img');
-    if (!img) return;
-    const rect = img.getBoundingClientRect();
-    if (rect.width < 1 || rect.height < 1) return;
-    out[p.id] = {
-      rect,
-      hide: img,                          // swapped for the flyer mid-flight
-      host: img.closest('.node-project'), // carries --chrome-dur/--chrome-delay
-      src: img.currentSrc || img.src,
-      nw: img.naturalWidth, nh: img.naturalHeight,
-      opacity: getComputedStyle(img).opacity,
-      fit: 'cover', posY: 0, // matches .image-stack img's object-fit/position
-    };
-  });
-  if (reveal) canvasEl.classList.remove('measuring');
-  return out;
-}
-
-function measureRows({ reveal = false } = {}) {
-  if (reveal) listEl.classList.add('measuring');
-  const out = {};
-  listEl.querySelectorAll('.p-item[data-id]').forEach(item => {
-    const img = item.querySelector('.p-row-img');
-    if (!img) return;
-    const rect = img.getBoundingClientRect();
-    if (rect.width < 1 || rect.height < 1) return;
-    out[item.dataset.id] = {
-      rect,
-      hide: img,                   // swapped for the flyer mid-flight
-      host: img.closest('.p-row'), // carries --chrome-dur/--chrome-delay
-      src: img.currentSrc || img.src,
-      nw: img.naturalWidth, nh: img.naturalHeight,
-      opacity: getComputedStyle(img).opacity,
-      fit: 'cover', posY: 50, // matches .p-row-img's object-fit/position
-    };
-  });
-  if (reveal) listEl.classList.remove('measuring');
-  return out;
-}
-
-// object-fit resolved to an explicit background-size, so the two ends of the
-// flight interpolate instead of snapping between `cover` and `contain`.
-function bgFrame({ rect, nw, nh, fit, posY }) {
-  const pos = `50% ${posY}%`;
-  if (!nw || !nh) return { size: `${rect.width}px ${rect.height}px`, pos };
-  const s = fit === 'cover'
-    ? Math.max(rect.width / nw, rect.height / nh)
-    : Math.min(rect.width / nw, rect.height / nh);
-  return { size: `${(nw * s).toFixed(2)}px ${(nh * s).toFixed(2)}px`, pos };
-}
-
-// ── The flight ────────────────────────────────────────────────────────────
-async function flyBetweenViews(toListView) {
-  const from = toListView ? measureNodes() : measureRows();
-  const to   = toListView ? measureRows({ reveal: true }) : measureNodes({ reveal: true });
-
-  const ids = Object.keys(from).filter(id => to[id]);
-
-  // Hide whatever the flyer is standing in for — only the node view has a
-  // real image to hand over to; a list row has nothing to hide. `visibility`
-  // rather than opacity so the swap can't be caught in a transition.
-  ids.forEach(id => to[id].hide?.classList.add('flight-hidden'));
-
-  // `view-flying` suppresses the destination's chrome — row labels, node
-  // cards — so nothing is doubled up while the flyers are in the air.
-  document.body.classList.add('view-flying');
-  document.body.classList.toggle('list-view', toListView);
-  if (toListView) listEl.scrollTop = 0;
-
-  // ── 1. Fly every hero image into place ──────────────────────────────────
-  // The flyers hold their final frame (fill: 'both') and deliberately stay
-  // on screen afterwards — the hand-off happens in step 3, not here.
-  await Promise.all(ids.map((id, i) => flyOne(from[id], to[id], i)));
-
-  // ── 2. Blend the chrome in around the images that just landed ───────────
-  // Node cards assemble around their hero image rather than sitting there
-  // waiting with a hole in them; row labels likewise settle in after their
-  // thumbnails have arrived. The flyers stay on top throughout, so the
-  // destination's own (still hidden) hero images never double up.
-  //
-  // Both custom properties inherit, so setting them on .p-row also drives its
-  // title, year and mark. With stagger at 0 every host gets the same delay
-  // and the whole view blends in as one.
-  const { dur, stagger } = toListView ? CHROME_LIST : CHROME_NODES;
-  const hosts = ids.map(id => to[id].host).filter(Boolean);
-  hosts.forEach((host, i) => {
-    host.style.setProperty('--chrome-dur',   `${dur}ms`);
-    host.style.setProperty('--chrome-delay', `${i * stagger}ms`);
-  });
-
-  document.body.classList.remove('view-flying');
-  await wait(dur + stagger * Math.max(0, hosts.length - 1) + 20);
-
-  // Clear the overrides so the delay can't leak into any later state change
-  // on these elements (row hover, a subsequent flight in the other order).
-  hosts.forEach(host => {
-    host.style.removeProperty('--chrome-dur');
-    host.style.removeProperty('--chrome-delay');
-  });
-
-  // ── 3. Hand off ─────────────────────────────────────────────────────────
-  // Chrome is fully opaque by now, so replacing each flyer with the real
-  // hero image sitting underneath it is an exact pixel swap. One synchronous
-  // block, so the browser only ever paints the finished state.
-  ids.forEach(id => to[id].hide?.classList.remove('flight-hidden'));
-  flightLayer.replaceChildren();
-}
-
-const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
-
-async function flyOne(from, to, i) {
-  // The list's thumbnails are lazy and the list starts hidden, so on the very
-  // first flight the row <img> can still have naturalWidth 0. Both ends show
-  // the same file, so whichever end did report real dimensions speaks for both.
-  const nw = from.nw || to.nw, nh = from.nh || to.nh;
-  const a = bgFrame({ ...from, nw, nh }), b = bgFrame({ ...to, nw, nh });
-
-  const fly = document.createElement('div');
-  fly.className = 'view-flyer';
-  fly.style.left            = `${from.rect.left}px`;
-  fly.style.top             = `${from.rect.top}px`;
-  fly.style.backgroundImage = `url("${from.src}")`;
-  // Match the destination's own opacity so the hand-off is an exact pixel
-  // swap rather than a step in brightness.
-  fly.style.opacity         = to.opacity;
-  flightLayer.appendChild(fly);
-
-  // left/top stay pinned at the start rect; the delta is carried by
-  // transform, so only width/height/background-size need to interpolate.
-  const anim = fly.animate([
-    {
-      transform: 'translate(0px, 0px)',
-      width: `${from.rect.width}px`, height: `${from.rect.height}px`,
-      backgroundSize: a.size, backgroundPosition: a.pos,
-    },
-    {
-      transform: `translate(${to.rect.left - from.rect.left}px, ${to.rect.top - from.rect.top}px)`,
-      width: `${to.rect.width}px`, height: `${to.rect.height}px`,
-      backgroundSize: b.size, backgroundPosition: b.pos,
-    },
-  ], {
-    duration: FLIGHT_MS,
-    delay: i * STAGGER_MS,
-    easing: 'cubic-bezier(.6,0,.25,1)',
-    fill: 'both',
-  });
-
-  // Resolves when this flyer reaches its destination rect; it stays put
-  // (fill: 'both') until flyBetweenViews hands off in one go.
-  await anim.finished.catch(() => {});
+  document.body.classList.toggle('list-view', isList);
+  if (isList) list?.activateDefault();
 }

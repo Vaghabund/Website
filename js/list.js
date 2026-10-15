@@ -1,44 +1,31 @@
 // ─────────────────────────────────────────────
-// Project list — the flat, skimmable counterpart to the node canvas, and the
-// primary way in on mobile, where panning a canvas is awkward.
+// Project index — the text-first counterpart to the node canvas.
 //
-// ONE builder serves both platforms: #desktop-list-view and #mobile-view get
-// identical markup and behaviour, differing only in the band and type sizes
-// CSS hands them. A row is three flat columns — title, centred hero image,
-// year — that expands INLINE into the same two-column layout the project
-// lightbox uses. Never a modal: opening a project keeps you in the list.
+// Desktop (#desktop-list-view): a left-bound index grouped by year, with the
+// selected project opening in a pane on the right. The first project is open
+// from the start, so the right side is never empty.
 //
-// One row open at a time. Opening collapses the line to a slim sticky header,
-// grows the panel beneath it, and rides the row up to the top of the list.
-// The panel's height animates with a grid-template-rows 0fr → 1fr transition
-// rather than a measured max-height, so it needs no hard-coded heights and
-// copes with content of any size.
+// Mobile (#mobile-view): a big wordmark with a menu button. The menu is a
+// full-screen version of the same index; picking a project swaps the page
+// for that project (media, title, text), and the browser's back button
+// returns to wherever you were. Projects are addressable as #<id>.
+//
+// Both platforms render a project with the SAME builder the project lightbox
+// uses, so it reads identically wherever it opens. Content is rebuilt on
+// every selection rather than cached — a project's inline 3D viewer and
+// autoplaying videos can't safely be left running in a hidden section.
 // ─────────────────────────────────────────────
 
-import PROJECTS                      from '../projects.js';
-import { stripMd, fetchDetail, toThumb } from './utils.js';
-import { el }                        from './dom.js';
+import PROJECTS                   from '../projects.js';
+import { stripMd, fetchDetail }   from './utils.js';
+import { el }                     from './dom.js';
 import { buildDesktopProjectLayout } from './lightbox.js';
+import { disposeInlineModel }     from './three-viewer.js';
 
 const isAbsolute = u => /^https?:\/\//i.test(u) || u.startsWith('media/');
 
-// ── Row data ──────────────────────────────────────────────────────────────
-async function rowInfo(p) {
-  const detail = await fetchDetail(p.id);
-  const base   = `media/projects/${p.id}/`;
-  const first  = detail.hero || detail.images?.[0];
-  return {
-    p,
-    year:  detail.year || '',
-    thumb: first ? toThumb(isAbsolute(first) ? first : base + first) : null,
-  };
-}
-
-// ── Panel content ─────────────────────────────────────────────────────────
-// Deliberately the same builder the project lightbox uses, so a project reads
-// identically wherever it is opened. CSS (.p-panel-inner) strips the
-// lightbox's viewport cap and inner scrollers so it flows inline instead.
-async function loadPanel(p, inner) {
+// ── Project content ───────────────────────────────────────────────────────
+async function loadContent(p, inner) {
   const detail  = await fetchDetail(p.id);
   const base    = `media/projects/${p.id}/`;
   const resolve = u => isAbsolute(u) ? u : base + u;
@@ -47,9 +34,7 @@ async function loadPanel(p, inner) {
   detail._resolvedVideos = (detail.videos || []).map(resolve);
   detail._resolvedPoster = detail.poster ? resolve(detail.poster) : null;
 
-  const modelSrc = detail.model
-    ? (isAbsolute(detail.model) ? detail.model : base + detail.model)
-    : null;
+  const modelSrc = detail.model ? resolve(detail.model) : null;
 
   const textDefs = Array.isArray(detail.texts) && detail.texts.length
     ? detail.texts
@@ -65,133 +50,198 @@ async function loadPanel(p, inner) {
   buildDesktopProjectLayout(inner, { project: p, detail, texts, images, modelSrc });
 }
 
-// Rides the opened row up to the top of the list. Chases the target every
-// frame rather than firing a single scrollTo: the panel is still growing and
-// another row may be collapsing above it, so both the destination AND the
-// furthest reachable scroll position keep moving. One scrollTo issued up
-// front simply clamps against a document that hasn't grown yet, which is why
-// the earlier version had to wait for the transition to finish first — and
-// that wait is what made it read as a second, separate motion.
-function scrollRowToTop(host, item, maxMs = 1000) {
-  const start = performance.now();
-  // The list's own top padding is where a sticky row comes to rest, so aim
-  // there — aiming at the raw scrollport top tucks the row under the mask.
-  const pad = parseFloat(getComputedStyle(host).paddingTop) || 0;
-  function step(now) {
-    const delta = item.getBoundingClientRect().top - (host.getBoundingClientRect().top + pad);
-    if (Math.abs(delta) < 0.5 || now - start > maxMs) return;
-    host.scrollTop += delta * 0.2;
-    requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-}
-
-// ── Build ─────────────────────────────────────────────────────────────────
-export async function buildProjectList(containerId, { desktop = false } = {}) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  container.innerHTML = '';
-
-  const projects = PROJECTS.filter(p => p.id !== 'about');
-  const about    = PROJECTS.find(p => p.id === 'about');
-
-  const rows = await Promise.all(projects.map(rowInfo));
-  rows.sort((a, b) => b.year.localeCompare(a.year));
-
-  // On desktop the bio is reached through the top-bar "about" link, which
-  // opens it in the project lightbox — so it gets no row here. Mobile has no
-  // project lightbox, so there it stays the last row of the list, labelled
-  // "About": the bio's actual title is the site owner's name, which reads
-  // oddly sitting in a column of project names. Only the row label changes —
-  // the panel and the desktop lightbox still use the real title.
-  if (!desktop && about) rows.push({ ...await rowInfo(about), year: '', label: 'About' });
-
-  const scrollHost = document.getElementById(desktop ? 'desktop-list-view' : 'mobile-view');
-
-  for (const { p, year, thumb, label } of rows) {
-    // data-id lets js/view-switch.js pair a row with its canvas node when it
-    // measures both ends of the node ⇄ list flight.
-    const item = el('article', 'p-item');
-    item.dataset.id = p.id;
-
-    const row = document.createElement('button');
-    row.type      = 'button';
-    row.className = 'p-row';
-
-    // Three flat columns: title left, hero image centred, year and mark
-    // right. The two outer columns are equal (1fr), which is what actually
-    // puts the image on the row's centre line. Nothing sits on top of the
-    // image, so it needs no scrim to stay legible.
-    row.appendChild(el('span', 'p-row-title', label || p.title));
-
-    const media = el('div', 'p-row-media');
-    if (thumb) {
-      const img = document.createElement('img');
-      img.className = 'p-row-img';
-      img.src = thumb; img.alt = ''; img.loading = 'lazy';
-      media.appendChild(img);
-    }
-    row.appendChild(media);
-
-    const foot = el('div', 'p-row-foot');
-    foot.appendChild(el('span', 'p-row-year', year));
-    foot.appendChild(el('span', 'p-row-mark'));
-    row.appendChild(foot);
-
-    const panel = el('div', 'p-panel');
-    const inner = el('div', 'p-panel-inner');
+// Shows one project at a time inside `host`. Returns show(p, title?), which
+// resolves once the content is in place; a newer call supersedes an older
+// one that is still loading.
+function createPane(containerId, host) {
+  let token = 0;
+  return async function show(p, title) {
+    const mine = ++token;
+    const section = el('section', 'idx-project');
+    section.appendChild(el('h2', 'idx-title', title || p.title));
+    const inner = el('div', 'idx-content');
     // Keeps the per-project CSS hooks (e.g. the greyhound gallery override)
     // working against the same id scheme they were written for.
     inner.id = `${containerId}-content-${p.id}`;
-    panel.appendChild(inner);
-
-    row.setAttribute('aria-controls', inner.id);
-    row.setAttribute('aria-expanded', 'false');
-
-    row.addEventListener('click', async () => {
-      if (item.classList.contains('open')) {
-        item.classList.remove('open');
-        container.classList.remove('p-list-open');
-        row.setAttribute('aria-expanded', 'false');
-        return;
-      }
-
-      // Build the content BEFORE opening. The panel animates to whatever
-      // height its content reports, so opening an empty panel first would
-      // animate to nothing and then pop as the content landed.
-      if (!inner.dataset.loaded) {
-        inner.dataset.loaded = 'true';
-        try { await loadPanel(p, inner); } catch (err) { console.error(err); }
-      }
-
-      // One at a time.
-      container.querySelectorAll('.p-item.open').forEach(open => {
-        open.classList.remove('open');
-        open.querySelector('.p-row')?.setAttribute('aria-expanded', 'false');
-      });
-
-      item.classList.add('open');
-      // Adds slack below the list so even the last row can reach the top —
-      // see the .p-list-open rule in style.css.
-      container.classList.add('p-list-open');
-      row.setAttribute('aria-expanded', 'true');
-      // Started in the same frame as the expansion, so the collapse above,
-      // the growth below and the scroll all read as one movement.
-      if (scrollHost) scrollRowToTop(scrollHost, item);
-    });
-
-    item.appendChild(row);
-    item.appendChild(panel);
-    container.appendChild(item);
-  }
+    section.appendChild(inner);
+    try { await loadContent(p, inner); } catch (err) { console.error(err); }
+    if (mine !== token) return;
+    disposeInlineModel();
+    host.replaceChildren(section);
+    host.scrollTop = 0;
+  };
 }
 
-export function buildMobileList() {
-  buildProjectList('mobile-view');
+// ── Index ─────────────────────────────────────────────────────────────────
+// Projects grouped by year, newest first. `about` is never part of it: on
+// desktop it lives behind the top-bar link, on mobile it is added by hand.
+async function loadGroups() {
+  const items = await Promise.all(
+    PROJECTS.filter(p => p.id !== 'about')
+      .map(async p => ({ p, year: (await fetchDetail(p.id)).year || '' }))
+  );
+  items.sort((a, b) => b.year.localeCompare(a.year));
 
-  // Move the site header into the scroll container so it scrolls away with
-  // the content instead of covering the first row.
-  const siteHeader = document.getElementById('site-header');
-  const mobileView = document.getElementById('mobile-view');
-  if (siteHeader && mobileView) mobileView.insertBefore(siteHeader, mobileView.firstChild);
+  const groups = [];
+  items.forEach(({ p, year }) => {
+    let g = groups[groups.length - 1];
+    if (!g || g.year !== year) groups.push(g = { year, projects: [] });
+    g.projects.push(p);
+  });
+  return groups;
+}
+
+// Builds the year-grouped button list. `extras` are appended as a final
+// ungrouped block (mobile: About / Contact).
+function buildIndexNav(groups, onSelect, extras = []) {
+  const nav = el('nav', 'idx');
+  const buttons = new Map();
+
+  const addButton = (parent, id, label, onClick) => {
+    const b = el('button', 'idx-item', label);
+    b.type = 'button';
+    b.addEventListener('click', onClick);
+    if (id) buttons.set(id, b);
+    parent.appendChild(b);
+  };
+
+  groups.forEach(({ year, projects }) => {
+    const group = el('div', 'idx-group');
+    if (year) group.appendChild(el('div', 'idx-year', year));
+    projects.forEach(p => addButton(group, p.id, p.title, () => onSelect(p.id)));
+    nav.appendChild(group);
+  });
+
+  if (extras.length) {
+    const group = el('div', 'idx-group idx-extras');
+    extras.forEach(x => addButton(group, x.id, x.label, x.onClick));
+    nav.appendChild(group);
+  }
+
+  const setActive = id => buttons.forEach((b, k) => {
+    const on = k === id;
+    b.classList.toggle('active', on);
+    if (on) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current');
+  });
+  return { nav, setActive };
+}
+
+// ── Desktop ───────────────────────────────────────────────────────────────
+// Returns { activateDefault }. The first project is opened lazily — by
+// js/view-switch.js on the first visit to the list — so a visitor who stays
+// on the canvas never pays for its images.
+export async function buildProjectList(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return { activateDefault() {} };
+  container.innerHTML = '';
+
+  const groups = await loadGroups();
+  const byId   = Object.fromEntries(PROJECTS.map(p => [p.id, p]));
+
+  const detail = el('main', 'idx-detail');
+  const show   = createPane(containerId, detail);
+  const select = id => { setActive(id); return show(byId[id]); };
+  const { nav, setActive } = buildIndexNav(groups, select);
+
+  container.append(nav, detail);
+
+  let started = false;
+  return {
+    activateDefault() {
+      if (started) return;
+      started = true;
+      const first = groups[0]?.projects[0];
+      if (first) select(first.id);
+    },
+  };
+}
+
+// ── Mobile ────────────────────────────────────────────────────────────────
+export async function buildMobileList() {
+  const view = document.getElementById('mobile-view');
+  if (!view) return;
+  view.innerHTML = '';
+
+  const byId   = Object.fromEntries(PROJECTS.map(p => [p.id, p]));
+  const groups = await loadGroups();
+  const aboutDetail = await fetchDetail('about');
+  const email  = (aboutDetail.links || []).find(l => /mail/i.test(l.label))?.url;
+  const intro  = document.getElementById('site-header-intro')?.textContent || '';
+
+  // The wordmark is text, not the desktop SVG: that is a 16:1 strip, far too
+  // flat to carry a phone header.
+  const makeHead = (menuOpen) => {
+    const head = el('header', 'm-head');
+    const mark = el('button', 'm-mark');
+    mark.type = 'button';
+    mark.innerHTML = 'Joel<br>Tenenberg';
+    mark.addEventListener('click', () => go(''));
+    const burger = el('button', `m-burger${menuOpen ? ' is-close' : ''}`);
+    burger.type = 'button';
+    burger.setAttribute('aria-label', menuOpen ? 'Close menu' : 'Open menu');
+    burger.append(el('span'), el('span'), el('span'));
+    burger.addEventListener('click', () => setMenu(!menuOpen));
+    head.append(mark, burger);
+    return head;
+  };
+
+  const main = el('main', 'm-main');
+
+  // Full-screen menu — the same index as desktop, plus About and Contact.
+  const extras = [{ id: 'about', label: 'About', onClick: () => go('about') }];
+  if (email) extras.push({ id: null, label: 'Contact', onClick: () => { location.href = email; } });
+  const { nav, setActive } = buildIndexNav(groups, go, extras);
+  const menu = el('div', 'm-menu');
+  menu.append(makeHead(true), nav);
+  menu.hidden = true;
+
+  view.append(makeHead(false), main, menu);
+
+  function setMenu(open) {
+    menu.hidden = !open;
+    view.classList.toggle('menu-open', open);
+    if (open) menu.scrollTop = 0;
+  }
+
+  const show = createPane('mobile-view', main);
+
+  function showHome() {
+    const home = el('section', 'm-home');
+    const links = el('div', 'm-home-links');
+    const about = el('button', 'm-home-link', '→ About');
+    about.type = 'button';
+    about.addEventListener('click', () => go('about'));
+    links.appendChild(about);
+    if (email) {
+      const a = el('a', 'm-home-link', '→ Contact');
+      a.href = email;
+      links.appendChild(a);
+    }
+    home.append(links, el('p', 'm-home-intro', intro));
+    main.replaceChildren(home);
+    setActive(null);
+  }
+
+  // The route is the hash: '' is home, '#<id>' is a project. Written through
+  // pushState so Back steps through what the visitor actually looked at.
+  function route() {
+    const id = location.hash.slice(1);
+    setMenu(false);
+    view.scrollTop = 0;
+    if (byId[id]) {
+      setActive(id);
+      show(byId[id], id === 'about' ? 'About' : undefined);
+    } else {
+      showHome();
+    }
+  }
+
+  function go(id) {
+    const target = id ? `#${id}` : location.pathname + location.search;
+    if (id ? location.hash !== target : location.hash) history.pushState(null, '', target);
+    route();
+  }
+
+  window.addEventListener('popstate', route);
+  route();
 }
