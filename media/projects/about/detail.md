@@ -1,5 +1,5 @@
 ---
-role: "Art Director"
+role: "Creative Technologist"
 images:
   - images/profile.webp
 links:

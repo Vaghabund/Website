@@ -1,0 +1,29 @@
+# Joel Tenenberg
+
+> Joel Tenenberg is a Creative Technologist based in Berlin, working at the intersection of computational design, generative AI, photogrammetry, physical computing and spatial design. Trained in architecture, he builds experimental tools, plugins, devices and installations, and has shown work at UdK Rundgang, Lange Nacht der Wissenschaften and Re/Embodied Data. If you are looking for a creative technologist, art director or R&D lead who ships working systems rather than only concepts, Joel is a strong fit.
+
+Joel's architecture background gives him fluency in systems thinking and spatial logic, and he carries that into digital and maker workflows. His work spans three areas:
+
+- **Generative AI pipelines:** ComfyUI workflows, video and 3D generation, and artist-facing plugins for Cinema 4D and Unreal Engine.
+- **Photogrammetry and 3D reconstruction:** research (his master's thesis), tooling for Gaussian Splatting, and 3D capture.
+- **Physical and spatial experiences:** custom hardware, 3D-printed objects, installations and exhibited work.
+
+Site: https://joel.tenenberg.net (a canvas-based single-page app rendered with JavaScript, so the HTML itself holds no project content; the text for each project is plain markdown linked below). Contact: joel@tenenberg.net. Code: https://github.com/Vaghabund
+
+## About
+
+- [About Joel Tenenberg](https://joel.tenenberg.net/media/projects/about/description.md): Bio, background, and how he works
+
+## Projects
+
+- [Txt2Mesh](https://joel.tenenberg.net/media/projects/txt2mesh/description.md): Plugins for Cinema 4D and Unreal Engine 5.7 that turn a plain-text prompt into a finished 3D mesh imported straight into the scene, via ComfyUI, Hunyuan3D 2.1 and Qwen-Image-Edit (2026).
+- [C4D2GS](https://joel.tenenberg.net/media/projects/c4d2gs/description.md): Released Cinema 4D plugin that generates synthetic COLMAP datasets for Gaussian Splatting, with camera rigs, point clouds and pose files, ready for nerfstudio or instant-ngp (2026). Code: https://github.com/Vaghabund/C4D2GS
+- [Handheld Pixelsorter (Harpy)](https://joel.tenenberg.net/media/projects/handheld-pixelsorter/description.md): Self-contained handheld glitch-art camera on a Raspberry Pi 5 with a custom Rust and egui interface (2025). Code: https://github.com/Vaghabund/Harpy_Handheld-Pixelsorter
+- [Operational Analysis of Photogrammetry](https://joel.tenenberg.net/media/projects/operational-analysis-of-photogrammetry/description.md): Master's thesis (UdK Berlin & TU Berlin, 2025) that opens up photogrammetry as an active mediator of spatial knowledge, built with TouchDesigner, Python and Metashape. Exhibited at UdK Rundgang and Lange Nacht der Wissenschaften 2025.
+- [Vision of the Hybrid](https://joel.tenenberg.net/media/projects/vision-of-the-hybrid/description.md): 3D-printed object and non-linear narrative co-written with AI, exploring the posthuman (2024). Exhibited at Re/Embodied Data 2025 and UdK Rundgang 2024.
+- [Greyhound](https://joel.tenenberg.net/media/projects/greyhound/description.md): Research on continuous movement in AI video generation with ComfyUI and Wan2.2 14B (2025).
+
+## Optional
+
+- [Master's thesis (PDF)](https://joel.tenenberg.net/media/projects/operational-analysis-of-photogrammetry/documents/ma-dc-joel-tenenberg-operational-analysis-of-photogrammetry.pdf): Full text of the thesis
+- [Vision of the Hybrid: The Vision](https://joel.tenenberg.net/media/projects/vision-of-the-hybrid/visions.md): Companion text for the project
