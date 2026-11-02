@@ -88,7 +88,7 @@ export function createVideoWrap(src, { silent = false, poster = null } = {}) {
 
 // ── Shared desktop two-column layout builder ──────────────────────────────
 // Used by both the project lightbox and the desktop list-view accordion.
-export function buildDesktopProjectLayout(container, { project, detail, texts, images, modelSrc }) {
+export function buildDesktopProjectLayout(container, { project, detail, texts, images, modelSrc, linear = false }) {
   const hasDetail = !!(detail.year || detail.role || detail.timeline || detail.tools?.length || detail.links?.length || detail.exhibitions?.length);
 
   function appendDetails(target) {
@@ -142,7 +142,7 @@ export function buildDesktopProjectLayout(container, { project, detail, texts, i
     const g = el('div', `plb-gallery${images.length < 3 ? ' plb-gallery-single' : ''}`);
     gallery.appendChild(g);
 
-    const applyOrientation = project.id !== 'greyhound';
+    const applyOrientation = project.id !== 'greyhound' && !linear;
 
     if (!applyOrientation) {
       // Greyhound: render in order, no cropping

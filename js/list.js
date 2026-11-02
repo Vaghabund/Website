@@ -25,7 +25,7 @@ import { disposeInlineModel }     from './three-viewer.js';
 const isAbsolute = u => /^https?:\/\//i.test(u) || u.startsWith('media/');
 
 // ── Project content ───────────────────────────────────────────────────────
-async function loadContent(p, inner) {
+async function loadContent(p, inner, mobile = false) {
   const detail  = await fetchDetail(p.id);
   const base    = `media/projects/${p.id}/`;
   const resolve = u => isAbsolute(u) ? u : base + u;
@@ -47,13 +47,14 @@ async function loadContent(p, inner) {
     } catch { return null; }
   }))).filter(Boolean);
 
-  buildDesktopProjectLayout(inner, { project: p, detail, texts, images, modelSrc });
+  buildDesktopProjectLayout(inner, { project: p, detail, texts, images, modelSrc, linear: mobile });
+  return detail;
 }
 
 // Shows one project at a time inside `host`. Returns show(p, title?), which
 // resolves once the content is in place; a newer call supersedes an older
 // one that is still loading.
-function createPane(containerId, host) {
+function createPane(containerId, host, onBuilt) {
   let token = 0;
   return async function show(p, title) {
     const mine = ++token;
@@ -64,8 +65,10 @@ function createPane(containerId, host) {
     // working against the same id scheme they were written for.
     inner.id = `${containerId}-content-${p.id}`;
     section.appendChild(inner);
-    try { await loadContent(p, inner); } catch (err) { console.error(err); }
+    let detail = {};
+    try { detail = await loadContent(p, inner, !!onBuilt); } catch (err) { console.error(err); }
     if (mine !== token) return;
+    onBuilt?.(section, inner, p, detail);
     disposeInlineModel();
     host.replaceChildren(section);
     host.scrollTop = 0;
@@ -165,72 +168,168 @@ export async function buildMobileList() {
   const byId   = Object.fromEntries(PROJECTS.map(p => [p.id, p]));
   const groups = await loadGroups();
   const aboutDetail = await fetchDetail('about');
-  const email  = (aboutDetail.links || []).find(l => /mail/i.test(l.label))?.url;
   const intro  = document.getElementById('site-header-intro')?.textContent || '';
+  const email  = (aboutDetail.links || []).find(l => /mail/i.test(l.label))?.url;
 
-  // The wordmark is text, not the desktop SVG: that is a 16:1 strip, far too
-  // flat to carry a phone header.
-  const makeHead = (menuOpen) => {
+  // Same wordmark SVG and tagline as the desktop header.
+  const makeHead = (mode) => {
     const head = el('header', 'm-head');
     const mark = el('button', 'm-mark');
     mark.type = 'button';
-    mark.innerHTML = 'Joel<br>Tenenberg';
+    mark.setAttribute('aria-label', 'Joel Tenenberg');
+    const logo = el('img', 'm-mark-img');
+    logo.src = 'media/icons/Name_bold.svg';
+    logo.alt = '';
+    mark.append(logo, el('span', 'm-tagline', intro));
     mark.addEventListener('click', () => go(''));
-    const burger = el('button', `m-burger${menuOpen ? ' is-close' : ''}`);
-    burger.type = 'button';
-    burger.setAttribute('aria-label', menuOpen ? 'Close menu' : 'Open menu');
-    burger.append(el('span'), el('span'), el('span'));
-    burger.addEventListener('click', () => setMenu(!menuOpen));
-    head.append(mark, burger);
+    // One row for everything that is not a project, same style throughout.
+    const nav = el('nav', 'm-nav');
+    // A dot before each label; on the item that is open it turns into a cross.
+    const item = (label, onClick, open = false) => {
+      const b = el('button', `m-nav-item${open ? ' is-open' : ''}`);
+      b.append(el('span', 'm-dot'), document.createTextNode(label));
+      b.type = 'button';
+      b.addEventListener('click', onClick);
+      return b;
+    };
+    nav.appendChild(mode === 'index'
+      ? item('Close', () => setMenu(false), true)
+      : item('Index', () => { if (mode === 'about') go(''); setMenu(true); }));
+    nav.appendChild(mode === 'about'
+      ? item('Close', () => go(''), true)
+      : item('About', () => go('about')));
+    if (email) nav.appendChild(item('Contact', () => { location.href = email; }));
+    head.append(mark, nav);
     return head;
   };
 
   const main = el('main', 'm-main');
 
-  // Full-screen menu — the same index as desktop, plus About and Contact.
-  const extras = [{ id: 'about', label: 'About', onClick: () => go('about') }];
-  if (email) extras.push({ id: null, label: 'Contact', onClick: () => { location.href = email; } });
-  const { nav, setActive } = buildIndexNav(groups, go, extras);
+  // Full-screen menu — the same year-grouped index as desktop.
+  const { nav, setActive } = buildIndexNav(groups, go);
   const menu = el('div', 'm-menu');
-  menu.append(makeHead(true), nav);
+  menu.append(makeHead('index'), nav);
   menu.hidden = true;
 
-  view.append(makeHead(false), main, menu);
+  // About opens as a full-screen page of the same kind as the index.
+  const aboutBody = el('main', 'm-main');
+  const aboutPage = el('div', 'm-menu m-about');
+  aboutPage.append(makeHead('about'), aboutBody);
+  aboutPage.hidden = true;
+
+  view.append(makeHead(null), main, menu, aboutPage);
+
+  function setAbout(open) {
+    aboutPage.hidden = !open;
+    view.classList.toggle('menu-open', open || !menu.hidden);
+    if (open) aboutPage.scrollTop = 0;
+  }
 
   function setMenu(open) {
     menu.hidden = !open;
-    view.classList.toggle('menu-open', open);
+    view.classList.toggle('menu-open', open || !aboutPage.hidden);
     if (open) menu.scrollTop = 0;
   }
 
-  const show = createPane('mobile-view', main);
+  const flat = groups.flatMap(g => g.projects.map(p => ({ p, year: g.year })));
+
+  // Reshapes a freshly built project page for a phone: meta line under the
+  // title, hero first, a teaser instead of the full text, a capped gallery,
+  // and a card for the next project at the end.
+  function shapeProject(section, inner, p, detail) {
+    const title = section.querySelector('.idx-title');
+    const meta = [detail.year, detail.role].filter(Boolean).join(' · ');
+    if (meta && title) title.after(el('p', 'm-meta', meta));
+
+    if (inner.querySelector('.plb-video-wrap')) inner.classList.add('has-video');
+
+    const split = inner.querySelector('.plb-split');
+    const items = [...inner.querySelectorAll('.plb-gallery-item')];
+    const cap = Number(detail.mobileImages) || 4;
+    if (split && items.length > cap) {
+      items.slice(cap).forEach(i => i.classList.add('m-extra'));
+      inner.classList.add('m-gallery-collapsed');
+      const more = el('button', 'm-more', `+ ${items.length - cap} more`);
+      more.type = 'button';
+      more.addEventListener('click', () => {
+        inner.classList.remove('m-gallery-collapsed');
+        more.remove();
+      });
+      split.appendChild(more);
+    }
+
+    const text = inner.querySelector('.plb-col-text');
+    if (text && text.textContent.trim().length > 160) {
+      inner.classList.add('m-text-collapsed');
+      const read = el('button', 'm-read', 'Read more');
+      read.type = 'button';
+      read.addEventListener('click', () => {
+        const open = inner.classList.toggle('m-text-collapsed');
+        read.textContent = open ? 'Read more' : 'Show less';
+      });
+      text.appendChild(read);
+    }
+
+    const i = flat.findIndex(x => x.p.id === p.id);
+    const next = i >= 0 ? flat[(i + 1) % flat.length] : null;
+    if (next) {
+      const wrap = el('div', 'm-next');
+      wrap.append(el('div', 'm-next-label', 'Next'), makeCard(next.p, next.year, false));
+      section.appendChild(wrap);
+    }
+  }
+
+  const show = createPane('mobile-view', main, shapeProject);
+  const showAbout = createPane('mobile-view', aboutBody, () => {});
 
   function showHome() {
     const home = el('section', 'm-home');
-    const links = el('div', 'm-home-links');
-    const about = el('button', 'm-home-link', '→ About');
-    about.type = 'button';
-    about.addEventListener('click', () => go('about'));
-    links.appendChild(about);
-    if (email) {
-      const a = el('a', 'm-home-link', '→ Contact');
-      a.href = email;
-      links.appendChild(a);
-    }
-    home.append(links, el('p', 'm-home-intro', intro));
+    home.appendChild(feed);
     main.replaceChildren(home);
     setActive(null);
   }
+
+  // One full-width hero image per project, newest first. The images are
+  // lazy so only the ones scrolled near are fetched.
+  function makeCard(p, year, withImage = true) {
+    const card = el('button', 'm-card');
+    card.type = 'button';
+    card.addEventListener('click', () => go(p.id));
+    const cap = el('span', 'm-card-cap');
+    cap.append(el('span', 'm-card-title', p.title), el('span', 'm-card-year', year));
+    card.appendChild(cap);
+    if (!withImage) return card;
+    fetchDetail(p.id).then(d => {
+      const rel = d.hero || (d.images || [])[0];
+      if (!rel) return;
+      const img = el('img', 'm-card-img');
+      img.src = isAbsolute(rel) ? rel : `media/projects/${p.id}/${rel}`;
+      img.alt = p.title;
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      card.prepend(img);
+    });
+    return card;
+  }
+  const feed = el('div', 'm-feed');
+  flat.forEach(({ p, year }) => feed.appendChild(makeCard(p, year)));
 
   // The route is the hash: '' is home, '#<id>' is a project. Written through
   // pushState so Back steps through what the visitor actually looked at.
   function route() {
     const id = location.hash.slice(1);
     setMenu(false);
+    setAbout(false);
+    if (id === 'about') {
+      if (!main.firstChild) showHome();
+      setAbout(true);
+      showAbout(byId.about, 'About');
+      return;
+    }
     view.scrollTop = 0;
     if (byId[id]) {
       setActive(id);
-      show(byId[id], id === 'about' ? 'About' : undefined);
+      show(byId[id]);
     } else {
       showHome();
     }
